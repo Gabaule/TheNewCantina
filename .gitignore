@@ -2,3 +2,6 @@ data/
 concatenator.py
 concatenated_output.txt
 old/
+Lib/
+Scripts/
+pyvenv.cfg
