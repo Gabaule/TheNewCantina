@@ -10,7 +10,12 @@
                     <h1 class="text-xl font-semibold">The New Cantina</h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm">{{ user.name }} ({{ user.type }})</span>
+                    <div class="text-right">
+                        <span class="text-sm">{{ user.name }} ({{ user.type }})</span>
+                        <div class="text-xs text-green-600 dark:text-green-400 font-medium">
+                            Balance: ${{ "%.2f"|format(user.balance) }}
+                        </div>
+                    </div>
                     <a href="{{ url_for('logout') }}" class="text-sm text-blue-600 hover:text-blue-800">Logout</a>
                 </div>
             </div>
@@ -61,7 +66,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#"
+                            <a href="{{ url_for('balance') }}"
                                 class="block px-3 py-2 rounded-md text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
                                 Top Up Balance
                             </a>
