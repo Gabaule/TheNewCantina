@@ -1,0 +1,6 @@
+FROM gabaule/python-thenewcantina
+WORKDIR /app
+
+COPY . .
+
+CMD ["python", "app.py"]

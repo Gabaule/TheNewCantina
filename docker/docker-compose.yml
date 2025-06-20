@@ -5,8 +5,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: TheNewCantina
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
       TZ: Europe/Paris
 
     # Datas access from the host
@@ -28,3 +28,10 @@ services:
       - ../data/pgadmin:/var/lib/pgadmin
     depends_on:
       - postgres-db
+ 
+  app:
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+        - "5000:5000"
