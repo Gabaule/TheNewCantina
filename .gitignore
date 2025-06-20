@@ -5,3 +5,4 @@ old/
 Lib/
 Scripts/
 pyvenv.cfg
+Include/
