@@ -1,18 +1,17 @@
-version: "3.9"
-
 services:
   postgres-db:
     image: postgres:16-alpine
     container_name: postgres-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB:  TheNewCantina
-      POSTGRES_USER:  user
-      POSTGRES_PASSWORD:  "password" 
-      TZ: Europe/Paris                
+      POSTGRES_DB: TheNewCantina
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: "password"
+      TZ: Europe/Paris
 
     # Datas access from the host
     volumes:
+      - ../db-init/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ../data/postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"
@@ -25,5 +24,7 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: password
+    volumes:
+      - ../data/pgadmin:/var/lib/pgadmin
     depends_on:
       - postgres-db
