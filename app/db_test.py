@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """
 Quick database connection test for the canteen management system
+Enhanced with proper database waiting functionality
 """
 
 import time
+import sys
+import logging
 from flask import Flask
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import OperationalError
+import psycopg2
 from models.base_model import db
 from models.user import User
 from models.canteen import Canteen
@@ -14,6 +20,97 @@ from models.order_detail import OrderDetail
 import os
 from datetime import datetime
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger(__name__)
+
+def wait_for_database(database_url, max_retries=30, retry_interval=2):
+    """
+    Wait for database to become available with exponential backoff
+    
+    Args:
+        database_url: PostgreSQL connection URL
+        max_retries: Maximum number of connection attempts
+        retry_interval: Initial wait time between retries (seconds)
+    
+    Returns:
+        bool: True if connection successful, False otherwise
+    """
+    logger.info(f"🔄 Waiting for database to become available...")
+    logger.info(f"   Max retries: {max_retries}")
+    logger.info(f"   Retry interval: {retry_interval}s")
+    
+    for attempt in range(1, max_retries + 1):
+        try:
+            # Try to create a simple connection
+            engine = create_engine(database_url, pool_pre_ping=True)
+            
+            # Test the connection with a simple query
+            with engine.connect() as connection:
+                result = connection.execute(text("SELECT 1"))
+                result.fetchone()
+            
+            logger.info(f"✅ Database connection successful on attempt {attempt}!")
+            engine.dispose()  # Clean up the test engine
+            return True
+            
+        except (OperationalError, psycopg2.OperationalError) as e:
+            if attempt == max_retries:
+                logger.error(f"❌ Failed to connect to database after {max_retries} attempts")
+                logger.error(f"   Last error: {str(e)}")
+                return False
+            
+            # Calculate wait time with exponential backoff (max 10 seconds)
+            wait_time = min(retry_interval * (1.5 ** (attempt - 1)), 10)
+            
+            logger.warning(f"⏳ Attempt {attempt}/{max_retries} failed. Retrying in {wait_time:.1f}s...")
+            logger.warning(f"   Error: {str(e).split(chr(10))[0]}")  # First line only
+            
+            time.sleep(wait_time)
+            
+        except Exception as e:
+            logger.error(f"❌ Unexpected error during database connection: {str(e)}")
+            return False
+    
+    return False
+
+def wait_for_database_simple(database_url, timeout=60):
+    """
+    Simple database wait with timeout
+    
+    Args:
+        database_url: PostgreSQL connection URL
+        timeout: Maximum time to wait in seconds
+    
+    Returns:
+        bool: True if connection successful, False if timeout
+    """
+    logger.info(f"🔄 Waiting for database (timeout: {timeout}s)...")
+    
+    start_time = time.time()
+    attempt = 0
+    
+    while time.time() - start_time < timeout:
+        attempt += 1
+        try:
+            engine = create_engine(database_url, pool_pre_ping=True)
+            with engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+            
+            logger.info(f"✅ Database ready after {time.time() - start_time:.1f}s (attempt {attempt})")
+            engine.dispose()
+            return True
+            
+        except Exception:
+            elapsed = time.time() - start_time
+            remaining = timeout - elapsed
+            
+            if remaining > 0:
+                logger.info(f"⏳ Database not ready... {remaining:.0f}s remaining (attempt {attempt})")
+                time.sleep(2)
+            
+    logger.error(f"❌ Database connection timeout after {timeout}s")
+    return False
 
 def create_app():
     """Create Flask application"""
@@ -27,14 +124,51 @@ def create_app():
     DB_USER = os.getenv('DB_USER', 'admin')
     DB_PASSWORD = os.getenv('DB_PASSWORD', 'password')
     
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    database_url = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'dev-secret-key'  # Change in production
+    
+    # Wait for database before initializing SQLAlchemy
+    print("🔄 Waiting for database to become available...")
+    if not wait_for_database(database_url):
+        print("❌ Failed to establish database connection. Exiting...")
+        sys.exit(1)
     
     # Initialize database
     db.init_app(app)
     
     return app
+
+def create_app_with_health_check():
+    """Create Flask application with health check functionality"""
+    app = Flask(__name__)
+    
+    # Database configuration
+    DB_HOST = os.getenv('DB_HOST', 'postgres-db')
+    DB_PORT = os.getenv('DB_PORT', '5432')
+    DB_NAME = os.getenv('DB_NAME', 'TheNewCantina')
+    DB_USER = os.getenv('DB_USER', 'admin')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', 'password')
+    
+    database_url = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SECRET_KEY'] = 'dev-secret-key'
+    
+    # Add health check route
+    @app.route('/health')
+    def health_check():
+        try:
+            # Test database connection
+            db.engine.execute(text("SELECT 1"))
+            return {"status": "healthy", "database": "connected"}, 200
+        except Exception as e:
+            return {"status": "unhealthy", "error": str(e)}, 503
+    
+    return app, database_url
 
 def test_database_connection():
     """Test database connection and basic operations"""
@@ -42,11 +176,6 @@ def test_database_connection():
     
     with app.app_context():
         try:
-            print("Attente de 10 secondes...")
-            for i in range(10, 0, -1):
-                print(f"{i} secondes restantes...")
-                time.sleep(1)
-            print("Terminé !")
             print("🔄 Testing database connection...")
             
             # Test 1: Check if we can connect
@@ -147,6 +276,37 @@ def test_model_operations():
         except Exception as e:
             print(f"❌ Model operations test failed: {str(e)}")
             return False
+
+# Alternative: Docker Compose health check approach
+def create_docker_compose_healthcheck():
+    """
+    Returns a health check command for docker-compose.yml
+    This approach uses Docker's built-in health checking
+    """
+    return """
+# Add this to your docker-compose.yml for the postgres service:
+postgres-db:
+  image: postgres:13
+  environment:
+    POSTGRES_DB: TheNewCantina
+    POSTGRES_USER: admin
+    POSTGRES_PASSWORD: password
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U admin -d TheNewCantina"]
+    interval: 5s
+    timeout: 5s
+    retries: 5
+    start_period: 10s
+
+# And for your app service:
+canteen-app:
+  build: .
+  depends_on:
+    postgres-db:
+      condition: service_healthy  # Wait for DB to be healthy
+  environment:
+    DB_HOST: postgres-db
+"""
 
 if __name__ == "__main__":
     print("🚀 Starting Canteen Management System Database Test\n")
