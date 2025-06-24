@@ -20,8 +20,8 @@ from models.daily_menu_item import DailyMenuItem
 from models.reservation import Reservation
 from models.order_item import OrderItem
 
-# Create Flask app
-app = Flask(__name__)
+# Create Flask app with correct template folder path
+app = Flask(__name__, template_folder='../templates')
 
 # Authentication helper
 def require_login():
