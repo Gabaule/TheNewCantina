@@ -1,6 +1,6 @@
 /* ===========================================================
    Faculty Cafeteria Reservation System - SQL Schema
-   - Roles (student, teacher, admin)
+   - Roles (student, staff, admin)
    - Daily menu structure (main/side/soup/drink)
    - Example data
    - Clean install
@@ -99,7 +99,7 @@ INSERT INTO cafeteria (name, address, phone) VALUES
 INSERT INTO app_user (last_name, first_name, email, password, balance, role) VALUES
     ('Novák', 'Jakub', 'jakub.novak@uniza.sk', 'hashedpassword', 25.50, 'student'),
     ('Kováčová', 'Anna', 'anna.kovacova@uniza.sk', 'hashedpassword', 18.75, 'student'),
-    ('Smith', 'John', 'john.smith@uniza.sk', 'hashedpassword', 31.00, 'teacher'),
+    ('Smith', 'John', 'john.smith@uniza.sk', 'hashedpassword', 31.00, 'staff'),
     ('Admin', 'Alice', 'alice.admin@uniza.sk', 'hashedpassword', 100.00, 'admin');
 
 -- DISHES (all types)
@@ -151,7 +151,7 @@ INSERT INTO order_item (reservation_id, dish_id, quantity, is_takeaway, applied_
     (2, 5, 1, true, 3.00),    -- Mixed salad takeaway
     (2, 8, 1, true, 1.20);    -- Mineral water takeaway
 
--- RESERVATION: John (teacher), on-site
+-- RESERVATION: John (staff), on-site
 INSERT INTO reservation (user_id, cafeteria_id, reservation_datetime, total, status)
 VALUES (3, 1, '2025-06-25 13:00:00', 7.80, 'completed');
 
