@@ -1,4 +1,9 @@
-FROM gabaule/python-thenewcantina:latest
+FROM python:3-alpine
 WORKDIR /app
 COPY app/ .
-CMD ["python", "db_test.py"]
+COPY docker/requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+CMD ["python", "app.py"]
