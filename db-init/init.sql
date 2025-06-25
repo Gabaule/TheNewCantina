@@ -38,7 +38,6 @@ CREATE TABLE dish (
     name            VARCHAR(100) NOT NULL,
     description     TEXT,
     dine_in_price   NUMERIC(10,2) NOT NULL,
-    is_available    BOOLEAN DEFAULT TRUE,
     dish_type       VARCHAR(20) NOT NULL CHECK (
         dish_type IN ('main_course', 'side_dish', 'soup', 'drink')
     ),
