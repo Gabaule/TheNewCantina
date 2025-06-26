@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-Flask controller for The New Cantina application
+Flask REST API controller for The New Cantina application
 """
 
 import os
 import sys
 from datetime import datetime
+from decimal import Decimal
+from functools import wraps
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
 
 # Add parent directory to path for imports
@@ -16,38 +18,25 @@ from models.app_user import AppUser
 from models.cafeteria import Cafeteria
 from models.dish import Dish
 from models.daily_menu import DailyMenu
-from models.daily_menu_item import DailyMenuItem
+# DailyMenuItem is removed
 from models.reservation import Reservation
 from models.order_item import OrderItem
 
-# Create Flask app with correct template folder path
+# Create Flask app
 app = Flask(__name__, template_folder='../templates')
+# You should configure your app with a secret key, database URI, etc.
+# app.config['SECRET_KEY'] = 'your-super-secret-key'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'your-database-uri'
+# db.init_app(app)
 
-# Authentication helper
-def require_login():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-    return None
+# --- Authentication & Authorization Helpers ---
 
-def get_current_user():
-    user_id = session.get("user_id")
-    if user_id:
-        return AppUser.get_by_id(int(user_id))
-    return None
-
-# Routes
-@app.route("/")
-def index():
-    auth_check = require_login()
-    if auth_check:
-        return auth_check
-    return redirect(url_for("dashboard"))
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form.get("username", "").strip()
-        password = request.form.get("password", "")
+def api_require_login(f):
+    """Decorator for API routes that require authentication."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user_id" not in session:
+            return jsonify({"error": "Authentication required. Please log in."}), 401
         
         # --- START DEBUG LOGGING ---
         print(f"--- Login attempt ---")
@@ -263,13 +252,93 @@ def health_check():
         db.session.execute("SELECT 1")
         return {"status": "healthy", "database": "connected"}, 200
     except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}, 503
+        db.session.rollback()
+        # In a real app, log the error `e`
+        return jsonify({"error": "An internal error occurred while creating the reservation."}), 500
 
-# Error handlers
+@app.route("/api/v1/reservations", methods=["GET"])
+@api_require_login
+def get_reservations(current_user):
+    """Get the current user's reservation history."""
+    reservations = Reservation.query.filter_by(user_id=current_user.user_id).order_by(Reservation.reservation_datetime.desc()).all()
+    return jsonify([r.to_dict() for r in reservations]), 200
+
+
+@app.route("/api/v1/user/balance", methods=["POST"])
+@api_require_login
+def add_to_balance(current_user):
+    """Add funds to the user's balance."""
+    data = request.get_json()
+    try:
+        amount = Decimal(data.get("amount", "0"))
+        if 0.01 <= amount <= 500:
+            current_user.balance += amount
+            db.session.commit()
+            return jsonify({
+                "message": f"Successfully added ${amount:.2f} to your balance!",
+                "new_balance": float(current_user.balance)
+            }), 200
+        else:
+            return jsonify({"error": "Please enter an amount between $0.01 and $500.00"}), 400
+    except Exception:
+        return jsonify({"error": "Invalid amount entered. Please enter a valid number."}), 400
+
+
+# --- Page-Serving Routes (The Frontend Shell) ---
+# These routes now just render the main page.
+# The data is loaded dynamically via JavaScript making calls to the API routes above.
+
+@app.route("/")
+def index():
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
+    return redirect(url_for("dashboard_page"))
+
+@app.route("/login")
+def login_page():
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout_page():
+    session.clear()
+    flash("You have been logged out successfully.", "info")
+    return redirect(url_for("login_page"))
+
+@app.route("/dashboard")
+def dashboard_page():
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
+    return render_template("dashboard.html")
+
+@app.route("/orders")
+def orders_page():
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
+    return render_template("orders.html")
+
+@app.route("/balance")
+def balance_page():
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
+    # Pass user to template to display name and current balance initially
+    user = AppUser.get_by_id(session['user_id'])
+    return render_template("balance.html", user=user)
+
+
+# --- Error Handlers (Context-Aware) ---
+def handle_error(error, code):
+    """Generic error handler that returns JSON for API routes and HTML for others."""
+    if request.path.startswith('/api/'):
+        return jsonify(error=str(error.description)), code
+    # For web pages, render the appropriate HTML error template
+    template = "500.html" if code == 500 else "404.html"
+    return render_template(template), code
+
 @app.errorhandler(404)
 def not_found(error):
-    return render_template("404.html"), 404
+    return handle_error(error, 404)
 
 @app.errorhandler(500)
 def internal_error(error):
-    return render_template("500.html"), 500
+    db.session.rollback() # Ensure session is clean after an internal error
+    return handle_error(error, 500)
