@@ -9,6 +9,7 @@ from datetime import datetime
 from decimal import Decimal
 from functools import wraps
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
+from sqlalchemy import text
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
