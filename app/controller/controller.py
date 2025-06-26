@@ -9,6 +9,7 @@ from datetime import datetime
 from decimal import Decimal
 from functools import wraps
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
+from sqlalchemy import text
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -53,7 +54,7 @@ def api_require_login(f):
 def health_check_api():
     """Health check endpoint for Docker and monitoring."""
     try:
-        db.session.execute("SELECT 1")
+        db.session.execute(text("SELECT 1"))
         return jsonify({"status": "healthy", "database": "connected"}), 200
     except Exception as e:
         return jsonify({"status": "unhealthy", "error": str(e)}), 503
