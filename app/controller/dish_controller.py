@@ -1,67 +1,87 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
+from functools import wraps
 from models.dish import Dish
+from models.app_user import AppUser
 from models import db
 
 dish_bp = Blueprint('dish_bp', __name__, url_prefix='/api/v1/dish')
 
-# GET /api/v1/dish - list all dishes
+# --- Décorateur pour accès admin seulement ---
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user_id = session.get("user_id")
+        if not user_id:
+            return jsonify({"error": "Authentification requise"}), 401
+        user = AppUser.get_by_id(user_id)
+        if not user or user.role != "admin":
+            return jsonify({"error": "Accès réservé aux administrateurs"}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
+# --- ROUTES ---
+
+# GET /api/v1/dish - Liste tous les plats (lecture publique)
 @dish_bp.route('/', methods=['GET'])
 def get_all_dishes():
     return jsonify([dish.to_dict() for dish in Dish.query.all()]), 200
 
-# GET /api/v1/dish/<int:dish_id> - get dish by id
+# GET /api/v1/dish/<int:dish_id> - Affiche un plat (lecture publique)
 @dish_bp.route('/<int:dish_id>', methods=['GET'])
 def get_dish(dish_id):
     dish = Dish.query.get(dish_id)
     if not dish:
-        return jsonify({'error': 'Dish not found'}), 404
+        return jsonify({'error': 'Plat non trouvé'}), 404
     return jsonify(dish.to_dict()), 200
 
-# POST /api/v1/dish - create new dish
+# POST /api/v1/dish - Créer un plat (ADMIN)
 @dish_bp.route('/', methods=['POST'])
+@admin_required
 def create_dish():
     data = request.get_json()
     try:
-        dish = Dish.create_dish(
+        dish = Dish(
             name=data['name'],
             description=data.get('description'),
             dine_in_price=float(data['dine_in_price']),
-            is_available=data.get('is_available', True),
             dish_type=data['dish_type']
         )
-        if dish:
-            return jsonify(dish.to_dict()), 201
-        else:
-            return jsonify({'error': 'Dish creation failed (possibly duplicate name or constraint error).'}), 400
-    except (KeyError, TypeError, ValueError):
-        return jsonify({'error': 'Invalid data provided'}), 400
+        db.session.add(dish)
+        db.session.commit()
+        return jsonify(dish.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Erreur lors de la création du plat', 'details': str(e)}), 400
 
-# PUT /api/v1/dish/<int:dish_id> - update dish
+# PUT /api/v1/dish/<int:dish_id> - Modifier un plat (ADMIN)
 @dish_bp.route('/<int:dish_id>', methods=['PUT'])
+@admin_required
 def update_dish(dish_id):
     dish = Dish.query.get(dish_id)
     if not dish:
-        return jsonify({'error': 'Dish not found'}), 404
+        return jsonify({'error': 'Plat non trouvé'}), 404
     data = request.get_json()
-    updated = dish.update_dish(
-        name=data.get('name'),
-        description=data.get('description'),
-        dine_in_price=float(data['dine_in_price']) if data.get('dine_in_price') is not None else None,
-        is_available=data.get('is_available'),
-        dish_type=data.get('dish_type')
-    )
-    if updated:
+    try:
+        for field in ['name', 'description', 'dine_in_price', 'dish_type']:
+            if field in data:
+                setattr(dish, field, data[field])
+        db.session.commit()
         return jsonify(dish.to_dict()), 200
-    else:
-        return jsonify({'error': 'Update failed'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Erreur lors de la mise à jour', 'details': str(e)}), 400
 
-# DELETE /api/v1/dish/<int:dish_id> - delete dish
+# DELETE /api/v1/dish/<int:dish_id> - Supprimer un plat (ADMIN)
 @dish_bp.route('/<int:dish_id>', methods=['DELETE'])
+@admin_required
 def delete_dish(dish_id):
     dish = Dish.query.get(dish_id)
     if not dish:
-        return jsonify({'error': 'Dish not found'}), 404
-    if dish.delete_dish():
-        return jsonify({'message': 'Dish deleted'}), 200
-    else:
-        return jsonify({'error': 'Deletion failed'}), 500
+        return jsonify({'error': 'Plat non trouvé'}), 404
+    try:
+        db.session.delete(dish)
+        db.session.commit()
+        return jsonify({'message': 'Plat supprimé'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Erreur lors de la suppression', 'details': str(e)}), 500
