@@ -37,4 +37,4 @@ with app.app_context():
         print(f"❌ Error creating database tables: {e}")
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5045)
+    app.run(debug=True, host='0.0.0.0', port=5000)
