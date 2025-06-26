@@ -10,3 +10,4 @@ Include/
 __pycache__/
 docker/docker-compose-ishan.yml
 dockerfile-ishan
+notes.txt
