@@ -49,12 +49,27 @@ def login():
         email = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         
+        # --- START DEBUG LOGGING ---
+        print(f"--- Login attempt ---")
+        print(f"Received email: '{email}'")
+        print(f"Received password: '{password}'")
+
         user = AppUser.get_by_email(email)
-        if user and user.verify_password(password):
-            session["user_id"] = user.user_id
-            flash(f"Welcome back, {user.first_name}!", "success")
-            return redirect(url_for("dashboard"))
         
+        if not user:
+            print("DEBUG: User not found in database.")
+        else:
+            print(f"DEBUG: User found: {user.email}, Role: {user.role}")
+            password_is_valid = user.verify_password(password)
+            print(f"DEBUG: Password verification result: {password_is_valid}")
+            if password_is_valid:
+                session["user_id"] = user.user_id
+                flash(f"Welcome back, {user.first_name}!", "success")
+                print("--- Login successful, redirecting. ---")
+                return redirect(url_for("dashboard"))
+
+        # This part only runs if login fails
+        print("--- Login failed. Rendering login page with error. ---")
         flash("Invalid credentials. Please try again.", "error")
         return render_template("login.html", error="Invalid credentials")
     
@@ -105,8 +120,7 @@ def dashboard(cafeteria_id=None):
             menu_items = db.session.query(Dish, DailyMenuItem).join(
                 DailyMenuItem, Dish.dish_id == DailyMenuItem.dish_id
             ).filter(
-                DailyMenuItem.menu_id == daily_menu.menu_id,
-                Dish.is_available == True
+                DailyMenuItem.menu_id == daily_menu.menu_id
             ).order_by(DailyMenuItem.display_order).all()
     
     return render_template(
@@ -225,8 +239,7 @@ def api_menu(cafeteria_id):
     menu_items = db.session.query(Dish, DailyMenuItem).join(
         DailyMenuItem, Dish.dish_id == DailyMenuItem.dish_id
     ).filter(
-        DailyMenuItem.menu_id == daily_menu.menu_id,
-        Dish.is_available == True
+        DailyMenuItem.menu_id == daily_menu.menu_id
     ).order_by(DailyMenuItem.display_order).all()
     
     menu_data = []

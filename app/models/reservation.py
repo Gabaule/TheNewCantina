@@ -13,9 +13,9 @@ class Reservation(db.Model):
     status = db.Column(db.String(20), default='pending')
 
     # Relationships for navigation
-    user = db.relationship('AppUser', backref=db.backref('reservations', lazy=True))
-    cafeteria = db.relationship('Cafeteria', backref=db.backref('reservations', lazy=True))
-    order_items = db.relationship('OrderItem', backref='reservation', lazy=True)
+    user = db.relationship('AppUser', back_populates='reservations')
+    cafeteria = db.relationship('Cafeteria', back_populates='reservations')
+    order_items = db.relationship('OrderItem', back_populates='reservation', lazy=True)
 
     @classmethod
     def create_reservation(
@@ -27,8 +27,9 @@ class Reservation(db.Model):
         status: str = 'pending'
     ):
         """
-        Create and insert a new reservation into the database.
-        Returns the Reservation instance if successful, or None if there is an error.
+        Create and add a new reservation to the session.
+        The caller is responsible for committing the session.
+        Returns the Reservation instance.
         """
         reservation = cls(
             user_id=user_id,
@@ -37,13 +38,8 @@ class Reservation(db.Model):
             total=total,
             status=status
         )
-        try:
-            db.session.add(reservation)
-            db.session.commit()
-            return reservation
-        except IntegrityError:
-            db.session.rollback()
-            return None
+        db.session.add(reservation)
+        return reservation
 
     @classmethod
     def get_by_id(cls, reservation_id: int):
@@ -137,4 +133,3 @@ class Reservation(db.Model):
         Retrieve all reservations for a given user_id as a list of dicts.
         """
         return [res.to_dict() for res in cls.query.filter_by(user_id=user_id).all()]
-

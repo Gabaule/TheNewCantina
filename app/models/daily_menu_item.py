@@ -11,8 +11,8 @@ class DailyMenuItem(db.Model):
     display_order = db.Column(db.Integer, default=1)
 
     # Relationships (if you want to access the menu or dish from this item)
-    menu = db.relationship('DailyMenu', backref=db.backref('daily_menu_items', lazy=True))
-    dish = db.relationship('Dish', backref=db.backref('daily_menu_items', lazy=True))
+    menu = db.relationship('DailyMenu', back_populates='items')
+    dish = db.relationship('Dish', back_populates='menu_items')
 
     @classmethod
     def create_menu_item(
@@ -23,8 +23,9 @@ class DailyMenuItem(db.Model):
         display_order: int = 1
     ):
         """
-        Create and insert a new daily menu item into the database.
-        Returns the DailyMenuItem instance if successful, or None if there is an error.
+        Create and add a new daily menu item to the session.
+        The caller is responsible for committing the session.
+        Returns the DailyMenuItem instance.
         """
         item = cls(
             menu_id=menu_id,
@@ -32,13 +33,8 @@ class DailyMenuItem(db.Model):
             dish_role=dish_role,
             display_order=display_order
         )
-        try:
-            db.session.add(item)
-            db.session.commit()
-            return item
-        except IntegrityError:
-            db.session.rollback()
-            return None
+        db.session.add(item)
+        return item
 
     @classmethod
     def get_by_id(cls, menu_item_id: int):

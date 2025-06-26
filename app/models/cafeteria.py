@@ -11,8 +11,8 @@ class Cafeteria(db.Model):
     phone = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    menus = db.relationship('DailyMenu', backref='cafeteria', lazy=True)
-    reservations = db.relationship('Reservation', backref='cafeteria', lazy=True)
+    menus = db.relationship('DailyMenu', back_populates='cafeteria', lazy=True)
+    reservations = db.relationship('Reservation', back_populates='cafeteria', lazy=True)
 
     @classmethod
     def create_cafeteria(
@@ -22,21 +22,17 @@ class Cafeteria(db.Model):
         phone: str = None
     ):
         """
-        Create and insert a new cafeteria into the database.
-        Returns the cafeteria instance if successful, or None if there is an error.
+        Create and add a new cafeteria to the session.
+        The caller is responsible for committing the session.
+        Returns the cafeteria instance.
         """
         cafeteria = cls(
             name=name,
             address=address,
             phone=phone
         )
-        try:
-            db.session.add(cafeteria)
-            db.session.commit()
-            return cafeteria
-        except IntegrityError:
-            db.session.rollback()
-            return None
+        db.session.add(cafeteria)
+        return cafeteria
 
     @classmethod
     def get_by_id(cls, cafeteria_id: int):

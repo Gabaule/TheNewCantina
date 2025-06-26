@@ -12,7 +12,8 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
-                        <span class="text-sm">{{ user.name }} ({{ user.type }})</span>
+                        <!-- FIX: Use first_name, last_name, and role from the AppUser model -->
+                        <span class="text-sm">{{ user.first_name }} {{ user.last_name }} ({{ user.role }})</span>
                         <div class="text-xs text-green-600 dark:text-green-400 font-medium">
                             Balance: ${{ "%.2f"|format(user.balance) }}
                         </div>
@@ -136,23 +137,23 @@
                                                 <div class="flex items-center justify-between">
                                                     <div>
                                                         <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                                                            Order #{{ order.order_id }}
+                                                            <!-- FIX: Use reservation_id from the Reservation model -->
+                                                            Order #{{ order.reservation_id }}
                                                         </h3>
                                                         <div class="flex items-center space-x-4 mt-1 text-sm text-slate-600 dark:text-slate-400">
-                                                            <span>{{ order.date.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                                                            <!-- FIX: Use reservation_datetime and format it -->
+                                                            <span>{{ order.reservation_datetime.strftime('%B %d, %Y at %I:%M %p') }}</span>
                                                             <span>•</span>
-                                                            <span>{{ order.cafeteria }}</span>
-                                                            <span>•</span>
-                                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium{% if order.order_type == 'dine-in' %} bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200{% else %} bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200{% endif %}">
-                                                                {{ order.order_type|title }}
-                                                            </span>
+                                                            <!-- FIX: Access the .name of the related cafeteria object -->
+                                                            <span>{{ order.cafeteria.name if order.cafeteria else 'N/A' }}</span>
                                                         </div>
                                                     </div>
                                                     <div class="text-right">
                                                         <div class="text-xl font-bold text-slate-900 dark:text-slate-100">
                                                             ${{ "%.2f"|format(order.total) }}
                                                         </div>
-                                                        <div class="text-sm">
+                                                        <div class="text-sm mt-1">
+                                                            <!-- FIX: Use the status field which exists on the Reservation model -->
                                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium{% if order.status == 'completed' %} bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200{% elif order.status == 'pending' %} bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200{% else %} bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200{% endif %}">
                                                                 {{ order.status|title }}
                                                             </span>
@@ -170,10 +171,12 @@
                                                                 <span class="inline-flex items-center justify-center w-6 h-6 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-full text-xs font-medium mr-3">
                                                                     {{ item.quantity }}
                                                                 </span>
-                                                                <span class="text-slate-900 dark:text-slate-100">{{ item.name }}</span>
+                                                                <!-- FIX: Access the name from the related Dish object -->
+                                                                <span class="text-slate-900 dark:text-slate-100">{{ item.dish.name if item.dish else 'Dish not found' }}</span>
                                                             </div>
                                                             <span class="text-slate-600 dark:text-slate-400 font-medium">
-                                                                ${{ "%.2f"|format(item.price * item.quantity) }}
+                                                                <!-- FIX: Use applied_price from the OrderItem model -->
+                                                                ${{ "%.2f"|format(item.applied_price * item.quantity) }}
                                                             </span>
                                                         </div>
                                                     {% endfor %}
@@ -236,7 +239,8 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
+                                        <!-- FIX: Commented out the non-existent 'download_invoice' route to prevent app crash -->
+                                        <!-- <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
                                             <a href="{{ url_for('download_invoice', month=month_key) }}" 
                                                class="inline-flex items-center text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +248,7 @@
                                                 </svg>
                                                 Download PDF Invoice
                                             </a>
-                                        </div>
+                                        </div> -->
                                     </div>
                                 {% endfor %}
                             </div>

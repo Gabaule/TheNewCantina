@@ -11,7 +11,7 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
-                        <span class="text-sm">{{ user.name }} ({{ user.type }})</span>
+                        <span class="text-sm">{{ user.first_name }} {{ user.last_name }} ({{ user.role }})</span>
                         <div class="text-xs text-green-600 dark:text-green-400 font-medium">
                             Balance: ${{ "%.2f"|format(user.balance) }}
                         </div>
@@ -28,22 +28,22 @@
             <nav class="p-6">
                 <!-- Date Selection -->
                 <div class="mb-6">
-                    <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Select Date</h2>
-                    <form method="get" action="{{ url_for('dashboard', cafeteria_id=current_cafeteria.id) }}">
+                    <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Select Date</h2>                   
+                    <form method="get" action="{{ url_for('dashboard', cafeteria_id=current_cafeteria.cafeteria_id) }}">
                         <input type="date" name="date" value="{{ selected_date }}"
                             class="block w-full px-3 py-2 rounded-md text-sm font-medium text-slate-600 dark:text-slate-400 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors border-0 focus:outline-none focus:bg-blue-100 dark:focus:bg-blue-900 focus:text-blue-700 dark:focus:text-blue-300"
-                            onchange="this.form.submit()">
+                            onchange="this.form.submit()">                       
                     </form>
                 </div>
 
                 <!-- Cafeterias -->
                 <div class="mb-6">
                     <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Cafeterias</h2>
-                    <ul class="space-y-2">
-                        {% for caf_id, cafeteria in cafeterias.items() %}
+                    <ul class="space-y-2">                        
+                        {% for cafeteria in cafeterias %}
                         <li>
-                            <a href="{{ url_for('dashboard', cafeteria_id=caf_id) }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors
-                                      {% if current_cafeteria.id == caf_id %}
+                            <a href="{{ url_for('dashboard', cafeteria_id=cafeteria.cafeteria_id) }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors
+                                      {% if current_cafeteria.cafeteria_id == cafeteria.cafeteria_id %}
                                           bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300
                                       {% else %}
                                           text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100
@@ -88,7 +88,7 @@
                 <!-- Cafeteria Header -->
                 <div class="mb-8">
                     <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">{{ current_cafeteria.name }}</h1>
-                    <p class="mt-2 text-lg text-slate-600 dark:text-slate-400">{{ current_cafeteria.description }}</p>
+                    <p class="mt-2 text-lg text-slate-600 dark:text-slate-400">{{ current_cafeteria.address or 'No address provided.' }}</p>
                 </div>
 
                 {% block main_content %}{% endblock %}

@@ -10,8 +10,8 @@ class Dish(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    menu_items = db.relationship('DailyMenuItem', backref='dish', lazy=True)
-    order_items = db.relationship('OrderItem', backref='dish', lazy=True)
+    menu_items = db.relationship('DailyMenuItem', back_populates='dish', lazy=True)
+    order_items = db.relationship('OrderItem', back_populates='dish', lazy=True)
 
     def to_dict(self):
         return {

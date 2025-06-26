@@ -12,8 +12,8 @@ class OrderItem(db.Model):
     applied_price = db.Column(db.Numeric(10,2), nullable=False)
 
     # Relationships (optional, for navigation)
-    reservation = db.relationship('Reservation', backref=db.backref('order_items', lazy=True))
-    dish = db.relationship('Dish', backref=db.backref('order_items', lazy=True))
+    reservation = db.relationship('Reservation', back_populates='order_items')
+    dish = db.relationship('Dish', back_populates='order_items')
 
     @classmethod
     def create_order_item(
@@ -25,8 +25,9 @@ class OrderItem(db.Model):
         applied_price: float = 0.00
     ):
         """
-        Create and insert a new order item into the database.
-        Returns the OrderItem instance if successful, or None if there is an error.
+        Create and add a new order item to the session.
+        The caller is responsible for committing the session.
+        Returns the OrderItem instance.
         """
         item = cls(
             reservation_id=reservation_id,
@@ -35,13 +36,8 @@ class OrderItem(db.Model):
             is_takeaway=is_takeaway,
             applied_price=applied_price
         )
-        try:
-            db.session.add(item)
-            db.session.commit()
-            return item
-        except IntegrityError:
-            db.session.rollback()
-            return None
+        db.session.add(item)
+        return item
 
     @classmethod
     def get_by_id(cls, item_id: int):

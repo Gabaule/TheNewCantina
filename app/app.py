@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # Import the Flask app from controller
 from controller.controller import app
 from models import db
+from db_seeder import populate_database_if_empty
 
 # Database configuration
 DB_HOST = os.getenv('DB_HOST', 'postgres-db')
@@ -28,13 +29,17 @@ app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 # Initialize database
 db.init_app(app)
 
-# Create tables if they don't exist
+# Create tables and populate with initial data if database is empty
 with app.app_context():
     try:
         db.create_all()
         print("✅ Database tables created/verified successfully!")
+        
+        # Call the separated seeder function
+        populate_database_if_empty()
+
     except Exception as e:
-        print(f"❌ Error creating database tables: {e}")
+        print(f"❌ Error during app initialization: {e}")
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5045)

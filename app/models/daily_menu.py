@@ -11,8 +11,9 @@ class DailyMenu(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships (if you want to list all items of a menu)
-    items = db.relationship('DailyMenuItem', backref='menu', lazy=True)
-
+    cafeteria = db.relationship('Cafeteria', back_populates='menus')
+    items = db.relationship('DailyMenuItem', back_populates='menu', lazy=True, cascade="all, delete-orphan")
+    
     @classmethod
     def create_menu(
         cls,
@@ -20,20 +21,16 @@ class DailyMenu(db.Model):
         menu_date: datetime.date
     ):
         """
-        Create and insert a new daily menu into the database.
-        Returns the DailyMenu instance if successful, or None if there is an error.
+        Create and add a new daily menu to the session.
+        The caller is responsible for committing the session.
+        Returns the DailyMenu instance.
         """
         menu = cls(
             cafeteria_id=cafeteria_id,
             menu_date=menu_date
         )
-        try:
-            db.session.add(menu)
-            db.session.commit()
-            return menu
-        except IntegrityError:
-            db.session.rollback()
-            return None
+        db.session.add(menu)
+        return menu
 
     @classmethod
     def get_by_id(cls, menu_id: int):

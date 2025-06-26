@@ -16,7 +16,7 @@ class AppUser(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    reservations = db.relationship('Reservation', backref='user', lazy=True)
+    reservations = db.relationship('Reservation', back_populates='user', lazy=True)
 
     @classmethod
     def create_user(
@@ -29,8 +29,9 @@ class AppUser(db.Model):
         balance: float = 0.00
     ):
         """
-        Create and insert a new user with hashed password.
-        Returns the user instance if successful, or None if email already exists.
+        Create and add a new user to the session with a hashed password.
+        The caller is responsible for committing the session.
+        Returns the user instance.
         """
         password_hash = generate_password_hash(password)
         user = cls(
@@ -41,13 +42,8 @@ class AppUser(db.Model):
             role=role,
             balance=balance
         )
-        try:
-            db.session.add(user)
-            db.session.commit()
-            return user
-        except IntegrityError:
-            db.session.rollback()
-            return None
+        db.session.add(user)
+        return user
 
     @classmethod
     def get_by_id(cls, user_id: int):
