@@ -1,0 +1,20 @@
+meta {
+  name: create user
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8081/api/v1/user
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Cookie: session=.eJyrVopPy0kszkgtVrKKrlZSKAFSSqlFRflFSjpKrrmJmTkKiXkpCgWJxcXl-UUpColFqQpFqYWlmUWpKXpKsbU6ZOiJrQUAQxYoig.aF12Fg.DJA3xstJNRjEbrL9ntICVg-CIBw
+}
+
+body:json {
+  {\"last_name\":\"ds\",\"first_name\":\"c\",\"email\":\"cds@example.com\",\"password\":\"qwerty\"}
+}

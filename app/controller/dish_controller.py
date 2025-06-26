@@ -3,21 +3,9 @@ from functools import wraps
 from models.dish import Dish
 from models.app_user import AppUser
 from models import db
+from controller import admin_required
 
 dish_bp = Blueprint('dish_bp', __name__, url_prefix='/api/v1/dish')
-
-# --- Décorateur pour accès admin seulement ---
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        user_id = session.get("user_id")
-        if not user_id:
-            return jsonify({"error": "Authentification requise"}), 401
-        user = AppUser.get_by_id(user_id)
-        if not user or user.role != "admin":
-            return jsonify({"error": "Accès réservé aux administrateurs"}), 403
-        return f(*args, **kwargs)
-    return decorated_function
 
 # --- ROUTES ---
 

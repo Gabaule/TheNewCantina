@@ -24,6 +24,9 @@ from models.daily_menu_item import DailyMenuItem  # FIXED: This was missing
 from models.reservation import Reservation
 from models.order_item import OrderItem
 
+from .user_controller import user_bp
+from .dish_controller import dish_bp
+
 # Create Flask app
 app = Flask(__name__, template_folder='../templates')
 # App configuration (secret key, DB URI) is handled in app.py
@@ -35,6 +38,19 @@ def get_current_user():
     if "user_id" in session:
         return AppUser.get_by_id(session["user_id"])
     return None
+
+# --- Décorateur pour accès admin seulement ---
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user_id = session.get("user_id")
+        if not user_id:
+            return jsonify({"error": "Authentification requise"}), 401
+        user = AppUser.get_by_id(user_id)
+        if not user or user.role != "admin":
+            return jsonify({"error": "Accès réservé aux administrateurs"}), 403
+        return f(*args, **kwargs)
+    return decorated_function
 
 def require_login():
     """Helper function to protect web pages, redirects if not logged in."""
@@ -326,3 +342,6 @@ def not_found(error):
 def internal_error(error):
     db.session.rollback() 
     return handle_error(error, 500)
+
+app.register_blueprint(user_bp)
+app.register_blueprint(dish_bp)

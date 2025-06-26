@@ -3,6 +3,7 @@
 from flask import Blueprint, request, jsonify, session
 from models.app_user import AppUser
 from models import db
+from controller import admin_required
 
 user_bp = Blueprint('user_bp', __name__, url_prefix='/api/v1/user')
 
@@ -38,6 +39,7 @@ def get_user(user_id):
 
 # POST /api/v1/user - Création d’un utilisateur
 @user_bp.route('/', methods=['POST'])
+@admin_required
 def create_user():
     data = request.get_json()
     try:
