@@ -41,7 +41,7 @@ def populate_database_if_empty():
         user3 = AppUser.create_user(last_name='Novák', first_name='Jakub', email='jakub.novak@example.com', password='pass123', balance=18.75, role='student')
         user4 = AppUser.create_user(last_name='Kováčová', first_name='Anna', email='anna.kovacova@example.com', password='pass123', balance=31.00, role='student')
         user5 = AppUser.create_user(last_name='Smith', first_name='John', email='john.smith@example.com', password='pass123', balance=0.00, role='staff')
-        user6 = AppUser.create_user(last_name='Admin', first_name='Alice', email='admin@example.com', password='admin_pass', balance=100.00, role='admin')
+        user6 = AppUser.create_user(last_name='Admin', first_name='Alice', email='admin@example.com', password='password', balance=100.00, role='admin')
 
         db.session.commit()
         print("  - Users, Cafeterias, and Dishes created successfully.")
