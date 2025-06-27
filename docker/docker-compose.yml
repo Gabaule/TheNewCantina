@@ -34,7 +34,8 @@ services:
     depends_on:
       - postgres-db
  
-  app:
+  python-app:
+    container_name: python-app
     build:
       context: ..
       dockerfile: docker/Dockerfile
