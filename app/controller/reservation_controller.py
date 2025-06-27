@@ -12,7 +12,7 @@ from models.reservation import Reservation
 from models.order_item import OrderItem
 
 # Import the authentication decorator from the main controller
-from .controller import api_require_login
+from .auth import admin_required, api_require_login
 
 # Create a Blueprint for reservation routes
 reservation_bp = Blueprint('reservation_bp', __name__, url_prefix='/api/v1/reservations')

@@ -25,6 +25,7 @@ database_url = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NA
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+print(f"🔑 [DEBUG] Secret Key is set. Value: {''.join('*' for char in app.secret_key)}")
 
 # Initialize database
 db.init_app(app)

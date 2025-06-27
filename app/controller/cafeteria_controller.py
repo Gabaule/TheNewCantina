@@ -3,21 +3,10 @@ from functools import wraps
 from models.cafeteria import Cafeteria
 from models.app_user import AppUser
 from models import db
+from .auth import admin_required, api_require_login
 
 cafeteria_bp = Blueprint('cafeteria_bp', __name__, url_prefix='/api/v1/cafeteria')
 
-# --- Décorateur admin ---
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        user_id = session.get("user_id")
-        if not user_id:
-            return jsonify({"error": "Authentification requise"}), 401
-        user = AppUser.get_by_id(user_id)
-        if not user or user.role != "admin":
-            return jsonify({"error": "Accès réservé aux administrateurs"}), 403
-        return f(*args, **kwargs)
-    return decorated_function
 
 # --- ROUTES ---
 

@@ -3,7 +3,7 @@ from functools import wraps
 from models.dish import Dish
 from models.app_user import AppUser
 from models import db
-from controller import admin_required
+from .auth import admin_required, api_require_login
 
 dish_bp = Blueprint('dish_bp', __name__, url_prefix='/api/v1/dish')
 
