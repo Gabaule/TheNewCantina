@@ -5,11 +5,12 @@ Handles Web Page routes, authentication, and blueprint registration.
 """
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 from functools import wraps
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
 from sqlalchemy import text
+import json
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -33,6 +34,9 @@ from .order_item_controller import order_item_bp
 # Create Flask app
 app = Flask(__name__, template_folder='../templates')
 # App configuration (secret key, DB URI) is handled in app.py
+
+# Add tojson filter to Jinja environment
+app.jinja_env.filters['tojson'] = lambda obj: json.dumps(obj)
 
 # --- Authentication & Authorization Helpers (FIXED) ---
 
@@ -257,65 +261,172 @@ def orders():
 @app.route("/admin/dashboard")
 @admin_web_required
 def admin_dashboard(current_user):
-    cafeterias = Cafeteria.query.order_by(Cafeteria.name).all()
-    dishes = Dish.query.order_by(Dish.name).all()
-    categorized_dishes = {
-        'soup': [d for d in dishes if d.dish_type == 'soup'],
-        'main_course': [d for d in dishes if d.dish_type == 'main_course'],
-        'side_dish': [d for d in dishes if d.dish_type == 'side_dish'],
-        'drink': [d for d in dishes if d.dish_type == 'drink'],
+    """
+    Renders the advanced menu creation form.
+    Provides all cafeterias and dishes for the dynamic interface.
+    """
+    selected_date_str = request.args.get("date", date.today().strftime('%Y-%m-%d'))
+
+    all_cafeterias = Cafeteria.query.order_by(Cafeteria.name).all()
+    all_dishes_list = Dish.query.order_by(Dish.name).all()
+    
+    # Group dishes by type for the JavaScript (for autocomplete functionality)
+    grouped_dishes = {
+        'main_course': [], 'soup': [], 'side_dish': [], 'drink': []
     }
+    for dish in all_dishes_list:
+        if dish.dish_type in grouped_dishes:
+            grouped_dishes[dish.dish_type].append({
+                'dish_id': dish.dish_id,
+                'name': dish.name,
+                'description': dish.description,
+                'dine_in_price': float(dish.dine_in_price),
+                'dish_type': dish.dish_type
+            })
+
     return render_template(
-        "admin/dashboard.html", 
-        user=current_user, 
-        cafeterias=cafeterias, 
-        dishes=categorized_dishes,
-        now=datetime.now()
+        "admin/dashboard.html",
+        user=current_user,
+        cafeterias=all_cafeterias,
+        dishes=grouped_dishes,  # This will be converted to JSON in the template
+        selected_date=selected_date_str
     )
+
+@app.route("/admin/menu", methods=['POST'])
+@admin_web_required
+def create_admin_menu(current_user):
+    """
+    Handles the submission from the advanced menu creation form.
+    Creates dishes and assigns them to multiple cafeterias for the given date.
+    """
+    menu_date_str = request.form.get('menu_date')
+    
+    try:
+        if not menu_date_str:
+            flash("Menu date is required.", "error")
+            return redirect(url_for('admin_dashboard'))
+
+        menu_date = datetime.strptime(menu_date_str, "%Y-%m-%d").date()
+        
+        # Parse dishes from the form
+        dishes_data = []
+        dish_index = 0
+        
+        while f'dishes[{dish_index}][name]' in request.form:
+            dish_name = request.form.get(f'dishes[{dish_index}][name]', '').strip()
+            dish_description = request.form.get(f'dishes[{dish_index}][description]', '').strip()
+            dish_price = request.form.get(f'dishes[{dish_index}][dine_in_price]')
+            dish_type = request.form.get(f'dishes[{dish_index}][dish_type]')
+            selected_cafeterias = request.form.getlist(f'dishes[{dish_index}][cafeterias]')
+            
+            if dish_name and dish_price and dish_type and selected_cafeterias:
+                try:
+                    price = float(dish_price)
+                    cafeteria_ids = [int(cid) for cid in selected_cafeterias]
+                    
+                    dishes_data.append({
+                        'name': dish_name,
+                        'description': dish_description,
+                        'dine_in_price': price,
+                        'dish_type': dish_type,
+                        'cafeteria_ids': cafeteria_ids
+                    })
+                except (ValueError, TypeError):
+                    flash(f"Invalid price or cafeteria selection for dish '{dish_name}'", "error")
+                    return redirect(url_for('admin_dashboard', date=menu_date_str))
+            
+            dish_index += 1
+        
+        if not dishes_data:
+            flash("At least one dish with valid data and cafeteria selection is required.", "error")
+            return redirect(url_for('admin_dashboard', date=menu_date_str))
+
+        # Track which cafeterias we're updating
+        affected_cafeterias = set()
+        for dish_data in dishes_data:
+            affected_cafeterias.update(dish_data['cafeteria_ids'])
+
+        # Clear existing menus for the selected date and cafeterias
+        for cafeteria_id in affected_cafeterias:
+            existing_menu = DailyMenu.query.filter_by(
+                cafeteria_id=cafeteria_id, menu_date=menu_date
+            ).first()
+            if existing_menu:
+                # Clear existing items
+                DailyMenuItem.query.filter_by(menu_id=existing_menu.menu_id).delete()
+
+        # Process each dish
+        created_dishes = []
+        for dish_data in dishes_data:
+            # Check if dish already exists by name (exact match)
+            existing_dish = Dish.query.filter_by(name=dish_data['name']).first()
+            
+            if existing_dish:
+                # Update existing dish with new data
+                existing_dish.description = dish_data['description']
+                existing_dish.dine_in_price = dish_data['dine_in_price']
+                existing_dish.dish_type = dish_data['dish_type']
+                dish = existing_dish
+            else:
+                # Create new dish
+                dish = Dish(
+                    name=dish_data['name'],
+                    description=dish_data['description'],
+                    dine_in_price=dish_data['dine_in_price'],
+                    dish_type=dish_data['dish_type']
+                )
+                db.session.add(dish)
+                db.session.flush()  # Get the dish_id
+            
+            created_dishes.append((dish, dish_data['cafeteria_ids']))
+
+        # Create/update daily menus and add items
+        display_order = 1
+        for dish, cafeteria_ids in created_dishes:
+            for cafeteria_id in cafeteria_ids:
+                # Get or create daily menu for this cafeteria and date
+                daily_menu = DailyMenu.query.filter_by(
+                    cafeteria_id=cafeteria_id, menu_date=menu_date
+                ).first()
+                
+                if not daily_menu:
+                    daily_menu = DailyMenu(
+                        cafeteria_id=cafeteria_id,
+                        menu_date=menu_date
+                    )
+                    db.session.add(daily_menu)
+                    db.session.flush()  # Get the menu_id
+
+                # Add dish to this menu
+                menu_item = DailyMenuItem(
+                    menu_id=daily_menu.menu_id,
+                    dish_id=dish.dish_id,
+                    dish_role=dish.dish_type,
+                    display_order=display_order
+                )
+                db.session.add(menu_item)
+            
+            display_order += 1
+
+        db.session.commit()
+        
+        cafeteria_names = [c.name for c in Cafeteria.query.filter(Cafeteria.cafeteria_id.in_(affected_cafeterias)).all()]
+        flash(f"Menu for {menu_date_str} created/updated successfully for {', '.join(cafeteria_names)}! Added {len(created_dishes)} dishes.", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred: {e}", "error")
+        import traceback
+        traceback.print_exc()
+
+    return redirect(url_for('admin_dashboard', date=menu_date_str or ''))
+
 
 @app.route("/admin/users")
 @admin_web_required
 def admin_users(current_user):
     all_users = AppUser.query.order_by(AppUser.last_name, AppUser.first_name).all()
     return render_template("admin/users.html", user=current_user, users=all_users)
-
-@app.route("/admin/menu", methods=['POST'])
-@admin_web_required
-def create_admin_menu(current_user):
-    try:
-        cafeteria_id = request.form.get('cafeteria_id')
-        menu_date_str = request.form.get('menu_date')
-        dish_ids = request.form.getlist('dish_ids')
-
-        if not all([cafeteria_id, menu_date_str, dish_ids]):
-            flash("All fields are required to create a menu.", "error")
-            return redirect(url_for('admin_dashboard'))
-
-        menu_date = datetime.strptime(menu_date_str, "%Y-%m-%d").date()
-        
-        existing_menu = DailyMenu.query.filter_by(cafeteria_id=cafeteria_id, menu_date=menu_date).first()
-        if existing_menu:
-            flash(f"A menu for this cafeteria on {menu_date_str} already exists. Please delete it first if you want to replace it.", "error")
-            return redirect(url_for('admin_dashboard'))
-        
-        new_menu = DailyMenu.create_menu(cafeteria_id=cafeteria_id, menu_date=menu_date)
-        db.session.flush()
-
-        dishes = Dish.query.filter(Dish.dish_id.in_(dish_ids)).all()
-        for dish in dishes:
-            DailyMenuItem.create_menu_item(
-                menu_id=new_menu.menu_id,
-                dish_id=dish.dish_id,
-                dish_role=dish.dish_type
-            )
-
-        db.session.commit()
-
-    except Exception as e:
-        db.session.rollback()
-        flash(f"An error occurred while creating the menu: {e}", "error")
-
-    return redirect(url_for('admin_dashboard'))
 
 
 # --- Health Check Route ---

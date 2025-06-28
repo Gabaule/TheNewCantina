@@ -5,8 +5,8 @@
 <div class="max-w-4xl mx-auto">
     <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg">
         <div class="p-6 border-b border-slate-200 dark:border-slate-700">
-            <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Create a New Daily Menu</h2>
-            <p class="mt-1 text-slate-600 dark:text-slate-400">Select a cafeteria, date, and choose from available dishes to build the menu.</p>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Create or Update a Daily Menu</h2>
+            <p class="mt-1 text-slate-600 dark:text-slate-400">Select a cafeteria and date, then choose dishes. Saving will overwrite any existing menu for that day and cafeteria.</p>
         </div>
 
         <form method="POST" action="{{ url_for('create_admin_menu') }}" class="p-6 space-y-6">
@@ -24,7 +24,7 @@
                 </div>
                 <div>
                     <label for="menu_date" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Menu Date</label>
-                    <input type="date" id="menu_date" name="menu_date" required value="{{ now.strftime('%Y-%m-%d') }}"
+                    <input type="date" id="menu_date" name="menu_date" required value="{{ selected_date }}"
                            class="mt-1 block w-full pl-3 pr-2 py-2 text-base border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                 </div>
             </div>
@@ -68,7 +68,7 @@
                 <div class="flex justify-end">
                     <button type="submit"
                             class="w-full md:w-auto inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Create Menu
+                        Save Menu
                     </button>
                 </div>
             </div>
