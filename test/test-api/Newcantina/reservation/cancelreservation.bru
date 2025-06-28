@@ -1,0 +1,11 @@
+meta {
+  name: cancelreservation
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8081/api/v1/reservations/1/cancel
+  body: none
+  auth: inherit
+}
