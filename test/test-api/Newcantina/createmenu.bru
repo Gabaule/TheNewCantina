@@ -1,0 +1,18 @@
+meta {
+  name: createmenu
+  type: http
+  seq: 18
+}
+
+post {
+  url: http://localhost:8081/api/v1/daily-menu/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "cafeteria_id": 1,
+      "menu_date": "2025-06-26"
+  }
+}
