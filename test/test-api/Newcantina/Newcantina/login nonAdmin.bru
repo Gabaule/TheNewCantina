@@ -1,0 +1,16 @@
+meta {
+  name: login nonAdmin
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8081/login
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  username: student1@example.com
+  password: pass123
+}
