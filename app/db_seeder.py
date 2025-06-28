@@ -20,22 +20,28 @@ def populate_database_if_empty():
     
     try:
         # --- Stage 1: Create independent data (Users, Cafeterias, Dishes) ---
-        cafeteria1 = Cafeteria.create_cafeteria(name='Main University Cafeteria', address='Campus A, Main Road 1', phone='+421 41 513 4001')
-        cafeteria2 = Cafeteria.create_cafeteria(name='Faculty of Science Cafeteria', address='Science Building, 2nd Floor', phone='+421 41 513 4201')
         
+        # Create Cafeterias
+        cafeterias_names = [
+            'AR', 'Fakulta bezpečnostného inžinierstva', 'Fakulta riadenia a inf.',
+            'FCC Nová Menza', 'Kafeteria', 'Letisko Hričov', 'Nová Menza', 'Stará Menza'
+        ]
+        cafeterias = [Cafeteria.create_cafeteria(name=name) for name in cafeterias_names]
+        nova_menza = next((c for c in cafeterias if c.name == 'Nová Menza'), cafeterias[0])
+        
+        # Create Dishes
         dishes_data = [
-            {'name': 'Schnitzel with Potato Salad', 'description': 'Breaded pork schnitzel served with classic potato salad', 'dine_in_price': 5.80, 'dish_type': 'main_course'},
-            {'name': 'Chicken Breast with Rice', 'description': 'Grilled chicken breast, rice, and steamed vegetables', 'dine_in_price': 5.20, 'dish_type': 'main_course'},
-            {'name': 'Goulash with Dumplings', 'description': 'Hearty beef goulash with bread dumplings', 'dine_in_price': 4.90, 'dish_type': 'main_course'},
-            {'name': 'French Fries', 'description': 'Crispy golden french fries', 'dine_in_price': 2.30, 'dish_type': 'side_dish'},
-            {'name': 'Mixed Salad', 'description': 'Fresh seasonal salad with a light vinaigrette', 'dine_in_price': 2.80, 'dish_type': 'side_dish'},
-            {'name': 'Bread Roll', 'description': 'Freshly baked bread roll', 'dine_in_price': 0.60, 'dish_type': 'side_dish'},
-            {'name': 'Chicken Soup', 'description': 'Clear chicken broth with noodles and vegetables', 'dine_in_price': 1.80, 'dish_type': 'soup'},
-            {'name': 'Mineral Water', 'description': 'Sparkling or still mineral water', 'dine_in_price': 1.10, 'dish_type': 'drink'}
+            {'name': 'Polievka Zeleninová s mrveničkou', 'description': 'Alergény: lepok, vajcia, zeler', 'dine_in_price': 0.00, 'dish_type': 'soup'},
+            {'name': 'Prírodné kuracie prsia s opraženou slaninkou, ryža, mrkvový šalát', 'description': 'Alergény: zeler', 'dine_in_price': 3.60, 'dish_type': 'main_course'},
+            {'name': 'Pastierske bravčové stehno, pučené zemiaky, obloha', 'description': 'Alergény: lepok, mlieko, zeler', 'dine_in_price': 3.60, 'dish_type': 'main_course'},
+            {'name': 'Zapekané zemiaky so zeleninou, cviklou a syrom, obloha', 'description': 'Alergény: lepok, mlieko, zeler', 'dine_in_price': 3.60, 'dish_type': 'main_course'},
+            {'name': 'Pizza Prosciutto, suchá saláma, olivy, cibuľa, syr', 'description': 'Alergény: lepok, mlieko', 'dine_in_price': 3.90, 'dish_type': 'main_course'},
+            {'name': 'Bageta plnená', 'description': 'Alergény: lepok, vajcia, mlieko, horčica', 'dine_in_price': 1.50, 'dish_type': 'main_course'}
         ]
         dishes = [Dish.create_from_dict(d) for d in dishes_data]
         db.session.add_all(dishes)
         
+        # Create Users
         user1 = AppUser.create_user(last_name='Student', first_name='One', email='student1@example.com', password='pass123', balance=25.50, role='student')
         user2 = AppUser.create_user(last_name='Faculty', first_name='One', email='faculty1@example.com', password='pass123', balance=40.00, role='staff')
         user3 = AppUser.create_user(last_name='Novák', first_name='Jakub', email='jakub.novak@example.com', password='pass123', balance=18.75, role='student')
@@ -46,42 +52,22 @@ def populate_database_if_empty():
         db.session.commit()
         print("  - Users, Cafeterias, and Dishes created successfully.")
         
-        # --- Stage 2: Create dependent data (Menus, Reservations) ---
+        # --- Stage 2: Create dependent data (Menu for today) ---
         dish_map = {d.name: d for d in Dish.query.all()}
-        menu_date = date(2025, 6, 25)
+        menu_date = date(2025, 6, 28)
         
-        main_menu = DailyMenu.create_menu(cafeteria_id=cafeteria1.cafeteria_id, menu_date=menu_date)
+        main_menu = DailyMenu.create_menu(cafeteria_id=nova_menza.cafeteria_id, menu_date=menu_date)
         db.session.commit() # Commit to get menu_id
         
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Schnitzel with Potato Salad'].dish_id, dish_role='main_course', display_order=1)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Chicken Breast with Rice'].dish_id, dish_role='main_course', display_order=2)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Goulash with Dumplings'].dish_id, dish_role='main_course', display_order=3)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['French Fries'].dish_id, dish_role='side_dish', display_order=1)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Mixed Salad'].dish_id, dish_role='side_dish', display_order=2)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Bread Roll'].dish_id, dish_role='side_dish', display_order=3)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Chicken Soup'].dish_id, dish_role='soup', display_order=1)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Mineral Water'].dish_id, dish_role='drink', display_order=1)
-        
-        res1 = Reservation.create_reservation(user_id=user3.user_id, cafeteria_id=cafeteria1.cafeteria_id, reservation_datetime=datetime(2025, 6, 25, 12, 0, 0), total=9.90, status='completed')
-        res2 = Reservation.create_reservation(user_id=user4.user_id, cafeteria_id=cafeteria1.cafeteria_id, reservation_datetime=datetime(2025, 6, 25, 12, 30, 0), total=9.10, status='pending')
-        res3 = Reservation.create_reservation(user_id=user5.user_id, cafeteria_id=cafeteria1.cafeteria_id, reservation_datetime=datetime(2025, 6, 25, 13, 0, 0), total=6.60, status='completed')
-        
-        db.session.flush() # Flush to assign IDs to reservations before creating order items
-
-        OrderItem.create_order_item(reservation_id=res1.reservation_id, dish_id=dish_map['Schnitzel with Potato Salad'].dish_id, quantity=1, is_takeaway=False, applied_price=5.80)
-        OrderItem.create_order_item(reservation_id=res1.reservation_id, dish_id=dish_map['Chicken Soup'].dish_id, quantity=1, is_takeaway=False, applied_price=1.80)
-        OrderItem.create_order_item(reservation_id=res1.reservation_id, dish_id=dish_map['French Fries'].dish_id, quantity=1, is_takeaway=False, applied_price=2.30)
-
-        OrderItem.create_order_item(reservation_id=res2.reservation_id, dish_id=dish_map['Chicken Breast with Rice'].dish_id, quantity=1, is_takeaway=True, applied_price=5.20)
-        OrderItem.create_order_item(reservation_id=res2.reservation_id, dish_id=dish_map['Mixed Salad'].dish_id, quantity=1, is_takeaway=True, applied_price=2.80)
-        OrderItem.create_order_item(reservation_id=res2.reservation_id, dish_id=dish_map['Mineral Water'].dish_id, quantity=1, is_takeaway=True, applied_price=1.10)
-        
-        OrderItem.create_order_item(reservation_id=res3.reservation_id, dish_id=dish_map['Goulash with Dumplings'].dish_id, quantity=1, is_takeaway=False, applied_price=4.90)
-        OrderItem.create_order_item(reservation_id=res3.reservation_id, dish_id=dish_map['Bread Roll'].dish_id, quantity=1, is_takeaway=False, applied_price=0.60)
-        OrderItem.create_order_item(reservation_id=res3.reservation_id, dish_id=dish_map['Mineral Water'].dish_id, quantity=1, is_takeaway=False, applied_price=1.10)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Polievka Zeleninová s mrveničkou'].dish_id, dish_role='soup', display_order=0)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Prírodné kuracie prsia s opraženou slaninkou, ryža, mrkvový šalát'].dish_id, dish_role='main_course', display_order=1)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Pastierske bravčové stehno, pučené zemiaky, obloha'].dish_id, dish_role='main_course', display_order=2)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Zapekané zemiaky so zeleninou, cviklou a syrom, obloha'].dish_id, dish_role='main_course', display_order=3)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Pizza Prosciutto, suchá saláma, olivy, cibuľa, syr'].dish_id, dish_role='main_course', display_order=5)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Bageta plnená'].dish_id, dish_role='main_course', display_order=8)
         
         db.session.commit()
-        print("  - Dependent data (Menus, Reservations, etc.) created successfully.")
+        print(f"  - Menu for {menu_date} at '{nova_menza.name}' created successfully.")
         print("✅ Database population successful!")
 
     except Exception as e:
