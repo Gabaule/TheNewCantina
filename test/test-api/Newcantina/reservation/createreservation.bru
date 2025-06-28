@@ -1,0 +1,20 @@
+meta {
+  name: createreservation
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8081/api/v1/reservations/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "cafeteria_id": 1,
+      "items": [
+          { "dish_id": 999, "quantity": 1, "is_takeaway": false }
+      ]
+  }
+}
