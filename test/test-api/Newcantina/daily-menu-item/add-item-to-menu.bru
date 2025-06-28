@@ -1,0 +1,20 @@
+meta {
+  name: additemtomenu
+  type: http
+  seq: 23
+}
+
+post {
+  url: http://localhost:8081/api/v1/daily-menu-item/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "menu_id": 1,
+      "dish_id": 3,
+      "dish_role": "main_course",
+      "display_order": 4
+  }
+}

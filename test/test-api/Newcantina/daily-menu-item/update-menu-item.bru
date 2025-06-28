@@ -1,0 +1,17 @@
+meta {
+  name: updatemenuitem
+  type: http
+  seq: 25
+}
+
+put {
+  url: http://localhost:8081/api/v1/daily-menu-item/1
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "display_order": 1
+  }
+}
