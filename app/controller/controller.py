@@ -43,6 +43,29 @@ def require_login():
         return redirect(url_for("login"))
     return None
 
+def admin_web_required(f):
+    """Decorator for web pages that require admin access."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_check = require_login()
+        if auth_check:
+            return auth_check
+
+        user = get_current_user()
+        if not user:
+            flash("User not found, please log in again.", "error")
+            session.clear()
+            return redirect(url_for("login"))
+
+        if user.role != "admin":
+            flash("You do not have permission to access this page.", "error")
+            # Redirect non-admins away to their own dashboard
+            return redirect(url_for("dashboard"))
+        
+        # Pass the user object to the decorated function
+        return f(current_user=user, *args, **kwargs)
+    return decorated_function
+
 def api_require_login(f):
     """Decorator for API routes that require authentication."""
     @wraps(f)
@@ -65,13 +88,16 @@ def api_require_login(f):
 @app.route("/")
 def index():
     if "user_id" in session:
+        user = get_current_user()
+        if user and user.role == 'admin':
+            return redirect(url_for("admin_dashboard"))
         return redirect(url_for("dashboard"))
     return redirect(url_for("login"))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if "user_id" in session:
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("index"))
 
     if request.method == "POST":
         email = request.form.get("username")
@@ -85,9 +111,14 @@ def login():
         
         if user and user.verify_password(password):
             session["user_id"] = user.user_id
-            session.permanent = True  # Keep user logged in across browser sessions
+            session.permanent = True
             flash(f"Welcome back, {user.first_name}!", "success")
-            return redirect(url_for("dashboard"))
+            
+            # Redirect admin to admin dashboard, others to regular dashboard
+            if user.role == 'admin':
+                return redirect(url_for("admin_dashboard"))
+            else:
+                return redirect(url_for("dashboard"))
         else:
             flash("Invalid credentials. Please try again.", "error")
             return render_template("login.html")
@@ -111,6 +142,9 @@ def dashboard(cafeteria_id=None):
         return auth_check
     
     user = get_current_user()
+    if user.role == 'admin':
+        # Don't let admins see the student dashboard
+        return redirect(url_for('admin_dashboard'))
     
     cafeterias = Cafeteria.query.all()
     if not cafeterias:
@@ -231,6 +265,73 @@ def orders():
         selected_month_name=selected_month_name,
         monthly_summary=monthly_summary
     )
+
+
+# --- Admin Routes ---
+
+@app.route("/admin/dashboard")
+@admin_web_required
+def admin_dashboard(current_user):
+    cafeterias = Cafeteria.query.order_by(Cafeteria.name).all()
+    dishes = Dish.query.order_by(Dish.name).all()
+    categorized_dishes = {
+        'soup': [d for d in dishes if d.dish_type == 'soup'],
+        'main_course': [d for d in dishes if d.dish_type == 'main_course'],
+        'side_dish': [d for d in dishes if d.dish_type == 'side_dish'],
+        'drink': [d for d in dishes if d.dish_type == 'drink'],
+    }
+    return render_template(
+        "admin/dashboard.html", 
+        user=current_user, 
+        cafeterias=cafeterias, 
+        dishes=categorized_dishes,
+        now=datetime.now()
+    )
+
+@app.route("/admin/users")
+@admin_web_required
+def admin_users(current_user):
+    all_users = AppUser.query.order_by(AppUser.last_name, AppUser.first_name).all()
+    return render_template("admin/users.html", user=current_user, users=all_users)
+
+@app.route("/admin/menu", methods=['POST'])
+@admin_web_required
+def create_admin_menu(current_user):
+    try:
+        cafeteria_id = request.form.get('cafeteria_id')
+        menu_date_str = request.form.get('menu_date')
+        dish_ids = request.form.getlist('dish_ids')
+
+        if not all([cafeteria_id, menu_date_str, dish_ids]):
+            flash("All fields are required to create a menu.", "error")
+            return redirect(url_for('admin_dashboard'))
+
+        menu_date = datetime.strptime(menu_date_str, "%Y-%m-%d").date()
+        
+        existing_menu = DailyMenu.query.filter_by(cafeteria_id=cafeteria_id, menu_date=menu_date).first()
+        if existing_menu:
+            flash(f"A menu for this cafeteria on {menu_date_str} already exists. Please delete it first if you want to replace it.", "error")
+            return redirect(url_for('admin_dashboard'))
+        
+        new_menu = DailyMenu.create_menu(cafeteria_id=cafeteria_id, menu_date=menu_date)
+        db.session.flush()
+
+        dishes = Dish.query.filter(Dish.dish_id.in_(dish_ids)).all()
+        for dish in dishes:
+            DailyMenuItem.create_menu_item(
+                menu_id=new_menu.menu_id,
+                dish_id=dish.dish_id,
+                dish_role=dish.dish_type
+            )
+
+        db.session.commit()
+        flash(f"Menu for {menu_date_str} created successfully!", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred while creating the menu: {e}", "error")
+
+    return redirect(url_for('admin_dashboard'))
 
 
 # --- API Routes ---
