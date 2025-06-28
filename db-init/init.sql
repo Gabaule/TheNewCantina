@@ -28,7 +28,7 @@ CREATE TABLE app_user (
 CREATE TABLE cafeteria (
     cafeteria_id  SERIAL PRIMARY KEY,
     name        VARCHAR(100) NOT NULL,
-    address     TEXT,
+    address     VARCHAR(255),
     phone       VARCHAR(20),
     created_at  TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
