@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,6 +18,90 @@
 
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased">
     {% block content %}{% endblock %}
+
+    <script>
+    const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    function datepicker(config) {
+        return {
+            show: false,
+            value: config.value || '',
+            formId: config.formId || null,
+            month: '',
+            year: '',
+            daysInMonth: [],
+            blankdays: [],
+            
+            init() {
+                if (!this.value) {
+                    const today = new Date();
+                    this.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                }
+                // Use T00:00:00 to avoid timezone issues when parsing just a date string
+                const initialDate = new Date(this.value + 'T00:00:00');
+                this.month = initialDate.getMonth();
+                this.year = initialDate.getFullYear();
+                this.getDaysInMonth();
+            },
+            
+            getDaysInMonth() {
+                let daysInMonth = new Date(this.year, this.month + 1, 0).getDate();
+                // In JS, Sunday is 0, Monday is 1, etc.
+                let firstDayOfMonth = new Date(this.year, this.month, 1).getDay();
+                
+                this.blankdays = Array.from({ length: firstDayOfMonth }, (_, i) => i + 1);
+                this.daysInMonth = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+            },
+
+            isSelected(day) {
+                const d = new Date(this.year, this.month, day);
+                const formattedDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                return this.value === formattedDate;
+            },
+
+            isToday(day) {
+                const today = new Date();
+                const d = new Date(this.year, this.month, day);
+                return today.toDateString() === d.toDateString();
+            },
+
+            selectDate(day) {
+                let d = new Date(this.year, this.month, day);
+                this.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                this.show = false;
+                
+                if (this.formId) {
+                    this.$nextTick(() => {
+                        const form = document.getElementById(this.formId);
+                        if (form) {
+                            form.submit();
+                        }
+                    });
+                }
+            },
+            
+            formatDisplayDate() {
+                if (!this.value) return 'Select Date';
+                const date = new Date(this.value + 'T00:00:00');
+                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+            },
+
+            changeMonth(amount) {
+                this.month += amount;
+                if (this.month < 0) {
+                    this.month = 11;
+                    this.year--;
+                } else if (this.month > 11) {
+                    this.month = 0;
+                    this.year++;
+                }
+                this.getDaysInMonth();
+            }
+        }
+    }
+    </script>
+
     {% block extra_scripts %}{% endblock %}
 </body>
 

@@ -23,9 +23,52 @@
                     </select>
                 </div>
                 <div>
-                    <label for="menu_date" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Menu Date</label>
-                    <input type="date" id="menu_date" name="menu_date" required value="{{ selected_date }}"
-                           class="mt-1 block w-full pl-3 pr-2 py-2 text-base border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                    <label for="menu_date_button" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Menu Date</label>
+                    <div x-data="datepicker({ value: '{{ selected_date }}' })" @keydown.escape="show = false" class="relative mt-1">
+                        <input type="hidden" name="menu_date" x-model="value" required>
+                        <button id="menu_date_button" type="button" @click="show = !show" class="w-full flex justify-between items-center pl-3 pr-2 py-2 text-left text-base border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <span x-text="formatDisplayDate()"></span>
+                            <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </button>
+                        <div x-show="show" x-cloak @click.away="show = false" x-transition class="absolute mt-2 z-20 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 border border-slate-200 dark:border-slate-700" style="left: 0;">
+                            <div class="flex justify-between items-center mb-2">
+                                <button type="button" @click="changeMonth(-1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                                    <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                                </button>
+                                <div class="text-lg font-semibold" x-text="MONTH_NAMES[month] + ' ' + year"></div>
+                                <button type="button" @click="changeMonth(1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                                    <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 mb-2">
+                                <template x-for="day in DAYS" :key="day">
+                                    <div class="text-center text-xs font-medium text-slate-500" x-text="day"></div>
+                                </template>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1">
+                                <template x-for="d in blankdays">
+                                    <div></div>
+                                </template>
+                                <template x-for="day in daysInMonth" :key="day">
+                                    <div class="text-center">
+                                        <button
+                                            type="button"
+                                            @click="selectDate(day)"
+                                            class="w-8 h-8 rounded-full text-sm flex items-center justify-center transition-colors"
+                                            :class="{
+                                                'bg-blue-600 text-white': isSelected(day),
+                                                'text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700': !isSelected(day),
+                                                'font-bold text-blue-500': isToday(day) && !isSelected(day)
+                                            }"
+                                            x-text="day">
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

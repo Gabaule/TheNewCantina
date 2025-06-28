@@ -28,12 +28,56 @@
             <nav class="p-6">
                 <!-- Date Selection -->
                 <div class="mb-6">
-                    <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Select Date</h2>                   
-                    <form method="get" action="{{ url_for('dashboard', cafeteria_id=current_cafeteria.cafeteria_id) }}">
-                        <input type="date" name="date" value="{{ selected_date }}"
-                            class="block w-full px-3 py-2 rounded-md text-sm font-medium text-slate-600 dark:text-slate-400 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors border-0 focus:outline-none focus:bg-blue-100 dark:focus:bg-blue-900 focus:text-blue-700 dark:focus:text-blue-300"
-                            onchange="this.form.submit()">                       
-                    </form>
+                    <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Select Date</h2>
+                    <div x-data="datepicker({ value: '{{ selected_date }}', formId: 'date-form' })" @keydown.escape="show = false" class="relative">
+                        <form method="get" action="{{ url_for('dashboard', cafeteria_id=current_cafeteria.cafeteria_id) }}" id="date-form">
+                            <input type="hidden" name="date" x-model="value">
+                        </form>
+                        
+                        <button type="button" @click="show = !show" class="w-full flex justify-between items-center px-3 py-2 rounded-md text-sm font-medium text-slate-600 dark:text-slate-400 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors border-0 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <span x-text="formatDisplayDate()"></span>
+                            <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </button>
+                        
+                        <div x-show="show" x-cloak @click.away="show = false" x-transition class="absolute mt-2 z-20 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 border border-slate-200 dark:border-slate-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <button type="button" @click="changeMonth(-1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                                    <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                                </button>
+                                <div class="text-lg font-semibold" x-text="MONTH_NAMES[month] + ' ' + year"></div>
+                                <button type="button" @click="changeMonth(1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                                    <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 mb-2">
+                                <template x-for="day in DAYS" :key="day">
+                                    <div class="text-center text-xs font-medium text-slate-500" x-text="day"></div>
+                                </template>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1">
+                                <template x-for="d in blankdays">
+                                    <div></div>
+                                </template>
+                                <template x-for="day in daysInMonth" :key="day">
+                                    <div class="text-center">
+                                        <button
+                                            type="button"
+                                            @click="selectDate(day)"
+                                            class="w-8 h-8 rounded-full text-sm flex items-center justify-center transition-colors"
+                                            :class="{
+                                                'bg-blue-600 text-white': isSelected(day),
+                                                'text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700': !isSelected(day),
+                                                'font-bold text-blue-500': isToday(day) && !isSelected(day)
+                                            }"
+                                            x-text="day">
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Cafeterias -->
