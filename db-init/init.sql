@@ -39,7 +39,7 @@ CREATE TABLE dish (
     dish_id         SERIAL PRIMARY KEY,
     name            VARCHAR(100) NOT NULL,
     description     TEXT,
-    dine_in_price   NUMERIC(10,2) NOT NULL,
+    dine_in_price   NUMERIC(10,2) NOT NULL CHECK (dine_in_price >= 0),
     dish_type       VARCHAR(20) NOT NULL CHECK (
         dish_type IN ('main_course', 'side_dish', 'soup', 'drink')
     ),
