@@ -1,0 +1,78 @@
+{% extends "admin/layout.html" %}
+{% block title %}Admin Dashboard - Manage Menus{% endblock %}
+
+{% block admin_content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg">
+        <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Create a New Daily Menu</h2>
+            <p class="mt-1 text-slate-600 dark:text-slate-400">Select a cafeteria, date, and choose from available dishes to build the menu.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('create_admin_menu') }}" class="p-6 space-y-6">
+            <!-- Cafeteria and Date Selection -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="cafeteria_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Cafeteria</label>
+                    <select id="cafeteria_id" name="cafeteria_id" required
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                        <option disabled selected value="">-- Select a cafeteria --</option>
+                        {% for cafeteria in cafeterias %}
+                        <option value="{{ cafeteria.cafeteria_id }}">{{ cafeteria.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="menu_date" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Menu Date</label>
+                    <input type="date" id="menu_date" name="menu_date" required value="{{ now.strftime('%Y-%m-%d') }}"
+                           class="mt-1 block w-full pl-3 pr-2 py-2 text-base border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                </div>
+            </div>
+
+            <!-- Dish Selection -->
+            <div class="space-y-6">
+                {% set categories = [
+                    ('main_course', 'Main Courses', 'Mains'), 
+                    ('soup', 'Soups', 'Soups'), 
+                    ('side_dish', 'Side Dishes', 'Sides'),
+                    ('drink', 'Drinks', 'Drinks')
+                ] %}
+
+                {% for key, title, short_title in categories %}
+                <div>
+                    <h3 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2 border-b border-slate-200 dark:border-slate-700 pb-2">{{ title }}</h3>
+                    {% if dishes[key] %}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                        {% for dish in dishes[key] %}
+                            <label class="relative flex items-start p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600/50 transition-colors">
+                                <div class="flex items-center h-5">
+                                    <input type="checkbox" name="dish_ids" value="{{ dish.dish_id }}" 
+                                           class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-slate-300 rounded">
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <span class="font-medium text-slate-900 dark:text-slate-100">{{ dish.name }}</span>
+                                    <p class="text-slate-500 dark:text-slate-400">${{ "%.2f"|format(dish.dine_in_price) }}</p>
+                                </div>
+                            </label>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">No {{ short_title.lower() }} configured in the system.</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Submission Button -->
+            <div class="pt-5">
+                <div class="flex justify-end">
+                    <button type="submit"
+                            class="w-full md:w-auto inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Create Menu
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

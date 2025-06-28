@@ -43,7 +43,7 @@
                         {% for cafeteria in cafeterias %}
                         <li>
                             <a href="{{ url_for('dashboard', cafeteria_id=cafeteria.cafeteria_id) }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors
-                                      {% if current_cafeteria.cafeteria_id == cafeteria.cafeteria_id %}
+                                      {% if current_cafeteria and current_cafeteria.cafeteria_id == cafeteria.cafeteria_id %}
                                           bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300
                                       {% else %}
                                           text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100
@@ -71,12 +71,6 @@
                                 Top Up Balance
                             </a>
                         </li>
-                        <li>
-                            <a href="#"
-                                class="block px-3 py-2 rounded-md text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
-                                Settings
-                            </a>
-                        </li>
                     </ul>
                 </div>
             </nav>
@@ -87,8 +81,8 @@
             <div class="p-6">
                 <!-- Cafeteria Header -->
                 <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">{{ current_cafeteria.name }}</h1>
-                    <p class="mt-2 text-lg text-slate-600 dark:text-slate-400">{{ current_cafeteria.address or 'No address provided.' }}</p>
+                    <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">{{ current_cafeteria.name if current_cafeteria else 'Welcome' }}</h1>
+                    <p class="mt-2 text-lg text-slate-600 dark:text-slate-400">{{ current_cafeteria.address if current_cafeteria else 'Please select a cafeteria to begin.' }}</p>
                 </div>
 
                 {% block main_content %}{% endblock %}
