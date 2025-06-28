@@ -35,6 +35,7 @@ def create_cafeteria():
             phone=data.get('phone')
         )
         if cafeteria:
+            db.session.commit()
             return jsonify(cafeteria.to_dict()), 201
         else:
             return jsonify({'error': 'Erreur lors de la création (nom en doublon ?)'}), 400
@@ -68,6 +69,6 @@ def delete_cafeteria(cafeteria_id):
     if not cafeteria:
         return jsonify({'error': 'Cafétéria non trouvée'}), 404
     if cafeteria.delete_cafeteria():
-        return jsonify({'message': 'Cafétéria supprimée'}), 200
+        return jsonify({'message': 'Cafétéria supprimée avec succès'}), 200
     else:
-        return jsonify({'error': 'Suppression impossible'}), 500
+        return jsonify({'error': 'La suppression a échoué en raison d\'une erreur interne'}), 500
