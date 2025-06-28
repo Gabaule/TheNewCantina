@@ -18,7 +18,7 @@ def list_users():
 
 # GET /api/v1/user/<int:user_id> - Récupérer un utilisateur par ID (admin ou soi-même)
 @user_bp.route('/<int:user_id>', methods=['GET'])
-@api_require_login
+@admin_required
 def get_user(current_user, user_id):
     user = AppUser.get_by_id(user_id)
     if not user:

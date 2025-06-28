@@ -1,0 +1,17 @@
+meta {
+  name: addmoney
+  type: http
+  seq: 9
+}
+
+post {
+  url: http://localhost:8081/api/v1/user/balance
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "amount": "-100"
+  }
+}

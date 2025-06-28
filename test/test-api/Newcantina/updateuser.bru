@@ -1,0 +1,17 @@
+meta {
+  name: updateuser
+  type: http
+  seq: 7
+}
+
+put {
+  url: http://localhost:8081/api/v1/user/7
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "role":"ntm"
+  }
+}
