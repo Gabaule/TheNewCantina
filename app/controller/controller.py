@@ -122,7 +122,6 @@ def login():
             print(f"[DEBUG] ✅ User found in DB: {user.first_name} (ID: {user.user_id})")
             session["user_id"] = user.user_id
             session.permanent = True
-            flash(f"Welcome back, {user.first_name}!", "success")
             
             # Redirect admin to admin dashboard, others to regular dashboard
             if user.role == 'admin':
@@ -137,10 +136,7 @@ def login():
 
 @app.route("/logout")
 def logout():
-    user = get_current_user()
-    user_name = f"{user.first_name} {user.last_name}" if user else "Utilisateur"
     session.clear()
-    flash(f"Au revoir, {user_name} ! Vous avez été déconnecté.", "info")
     return redirect(url_for("login"))
 
 @app.route("/dashboard")
@@ -202,7 +198,6 @@ def balance():
             if Decimal("0.01") <= amount <= Decimal("500.00"):
                 user.balance += amount
                 db.session.commit()
-                flash(f"Montant de ${amount:.2f} ajouté à votre solde avec succès !", "success")
                 return redirect(url_for("balance"))
             else:
                 flash("Veuillez entrer un montant entre 0.01$ et 500.00$", "error")
@@ -315,7 +310,6 @@ def create_admin_menu(current_user):
             )
 
         db.session.commit()
-        flash(f"Menu for {menu_date_str} created successfully!", "success")
 
     except Exception as e:
         db.session.rollback()
