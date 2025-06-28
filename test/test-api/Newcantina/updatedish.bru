@@ -1,0 +1,17 @@
+meta {
+  name: updatedish
+  type: http
+  seq: 17
+}
+
+put {
+  url: http://localhost:8081/api/v1/dish/1
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "dine_in_price": 2.8
+  }
+}

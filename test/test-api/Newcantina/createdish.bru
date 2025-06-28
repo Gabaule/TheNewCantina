@@ -1,0 +1,20 @@
+meta {
+  name: createdish
+  type: http
+  seq: 15
+}
+
+post {
+  url: http://localhost:8081/api/v1/dish/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Pizza de Test",
+      "description": "Une délicieuse pizza pour les tests API.",
+      "dine_in_price": 8.50,
+      "dish_type": "main_course"
+  }
+}

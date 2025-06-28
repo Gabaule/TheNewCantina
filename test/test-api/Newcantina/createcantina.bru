@@ -1,0 +1,19 @@
+meta {
+  name: createcantina
+  type: http
+  seq: 12
+}
+
+post {
+  url: http://localhost:8081/api/v1/cafeteria/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Cafeteria des Tests",
+      "address": "123 Rue de Bruno",
+      "phone": "0123456789"
+  }
+}
