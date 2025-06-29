@@ -4,6 +4,8 @@ from models.cafeteria import Cafeteria
 from models.app_user import AppUser
 from models import db
 from .auth import admin_required, api_require_login
+from sqlalchemy.exc import IntegrityError
+
 
 cafeteria_bp = Blueprint('cafeteria_bp', __name__, url_prefix='/api/v1/cafeteria')
 
@@ -32,15 +34,10 @@ def create_cafeteria():
     data = request.get_json()
     try:
         cafeteria = Cafeteria.create_cafeteria(
-            name=data['name'],
-            address=data.get('address'),
-            phone=data.get('phone')
+            name=data['name']
         )
-        if cafeteria:
-            db.session.commit()
-            return jsonify(cafeteria.to_dict()), 201
-        else:
-            return jsonify({'error': 'Erreur lors de la création (nom en doublon ?)'}), 400
+        db.session.commit()
+        return jsonify(cafeteria.to_dict()), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Erreur lors de la création', 'details': str(e)}), 400
@@ -54,9 +51,7 @@ def update_cafeteria(cafeteria_id):
         return jsonify({'error': 'Cafétéria non trouvée'}), 404
     data = request.get_json()
     success = cafeteria.update_cafeteria(
-        name=data.get('name'),
-        address=data.get('address'),
-        phone=data.get('phone')
+        name=data.get('name')
     )
     if success:
         return jsonify(cafeteria.to_dict()), 200
@@ -70,7 +65,13 @@ def delete_cafeteria(cafeteria_id):
     cafeteria = Cafeteria.get_by_id(cafeteria_id)
     if not cafeteria:
         return jsonify({'error': 'Cafétéria non trouvée'}), 404
-    if cafeteria.delete_cafeteria():
-        return jsonify({'message': 'Cafétéria supprimée avec succès'}), 200
-    else:
+    try:
+        cafeteria.delete_cafeteria()
+        # Return an empty response with 200 OK for HTMX.
+        return '', 200
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'error': 'Suppression impossible. La cafétéria est probablement référencée par un menu ou une commande.'}), 409
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': 'La suppression a échoué en raison d\'une erreur interne'}), 500

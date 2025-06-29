@@ -17,9 +17,7 @@ class Cafeteria(db.Model):
     @classmethod
     def create_cafeteria(
         cls,
-        name: str,
-        address: str = None,
-        phone: str = None
+        name: str
     ):
         """
         Create and add a new cafeteria to the session.
@@ -27,9 +25,7 @@ class Cafeteria(db.Model):
         Returns the cafeteria instance.
         """
         cafeteria = cls(
-            name=name,
-            address=address,
-            phone=phone
+            name=name
         )
         db.session.add(cafeteria)
         return cafeteria
@@ -51,9 +47,7 @@ class Cafeteria(db.Model):
 
     def update_cafeteria(
         self,
-        name: str = None,
-        address: str = None,
-        phone: str = None
+        name: str = None
     ) -> bool:
         """
         Update the cafeteria fields. Only provided fields will be updated.
@@ -63,12 +57,7 @@ class Cafeteria(db.Model):
         if name is not None:
             self.name = name
             updated = True
-        if address is not None:
-            self.address = address
-            updated = True
-        if phone is not None:
-            self.phone = phone
-            updated = True
+        
         if not updated:
             return False
         try:
@@ -99,6 +88,5 @@ class Cafeteria(db.Model):
             'cafeteria_id': self.cafeteria_id,
             'name': self.name,
             'address': self.address,
-            'phone': self.phone,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }

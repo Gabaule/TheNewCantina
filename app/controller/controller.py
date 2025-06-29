@@ -375,6 +375,18 @@ def create_admin_menu(current_user):
 def admin_users(current_user):
     return render_template("admin/users.html", user=current_user, users=AppUser.query.order_by(AppUser.last_name, AppUser.first_name).all())
 
+@app.route("/admin/cafeterias")
+@admin_web_required
+def admin_cafeterias(current_user):
+    cafeterias = Cafeteria.query.order_by(Cafeteria.name).all()
+    return render_template("admin/cafeterias.html", user=current_user, cafeterias=cafeterias)
+
+@app.route("/admin/dishes")
+@admin_web_required
+def admin_dishes(current_user):
+    dishes = Dish.query.order_by(Dish.name).all()
+    return render_template("admin/dishes.html", user=current_user, dishes=dishes)
+
 # --- Health & Error Handling ---
 @app.route("/health")
 def health_check():
