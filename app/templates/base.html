@@ -1,3 +1,6 @@
+{% set hx_request = hx_request or request.headers.get('HX-Request') %}
+
+{% if not hx_request %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}University Meal Ordering{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/htmx.org@2.1"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.0"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] {
@@ -17,8 +20,11 @@
 </head>
 
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased">
+{% endif %}
+
     {% block content %}{% endblock %}
 
+{% if not hx_request %}
     <script>
     const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -27,17 +33,16 @@
         return {
             show: false,
             value: config.value || '',
-            formId: config.formId || null,
-            month: '',
-            year: '',
-            daysInMonth: [],
-            blankdays: [],
             
             init() {
                 if (!this.value) {
                     const today = new Date();
                     this.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                 }
+                this.updateDate();
+            },
+
+            updateDate() {
                 // Use T00:00:00 to avoid timezone issues when parsing just a date string
                 const initialDate = new Date(this.value + 'T00:00:00');
                 this.month = initialDate.getMonth();
@@ -47,7 +52,6 @@
             
             getDaysInMonth() {
                 let daysInMonth = new Date(this.year, this.month + 1, 0).getDate();
-                // In JS, Sunday is 0, Monday is 1, etc.
                 let firstDayOfMonth = new Date(this.year, this.month, 1).getDay();
                 
                 this.blankdays = Array.from({ length: firstDayOfMonth }, (_, i) => i + 1);
@@ -71,14 +75,12 @@
                 this.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 this.show = false;
                 
-                if (this.formId) {
-                    this.$nextTick(() => {
-                        const form = document.getElementById(this.formId);
-                        if (form) {
-                            form.submit();
-                        }
-                    });
-                }
+                this.$nextTick(() => {
+                    const dateInput = document.getElementById('date-input');
+                    if (dateInput) {
+                        dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
             },
             
             formatDisplayDate() {
@@ -106,3 +108,4 @@
 </body>
 
 </html>
+{% endif %}

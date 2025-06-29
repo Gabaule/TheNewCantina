@@ -2,120 +2,130 @@
 {% block title %}Admin Dashboard - Manage Menus{% endblock %}
 
 {% block admin_content %}
-<div class="max-w-4xl mx-auto">
+<div x-data="menuBuilder({{ dishes | tojson | safe }}, {{ cafeterias | tojson | safe }})">
     <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg">
         <div class="p-6 border-b border-slate-200 dark:border-slate-700">
-            <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Create or Update a Daily Menu</h2>
-            <p class="mt-1 text-slate-600 dark:text-slate-400">Select a cafeteria and date, then choose dishes. Saving will overwrite any existing menu for that day and cafeteria.</p>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Create or Update Daily Menus</h2>
+            <p class="mt-1 text-slate-600 dark:text-slate-400">Build a menu by adding dishes below. You can assign each dish to one or more cafeterias. Saving will create or overwrite the menus for the selected date.</p>
         </div>
 
-        <form method="POST" action="{{ url_for('create_admin_menu') }}" class="p-6 space-y-6">
-            <!-- Cafeteria and Date Selection -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="cafeteria_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Cafeteria</label>
-                    <select id="cafeteria_id" name="cafeteria_id" required
-                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                        <option disabled selected value="">-- Select a cafeteria --</option>
-                        {% for cafeteria in cafeterias %}
-                        <option value="{{ cafeteria.cafeteria_id }}">{{ cafeteria.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label for="menu_date_button" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Menu Date</label>
-                    <div x-data="datepicker({ value: '{{ selected_date }}' })" @keydown.escape="show = false" class="relative mt-1">
-                        <input type="hidden" name="menu_date" x-model="value" required>
-                        <button id="menu_date_button" type="button" @click="show = !show" class="w-full flex justify-between items-center pl-3 pr-2 py-2 text-left text-base border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                            <span x-text="formatDisplayDate()"></span>
-                            <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                        </button>
-                        <div x-show="show" x-cloak @click.away="show = false" x-transition class="absolute mt-2 z-20 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 border border-slate-200 dark:border-slate-700" style="left: 0;">
-                            <div class="flex justify-between items-center mb-2">
-                                <button type="button" @click="changeMonth(-1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
-                                    <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                                </button>
-                                <div class="text-lg font-semibold" x-text="MONTH_NAMES[month] + ' ' + year"></div>
-                                <button type="button" @click="changeMonth(1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
-                                    <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                </button>
-                            </div>
-                            <div class="grid grid-cols-7 gap-1 mb-2">
-                                <template x-for="day in DAYS" :key="day">
-                                    <div class="text-center text-xs font-medium text-slate-500" x-text="day"></div>
-                                </template>
-                            </div>
-                            <div class="grid grid-cols-7 gap-1">
-                                <template x-for="d in blankdays">
-                                    <div></div>
-                                </template>
-                                <template x-for="day in daysInMonth" :key="day">
-                                    <div class="text-center">
-                                        <button
-                                            type="button"
-                                            @click="selectDate(day)"
-                                            class="w-8 h-8 rounded-full text-sm flex items-center justify-center transition-colors"
-                                            :class="{
-                                                'bg-blue-600 text-white': isSelected(day),
-                                                'text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700': !isSelected(day),
-                                                'font-bold text-blue-500': isToday(day) && !isSelected(day)
-                                            }"
-                                            x-text="day">
-                                        </button>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
+        <form method="POST" hx-post="{{ url_for('create_admin_menu') }}" hx-target="body">
+            <!-- Date Selection -->
+            <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+                <label for="menu_date_button" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Menu Date</label>
+                <div x-data="datepicker({ value: '{{ selected_date }}' })" @keydown.escape="show = false" class="relative mt-1 max-w-sm">
+                    <input type="hidden" name="menu_date" x-model="value" required>
+                    <button id="menu_date_button" type="button" @click="show = !show" class="w-full flex justify-between items-center pl-3 pr-2 py-2 text-left border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                        <span x-text="formatDisplayDate()"></span>
+                        <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </button>
+                    <div x-show="show" x-cloak @click.away="show = false" x-transition class="absolute mt-2 z-20 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 border border-slate-200 dark:border-slate-700">
+                        <!-- Datepicker content (same as in layout) -->
+                        <div class="flex justify-between items-center mb-2"><button type="button" @click="changeMonth(-1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button><div class="text-lg font-semibold" x-text="MONTH_NAMES[month] + ' ' + year"></div><button type="button" @click="changeMonth(1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button></div><div class="grid grid-cols-7 gap-1 mb-2"><template x-for="day in DAYS" :key="day"><div class="text-center text-xs font-medium text-slate-500" x-text="day"></div></template></div><div class="grid grid-cols-7 gap-1"><template x-for="d in blankdays"><div></div></template><template x-for="day in daysInMonth" :key="day"><div class="text-center"><button type="button" @click="selectDate(day)" class="w-8 h-8 rounded-full text-sm flex items-center justify-center transition-colors" :class="{'bg-blue-600 text-white': isSelected(day),'text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700': !isSelected(day),'font-bold text-blue-500': isToday(day) && !isSelected(day)}" x-text="day"></button></div></template></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Dish Selection -->
-            <div class="space-y-6">
-                {% set categories = [
-                    ('main_course', 'Main Courses', 'Mains'), 
-                    ('soup', 'Soups', 'Soups'), 
-                    ('side_dish', 'Side Dishes', 'Sides'),
-                    ('drink', 'Drinks', 'Drinks')
-                ] %}
-
-                {% for key, title, short_title in categories %}
-                <div>
-                    <h3 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2 border-b border-slate-200 dark:border-slate-700 pb-2">{{ title }}</h3>
-                    {% if dishes[key] %}
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                        {% for dish in dishes[key] %}
-                            <label class="relative flex items-start p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600/50 transition-colors">
-                                <div class="flex items-center h-5">
-                                    <input type="checkbox" name="dish_ids" value="{{ dish.dish_id }}" 
-                                           class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-slate-300 rounded">
+            <!-- Dynamic Dishes List -->
+            <div class="p-6 space-y-6">
+                <template x-for="(dish, index) in dishes" :key="index">
+                    <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4 space-y-4 relative">
+                        <!-- Remove button -->
+                        <button type="button" @click="removeDish(index)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 leading-none hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Left Column: Dish Details -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium">Dish Name</label>
+                                    <input type="text" :name="`dishes[${index}][name]`" x-model="dish.name" required class="mt-1 block w-full input-style" placeholder="e.g., Chicken Alfredo">
                                 </div>
-                                <div class="ml-3 text-sm">
-                                    <span class="font-medium text-slate-900 dark:text-slate-100">{{ dish.name }}</span>
-                                    <p class="text-slate-500 dark:text-slate-400">${{ "%.2f"|format(dish.dine_in_price) }}</p>
+                                <div>
+                                    <label class="block text-sm font-medium">Description (Allergens, etc.)</label>
+                                    <input type="text" :name="`dishes[${index}][description]`" x-model="dish.description" class="mt-1 block w-full input-style" placeholder="e.g., Contains gluten, milk">
                                 </div>
-                            </label>
-                        {% endfor %}
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium">Price</label>
+                                        <input type="number" step="0.01" :name="`dishes[${index}][dine_in_price]`" x-model="dish.dine_in_price" required class="mt-1 block w-full input-style" placeholder="0.00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium">Type</label>
+                                        <select :name="`dishes[${index}][dish_type]`" x-model="dish.dish_type" required class="mt-1 block w-full input-style">
+                                            <option value="main_course">Main Course</option>
+                                            <option value="soup">Soup</option>
+                                            <option value="side_dish">Side Dish</option>
+                                            <option value="drink">Drink</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Right Column: Cafeteria Assignment -->
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Assign to Cafeterias</label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-slate-300 dark:border-slate-600 rounded-md">
+                                    <template x-for="cafeteria in allCafeterias" :key="cafeteria.cafeteria_id">
+                                        <label class="flex items-center space-x-2 p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">
+                                            <input type="checkbox" :name="`dishes[${index}][cafeterias]`" :value="cafeteria.cafeteria_id" x-model="dish.cafeteria_ids" class="rounded text-blue-600 focus:ring-blue-500">
+                                            <span x-text="cafeteria.name"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
-                    {% else %}
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">No {{ short_title.lower() }} configured in the system.</p>
-                    {% endif %}
+                    </div>
+                </template>
+
+                <!-- Add Dish Button -->
+                <div>
+                    <button type="button" @click="addDish" class="w-full text-left flex items-center space-x-2 p-3 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 font-medium transition-colors">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                        <span>Add Another Dish</span>
+                    </button>
                 </div>
-                {% endfor %}
             </div>
 
             <!-- Submission Button -->
-            <div class="pt-5">
+            <div class="p-6 border-t border-slate-200 dark:border-slate-700">
                 <div class="flex justify-end">
                     <button type="submit"
-                            class="w-full md:w-auto inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Save Menu
+                            class="w-full md:w-auto inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Save Menus
                     </button>
                 </div>
             </div>
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<style>.input-style { border-radius: 0.375rem; border-width: 1px; padding: 0.5rem 0.75rem; width: 100%; } .dark .input-style { background-color: #334155; border-color: #475569; } .input-style:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-color: #3b82f6; box-shadow: 0 0 0 2px var(--tw-ring-color); border-color: #3b82f6; }</style>
+<script>
+function menuBuilder(existingDishes, allCafeterias) {
+    return {
+        dishes: [],
+        allDishes: existingDishes,
+        allCafeterias: allCafeterias,
+        addDish() {
+            this.dishes.push({
+                name: '',
+                description: '',
+                dine_in_price: '',
+                dish_type: 'main_course',
+                cafeteria_ids: []
+            });
+        },
+        removeDish(index) {
+            this.dishes.splice(index, 1);
+        },
+        init() {
+            // Start with one empty dish row
+            this.addDish();
+        }
+    }
+}
+</script>
 {% endblock %}
