@@ -15,7 +15,7 @@ class Reservation(db.Model):
     # Relationships for navigation
     user = db.relationship('AppUser', back_populates='reservations')
     cafeteria = db.relationship('Cafeteria', back_populates='reservations')
-    order_items = db.relationship('OrderItem', back_populates='reservation', lazy=True)
+    order_items = db.relationship('OrderItem', back_populates='reservation', lazy=True, cascade="all, delete-orphan")
 
     @classmethod
     def create_reservation(

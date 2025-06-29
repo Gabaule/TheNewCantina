@@ -1,205 +1,50 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 {% block title %}Account Balance - University Meal Ordering{% endblock %}
 
-{% block content %}
-<div class="min-h-screen bg-slate-50 dark:bg-slate-900">
-    <!-- Header -->
-    <header class="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700">
-        <div class="px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <h1 class="text-xl font-semibold">The New Cantina</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-right">
-                        <!-- FIX: Use first_name, last_name, and role from the AppUser model -->
-                        <span class="text-sm">{{ user.first_name }} {{ user.last_name }} ({{ user.role }})</span>
-                        <div class="text-xs text-green-600 dark:text-green-400 font-medium">
-                            Balance: ${{ "%.2f"|format(user.balance) }}
-                        </div>
-                    </div>
-                    <a href="{{ url_for('logout') }}" class="text-sm text-blue-600 hover:text-blue-800">Logout</a>
-                </div>
-            </div>
+{% block main_content %}
+<div id="balance-content" class="max-w-3xl mx-auto space-y-8">
+    <!-- Page Header -->
+    <div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">Account Balance</h1>
+        <p class="mt-2 text-md sm:text-lg text-slate-600 dark:text-slate-400">Manage your meal plan balance</p>
+    </div>
+
+    <!-- Inline Messages for HTMX response -->
+    {% if error_msg or success_msg %}
+        <div class="rounded-md p-4 {% if success_msg %}bg-green-50 dark:bg-green-800/20 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700{% else %}bg-red-50 dark:bg-red-800/20 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700{% endif %}">
+            <p class="text-sm font-medium">{{ success_msg or error_msg }}</p>
         </div>
-    </header>
+    {% endif %}
 
-    <div class="flex">
-        <!-- Simple Sidebar -->
-        <aside class="w-64 bg-white dark:bg-slate-800 shadow-sm min-h-screen">
-            <nav class="p-6">
-                <!-- Navigation back to dashboard -->
-                <div class="mb-6">
-                    <a href="{{ url_for('dashboard') }}" 
-                       class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                        </svg>
-                        Back to Dashboard
-                    </a>
-                </div>
-                
-                <!-- Account navigation -->
-                <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
-                    <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Account</h2>
-                    <ul class="space-y-2">
-                        <li>
-                            <a href="{{ url_for('orders') }}"
-                                class="block px-3 py-2 rounded-md text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
-                                Order History
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ url_for('balance') }}"
-                                class="block px-3 py-2 rounded-md text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
-                                Top Up Balance
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-        </aside>
+    <!-- Current Balance -->
+    <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg p-6 text-center">
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Current Balance</h2>
+        <div class="text-5xl font-bold text-green-600 dark:text-green-400 mb-4">${{ "%.2f"|format(user.balance) }}</div>
+        <p class="text-slate-500 dark:text-slate-400">Available for meal purchases at all cafeterias</p>
+    </div>
 
-        <!-- Main Content -->
-        <main class="flex-1 overflow-x-hidden">
-            <div class="p-6">
-                <div class="space-y-8">
-                    <!-- Page Header -->
-                    <div>
-                        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Account Balance</h1>
-                        <p class="mt-2 text-lg text-slate-600 dark:text-slate-400">Manage your meal plan balance</p>
-                    </div>
-
-                    <!-- Flash Messages -->
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="rounded-md p-4 {% if category == 'success' %}bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-200{% else %}bg-red-50 dark:bg-red-900 text-red-800 dark:text-red-200{% endif %}">
-                                    <div class="flex">
-                                        <div class="flex-shrink-0">
-                                            {% if category == 'success' %}
-                                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                                </svg>
-                                            {% else %}
-                                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                                                </svg>
-                                            {% endif %}
-                                        </div>
-                                        <div class="ml-3">
-                                            <p class="text-sm font-medium">{{ message }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-
-                    <!-- Current Balance -->
-                    <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg p-6">
-                        <div class="text-center">
-                            <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Current Balance</h2>
-                            <div class="text-5xl font-bold text-green-600 dark:text-green-400 mb-4">
-                                ${{ "%.2f"|format(user.balance) }}
-                            </div>
-                            <p class="text-slate-500 dark:text-slate-400">Available for meal purchases at all cafeterias</p>
-                        </div>
-                    </div>
-
-                    <!-- Top Up Form -->
-                    <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg p-6">
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">Add Money to Your Account</h3>
-                        
-                        <form method="POST" class="space-y-6">
-                            <div>
-                                <label for="amount" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                    Amount to Add
-                                </label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-slate-500 dark:text-slate-400">$</span>
-                                    </div>
-                                    <input 
-                                        type="number" 
-                                        id="amount" 
-                                        name="amount" 
-                                        step="0.01" 
-                                        min="0.01" 
-                                        max="500"
-                                        required
-                                        class="block w-full pl-7 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="0.00"
-                                    >
-                                </div>
-                                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                                    Minimum: $0.01 • Maximum: $500.00 per transaction
-                                </p>
-                            </div>
-
-                            <!-- Quick Amount Buttons -->
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                                    Quick Add Options
-                                </label>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    <button type="button" onclick="setAmount(10)" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                                        $10
-                                    </button>
-                                    <button type="button" onclick="setAmount(25)" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                                        $25
-                                    </button>
-                                    <button type="button" onclick="setAmount(50)" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                                        $50
-                                    </button>
-                                    <button type="button" onclick="setAmount(100)" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                                        $100
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
-                                <button 
-                                    type="submit" 
-                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                >
-                                    Add Money to Account
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Payment Information -->
-                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">
-                                    Payment Information
-                                </h3>
-                                <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
-                                    <p>• Your balance works at all university cafeterias</p>
-                                    <p>• Funds are added instantly to your account</p>
-                                    <p>• All transactions are secure and encrypted</p>
-                                    <p>• Unused balance carries over between semesters</p>
-                                    <p>• For refunds, contact the dining services office</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Top Up Form -->
+    <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg p-6">
+        <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">Add Money to Your Account</h3>
+        <form hx-post="{{ url_for('balance') }}" hx-target="#balance-content" hx-swap="outerHTML" class="space-y-6">
+            <div>
+                <label for="amount" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Amount to Add</label>
+                <div class="relative"><div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-slate-500 dark:text-slate-400">$</span></div><input type="number" id="amount" name="amount" step="0.01" min="0.01" max="500" required class="block w-full pl-7 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0.00"></div>
+                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Minimum: $0.01 • Maximum: $500.00</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Quick Add Options</label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button type="button" onclick="document.getElementById('amount').value = '10.00'" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">$10</button>
+                    <button type="button" onclick="document.getElementById('amount').value = '25.00'" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">$25</button>
+                    <button type="button" onclick="document.getElementById('amount').value = '50.00'" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">$50</button>
+                    <button type="button" onclick="document.getElementById('amount').value = '100.00'" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">$100</button>
                 </div>
             </div>
-        </main>
+            <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Add Money to Account</button>
+            </div>
+        </form>
     </div>
 </div>
-
-<script>
-function setAmount(amount) {
-    document.getElementById('amount').value = amount.toFixed(2);
-}
-</script>
 {% endblock %}
