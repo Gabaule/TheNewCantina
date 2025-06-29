@@ -5,6 +5,7 @@ from decimal import Decimal
 from models.app_user import AppUser
 from models import db
 from .auth import admin_required, api_require_login # Import api_require_login
+from sqlalchemy.exc import IntegrityError
 
 user_bp = Blueprint('user_bp', __name__, url_prefix='/api/v1/user')
 
@@ -35,6 +36,9 @@ def get_user(current_user, user_id):
 def create_user():
     data = request.get_json()
     try:
+        if not data or not all(k in data and data[k] for k in ['last_name', 'first_name', 'email', 'password']):
+            return jsonify({'error': 'Données manquantes. Les champs nom, prénom, email et mot de passe sont obligatoires.'}), 400
+
         user = AppUser.create_user(
             last_name=data['last_name'],
             first_name=data['first_name'],
@@ -43,14 +47,17 @@ def create_user():
             role=data.get('role', 'student'),
             balance=float(data.get('balance', 0.0))
         )
-        if user:
-            db.session.commit() # Commit after creation
-            return jsonify(user.to_dict()), 201
-        else:
-            return jsonify({'error': 'Email déjà utilisé'}), 409
+        db.session.commit()
+        return jsonify(user.to_dict()), 201
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'error': f"L'email '{data.get('email')}' est déjà utilisé."}), 409
     except (KeyError, TypeError, ValueError):
         db.session.rollback()
-        return jsonify({'error': 'Données invalides'}), 400
+        return jsonify({'error': 'Données invalides. Vérifiez les types de données (ex: le solde doit être un nombre).'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Une erreur interne est survenue', 'details': str(e)}), 500
 
 
 # PUT /api/v1/user/<int:user_id> - Modifier un utilisateur (admin ou soi-même)
@@ -96,7 +103,10 @@ def delete_user(current_user, user_id):
     if user_to_delete.delete_user():
         if current_user.user_id == user_id: # If user deletes themself
             session.clear()
-        return jsonify({'message': 'Utilisateur supprimé'}), 200
+        # Return an empty response with 200 OK.
+        # HTMX will swap the target (the <tr>) with this empty response,
+        # effectively deleting the row from the table.
+        return '', 200
     else:
         return jsonify({'error': 'Suppression impossible'}), 500
 
