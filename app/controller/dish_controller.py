@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from functools import wraps
+from sqlalchemy.exc import IntegrityError
 from models.dish import Dish
 from models.app_user import AppUser
 from models import db
@@ -69,7 +70,11 @@ def delete_dish(dish_id):
     try:
         db.session.delete(dish)
         db.session.commit()
-        return jsonify({'message': 'Plat supprimé'}), 200
+        # Return an empty response with 200 OK for HTMX.
+        return '', 200
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'error': 'Suppression impossible. Le plat est probablement utilisé dans un menu ou une commande.'}), 409
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Erreur lors de la suppression', 'details': str(e)}), 500
