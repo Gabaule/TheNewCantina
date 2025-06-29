@@ -28,16 +28,45 @@ def populate_database_if_empty():
         ]
         cafeterias = [Cafeteria.create_cafeteria(name=name) for name in cafeterias_names]
         nova_menza = next((c for c in cafeterias if c.name == 'Nová Menza'), cafeterias[0])
-        
-        # Create Dishes
+            
+            # Create Dishes
         dishes_data = [
-            {'name': 'Polievka Zeleninová s mrveničkou', 'description': 'Alergény: lepok, vajcia, zeler', 'dine_in_price': 0.00, 'dish_type': 'soup'},
-            {'name': 'Prírodné kuracie prsia s opraženou slaninkou, ryža, mrkvový šalát', 'description': 'Alergény: zeler', 'dine_in_price': 3.60, 'dish_type': 'main_course'},
-            {'name': 'Pastierske bravčové stehno, pučené zemiaky, obloha', 'description': 'Alergény: lepok, mlieko, zeler', 'dine_in_price': 3.60, 'dish_type': 'main_course'},
-            {'name': 'Zapekané zemiaky so zeleninou, cviklou a syrom, obloha', 'description': 'Alergény: lepok, mlieko, zeler', 'dine_in_price': 3.60, 'dish_type': 'main_course'},
-            {'name': 'Pizza Prosciutto, suchá saláma, olivy, cibuľa, syr', 'description': 'Alergény: lepok, mlieko', 'dine_in_price': 3.90, 'dish_type': 'main_course'},
-            {'name': 'Bageta plnená', 'description': 'Alergény: lepok, vajcia, mlieko, horčica', 'dine_in_price': 1.50, 'dish_type': 'main_course'}
+            # Soups
+            {"name": "Vegetable Soup with Vermicelli", "description": "Allergens: gluten, egg, celery", "dine_in_price": 0.00, "dish_type": "soup"},
+            {"name": "Lentil Soup", "description": "Allergens: celery", "dine_in_price": 0.00, "dish_type": "soup"},
+            {"name": "Tomato Cream Soup", "description": "Allergens: milk, celery", "dine_in_price": 0.00, "dish_type": "soup"},
+
+            # Main Courses
+            {"name": "Grilled Chicken Breast with Bacon, Rice, Carrot Salad", "description": "Allergens: celery", "dine_in_price": 3.60, "dish_type": "main_course"},
+            {"name": "Shepherd's Pork Leg, Mashed Potatoes, Garnish", "description": "Allergens: gluten, milk, celery", "dine_in_price": 3.60, "dish_type": "main_course"},
+            {"name": "Baked Potatoes with Vegetables, Beetroot and Cheese, Garnish", "description": "Allergens: gluten, milk, celery", "dine_in_price": 3.60, "dish_type": "main_course"},
+            {"name": "Pizza Prosciutto, Salami, Olives, Onion, Cheese", "description": "Allergens: gluten, milk", "dine_in_price": 3.90, "dish_type": "main_course"},
+            {"name": "Stuffed Baguette", "description": "Allergens: gluten, egg, milk, mustard", "dine_in_price": 1.50, "dish_type": "main_course"},
+            {"name": "Fried Cheese with French Fries and Tartar Sauce", "description": "Allergens: milk, egg, gluten", "dine_in_price": 3.90, "dish_type": "main_course"},
+            {"name": "Spaghetti Carbonara", "description": "Allergens: gluten, milk, egg", "dine_in_price": 3.80, "dish_type": "main_course"},
+            {"name": "Roast Duck with Red Cabbage and Dumplings", "description": "Allergens: egg, gluten, milk", "dine_in_price": 4.20, "dish_type": "main_course"},
+            {"name": "Chicken Caesar Salad", "description": "Allergens: egg, milk, fish, gluten", "dine_in_price": 3.50, "dish_type": "main_course"},
+
+            # Sides
+            {"name": "French Fries", "description": "Allergens: gluten", "dine_in_price": 1.50, "dish_type": "side_dish"},
+            {"name": "Steamed Rice", "description": "", "dine_in_price": 1.20, "dish_type": "side_dish"},
+            {"name": "Mashed Potatoes", "description": "Allergens: milk", "dine_in_price": 1.20, "dish_type": "side_dish"},
+            {"name": "Boiled Potatoes", "description": "", "dine_in_price": 1.00, "dish_type": "side_dish"},
+            {"name": "Grilled Vegetables", "description": "", "dine_in_price": 1.70, "dish_type": "side_dish"},
+            {"name": "Coleslaw Salad", "description": "Allergens: egg, mustard", "dine_in_price": 1.00, "dish_type": "side_dish"},
+            {"name": "Bread Roll", "description": "Allergens: gluten", "dine_in_price": 0.40, "dish_type": "side_dish"},
+
+            # Desserts
+            {"name": "Apple Pie", "description": "Allergens: egg, milk, gluten", "dine_in_price": 1.70, "dish_type": "main_course"},
+            {"name": "Pancakes with Jam", "description": "Allergens: gluten, egg, milk", "dine_in_price": 1.70, "dish_type": "main_course"},
+
+            # Drinks
+            {"name": "Mineral Water", "description": "", "dine_in_price": 0.70, "dish_type": "drink"},
+            {"name": "Orange Juice", "description": "", "dine_in_price": 1.20, "dish_type": "drink"},
+            {"name": "Apple Juice", "description": "", "dine_in_price": 1.20, "dish_type": "drink"},
+            {"name": "Cola", "description": "", "dine_in_price": 1.20, "dish_type": "drink"}
         ]
+
         dishes = [Dish.create_from_dict(d) for d in dishes_data]
         db.session.add_all(dishes)
         
