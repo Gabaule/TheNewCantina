@@ -2,130 +2,212 @@
 {% block title %}Admin Dashboard - Manage Menus{% endblock %}
 
 {% block admin_content %}
-<div x-data="menuBuilder({{ dishes | tojson | safe }}, {{ cafeterias | tojson | safe }})">
-    <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg">
+<!-- Main container with a single, unified Alpine.js component -->
+<div x-data="menuManager(
+    {{ all_dishes | tojson }}, 
+    {{ all_cafeterias | tojson }}, 
+    {{ dishes_on_menu | tojson }}
+)" x-init="init()">
+
+    <!-- Header and Date Picker -->
+    <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg mb-6">
         <div class="p-6 border-b border-slate-200 dark:border-slate-700">
-            <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Create or Update Daily Menus</h2>
-            <p class="mt-1 text-slate-600 dark:text-slate-400">Build a menu by adding dishes below. You can assign each dish to one or more cafeterias. Saving will create or overwrite the menus for the selected date.</p>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Manage Daily Menus</h2>
+            <p class="mt-1 text-slate-600 dark:text-slate-400">Select a date to view or edit the menu. Add dishes and assign them to cafeterias.</p>
         </div>
-
-        <form method="POST" hx-post="{{ url_for('create_admin_menu') }}" hx-target="body">
-            <!-- Date Selection -->
-            <div class="p-6 border-b border-slate-200 dark:border-slate-700">
-                <label for="menu_date_button" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Menu Date</label>
-                <div x-data="datepicker({ value: '{{ selected_date }}' })" @keydown.escape="show = false" class="relative mt-1 max-w-sm">
-                    <input type="hidden" name="menu_date" x-model="value" required>
-                    <button id="menu_date_button" type="button" @click="show = !show" class="w-full flex justify-between items-center pl-3 pr-2 py-2 text-left border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                        <span x-text="formatDisplayDate()"></span>
-                        <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    </button>
-                    <div x-show="show" x-cloak @click.away="show = false" x-transition class="absolute mt-2 z-20 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 border border-slate-200 dark:border-slate-700">
-                        <!-- Datepicker content (same as in layout) -->
-                        <div class="flex justify-between items-center mb-2"><button type="button" @click="changeMonth(-1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button><div class="text-lg font-semibold" x-text="MONTH_NAMES[month] + ' ' + year"></div><button type="button" @click="changeMonth(1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button></div><div class="grid grid-cols-7 gap-1 mb-2"><template x-for="day in DAYS" :key="day"><div class="text-center text-xs font-medium text-slate-500" x-text="day"></div></template></div><div class="grid grid-cols-7 gap-1"><template x-for="d in blankdays"><div></div></template><template x-for="day in daysInMonth" :key="day"><div class="text-center"><button type="button" @click="selectDate(day)" class="w-8 h-8 rounded-full text-sm flex items-center justify-center transition-colors" :class="{'bg-blue-600 text-white': isSelected(day),'text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700': !isSelected(day),'font-bold text-blue-500': isToday(day) && !isSelected(day)}" x-text="day"></button></div></template></div>
-                    </div>
+        <div class="p-6">
+            <label for="menu_date_button" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Menu Date</label>
+            <div x-data="datepicker({ value: '{{ selected_date }}' })" @keydown.escape="show = false" class="relative mt-1 max-w-sm">
+                <input type="hidden" id="date-input" x-model="value" @change="window.location.href = `{{ url_for('admin_dashboard') }}?date=${value}`">
+                <button id="menu_date_button" type="button" @click="show = !show" class="w-full flex justify-between items-center pl-3 pr-2 py-2 text-left border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                    <span x-text="formatDisplayDate()"></span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </button>
+                <div x-show="show" x-cloak @click.away="show = false" x-transition class="absolute mt-2 z-20 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 border border-slate-200 dark:border-slate-700">
+                    <div class="flex justify-between items-center mb-2"><button type="button" @click="changeMonth(-1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button><div class="text-lg font-semibold" x-text="MONTH_NAMES[month] + ' ' + year"></div><button type="button" @click="changeMonth(1)" class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button></div><div class="grid grid-cols-7 gap-1 mb-2"><template x-for="day in DAYS" :key="day"><div class="text-center text-xs font-medium text-slate-500" x-text="day"></div></template></div><div class="grid grid-cols-7 gap-1"><template x-for="d in blankdays"><div></div></template><template x-for="day in daysInMonth" :key="day"><div class="text-center"><button type="button" @click="selectDate(day)" class="w-8 h-8 rounded-full text-sm flex items-center justify-center transition-colors" :class="{'bg-blue-600 text-white': isSelected(day),'text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700': !isSelected(day),'font-bold text-blue-500': isToday(day) && !isSelected(day)}" x-text="day"></button></div></template></div>
                 </div>
             </div>
-
-            <!-- Dynamic Dishes List -->
-            <div class="p-6 space-y-6">
-                <template x-for="(dish, index) in dishes" :key="index">
-                    <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4 space-y-4 relative">
-                        <!-- Remove button -->
-                        <button type="button" @click="removeDish(index)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 leading-none hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Left Column: Dish Details -->
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium">Dish Name</label>
-                                    <input type="text" :name="`dishes[${index}][name]`" x-model="dish.name" required class="mt-1 block w-full input-style" placeholder="e.g., Chicken Alfredo">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium">Description (Allergens, etc.)</label>
-                                    <input type="text" :name="`dishes[${index}][description]`" x-model="dish.description" class="mt-1 block w-full input-style" placeholder="e.g., Contains gluten, milk">
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium">Price</label>
-                                        <input type="number" step="0.01" :name="`dishes[${index}][dine_in_price]`" x-model="dish.dine_in_price" required class="mt-1 block w-full input-style" placeholder="0.00">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium">Type</label>
-                                        <select :name="`dishes[${index}][dish_type]`" x-model="dish.dish_type" required class="mt-1 block w-full input-style">
-                                            <option value="main_course">Main Course</option>
-                                            <option value="soup">Soup</option>
-                                            <option value="side_dish">Side Dish</option>
-                                            <option value="drink">Drink</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Right Column: Cafeteria Assignment -->
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Assign to Cafeterias</label>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-slate-300 dark:border-slate-600 rounded-md">
-                                    <template x-for="cafeteria in allCafeterias" :key="cafeteria.cafeteria_id">
-                                        <label class="flex items-center space-x-2 p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">
-                                            <input type="checkbox" :name="`dishes[${index}][cafeterias]`" :value="cafeteria.cafeteria_id" x-model="dish.cafeteria_ids" class="rounded text-blue-600 focus:ring-blue-500">
-                                            <span x-text="cafeteria.name"></span>
-                                        </label>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-
-                <!-- Add Dish Button -->
-                <div>
-                    <button type="button" @click="addDish" class="w-full text-left flex items-center space-x-2 p-3 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 font-medium transition-colors">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                        <span>Add Another Dish</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Submission Button -->
-            <div class="p-6 border-t border-slate-200 dark:border-slate-700">
-                <div class="flex justify-end">
-                    <button type="submit"
-                            class="w-full md:w-auto inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Save Menus
-                    </button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
+
+    <!-- Form wrapping the entire menu table -->
+    <form method="POST" action="{{ url_for('create_admin_menu') }}">
+        <input type="hidden" name="menu_date" value="{{ selected_date }}">
+
+        <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg overflow-x-auto">
+            <table class="w-full min-w-[1200px]">
+                <thead class="bg-slate-50 dark:bg-slate-700">
+                    <tr>
+                        <th class="table-header w-1/5">Dish Name</th>
+                        <th class="table-header w-1/5">Description</th>
+                        <th class="table-header w-[100px]">Price</th>
+                        <th class="table-header w-[150px]">Type</th>
+                        <template x-for="cafeteria in allCafeterias" :key="cafeteria.cafeteria_id">
+                            <th class="table-header text-center" x-text="cafeteria.name"></th>
+                        </template>
+                        <th class="table-header w-[100px] text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- === INPUT ROW === -->
+                    <tr class="bg-slate-100 dark:bg-slate-900/50">
+                        <td class="p-2 align-top">
+                             <div class="relative" @click.away="comboboxOpen = false">
+                                <input type="text" x-model="comboboxSearch" @focus="comboboxOpen = true" @input.debounce.250ms="filterCombobox()" @keydown.enter.prevent="selectComboboxFirstOrCurrent()" placeholder="Search or add new..." class="input-style">
+                                <div x-show="comboboxOpen" x-cloak class="absolute z-10 w-full bg-white dark:bg-slate-700 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                                    <template x-for="(dish, idx) in comboboxFilteredDishes" :key="dish.dish_id">
+                                        <div @click="selectFromCombobox(dish)" @mouseenter="comboboxActiveIndex = idx" class="cursor-pointer select-none relative py-2 pl-3 pr-9" :class="{'text-white bg-blue-600': comboboxActiveIndex === idx, 'text-slate-900 dark:text-slate-200': comboboxActiveIndex !== idx}" x-text="dish.name"></div>
+                                    </template>
+                                    <div x-show="comboboxFilteredDishes.length === 0 && comboboxSearch !== ''" class="px-3 py-2 text-sm text-slate-500">No results found. A new dish will be created.</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-2 align-top"><input type="text" x-model="newDish.description" placeholder="Allergens, etc." class="input-style"></td>
+                        <td class="p-2 align-top"><input type="number" step="0.01" min="0" x-model="newDish.dine_in_price" placeholder="0.00" class="input-style"></td>
+                        <td class="p-2 align-top">
+                             <select x-model="newDish.dish_type" class="input-style">
+                                <option value="soup">Soup</option>
+                                <option value="main_course">Main Course</option>
+                                <option value="side_dish">Side Dish</option>
+                                <option value="drink">Drink</option>
+                            </select>
+                        </td>
+                        <template x-for="cafeteria in allCafeterias" :key="cafeteria.cafeteria_id">
+                            <td class="p-2 align-top text-center"><input type="checkbox" :value="cafeteria.cafeteria_id" x-model="newDish.cafeteria_ids" class="checkbox-style"></td>
+                        </template>
+                        <td class="p-2 align-top text-center">
+                            <button type="button" @click="addDishFromInput()" class="button-primary w-full">Add</button>
+                        </td>
+                    </tr>
+                    <!-- === DATA ROWS === -->
+                    <template x-for="(dish, index) in menuRows" :key="dish.unique_id">
+                        <tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                            <input type="hidden" :name="`dishes[${index}][dish_id]`" x-model="dish.dish_id">
+                            <td class="p-2"><input type="text" :name="`dishes[${index}][name]`" x-model="dish.name" class="input-style bg-transparent border-0 focus:ring-1 focus:bg-white dark:focus:bg-slate-700"></td>
+                            <td class="p-2"><input type="text" :name="`dishes[${index}][description]`" x-model="dish.description" class="input-style bg-transparent border-0 focus:ring-1 focus:bg-white dark:focus:bg-slate-700"></td>
+                            <td class="p-2"><input type="number" step="0.01" min="0" :name="`dishes[${index}][dine_in_price]`" x-model="dish.dine_in_price" class="input-style bg-transparent border-0 focus:ring-1 focus:bg-white dark:focus:bg-slate-700"></td>
+                            <td class="p-2">
+                                <select :name="`dishes[${index}][dish_type]`" x-model="dish.dish_type" class="input-style bg-transparent border-0 focus:ring-1 focus:bg-white dark:focus:bg-slate-700">
+                                    <option value="soup">Soup</option>
+                                    <option value="main_course">Main Course</option>
+                                    <option value="side_dish">Side Dish</option>
+                                    <option value="drink">Drink</option>
+                                </select>
+                            </td>
+                            <template x-for="cafeteria in allCafeterias" :key="cafeteria.cafeteria_id">
+                                <td class="p-2 text-center"><input type="checkbox" :name="`dishes[${index}][cafeterias]`" :value="cafeteria.cafeteria_id" x-model="dish.cafeteria_ids" class="checkbox-style"></td>
+                            </template>
+                            <td class="p-2 text-center">
+                                <button type="button" @click="removeDish(index)" class="button-danger w-full">Del</button>
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="menuRows.length === 0">
+                        <tr>
+                            <td :colspan="5 + allCafeterias.length" class="text-center py-12 text-slate-500">
+                                <h3 class="text-lg font-semibold">Menu is Empty</h3>
+                                <p class="mt-1">No dishes are on the menu for {{ selected_date }}. Use the top row to add one.</p>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-6 p-6 bg-white dark:bg-slate-800 shadow-sm rounded-lg">
+            <div class="flex justify-end">
+                <button type="submit" class="button-primary px-6 py-3 text-base">Save Menu for {{ selected_date }}</button>
+            </div>
+        </div>
+    </form>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
-<style>.input-style { border-radius: 0.375rem; border-width: 1px; padding: 0.5rem 0.75rem; width: 100%; } .dark .input-style { background-color: #334155; border-color: #475569; } .input-style:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-color: #3b82f6; box-shadow: 0 0 0 2px var(--tw-ring-color); border-color: #3b82f6; }</style>
+<!-- Styles -->
+<style>
+.table-header { padding: 0.75rem 0.5rem; text-align: left; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; } .dark .table-header { color: #94a3b8; }
+.input-style { display: block; width: 100%; border-radius: 0.375rem; border: 1px solid #cbd5e1; background-color: white; padding: 0.5rem 0.75rem; font-size: 0.875rem; line-height: 1.25rem; } .dark .input-style { background-color: #334155; border-color: #475569; } .input-style:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-color: #3b82f6; box-shadow: 0 0 0 2px var(--tw-ring-color); border-color: #3b82f6; }
+.checkbox-style { width: 1.25rem; height: 1.25rem; border-radius: 0.25rem; color: #2563eb; background-color: #e0e7ff; border-color: #a5b4fc; } .dark .checkbox-style { background-color: #3730a3; border-color: #6366f1; }
+.button-primary { display: inline-flex; justify-content: center; padding: 0.5rem 1rem; border: 1px solid transparent; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: white; background-color: #2563eb; transition: background-color 0.2s; } .button-primary:hover { background-color: #1d4ed8; }
+.button-danger { display: inline-flex; justify-content: center; padding: 0.5rem 0.75rem; border: 1px solid transparent; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: white; background-color: #dc2626; transition: background-color 0.2s; } .button-danger:hover { background-color: #b91c1c; }
+</style>
+<!-- Alpine.js Components -->
 <script>
-function menuBuilder(existingDishes, allCafeterias) {
-    return {
-        dishes: [],
-        allDishes: existingDishes,
-        allCafeterias: allCafeterias,
-        addDish() {
-            this.dishes.push({
-                name: '',
-                description: '',
-                dine_in_price: '',
-                dish_type: 'main_course',
-                cafeteria_ids: []
-            });
-        },
-        removeDish(index) {
-            this.dishes.splice(index, 1);
-        },
-        init() {
-            // Start with one empty dish row
-            this.addDish();
-        }
+    function menuManager(allDishes, allCafeterias, dishesOnMenu) {
+        return {
+            // Main state
+            allDishes, allCafeterias,
+            menuRows: [],
+            newDish: {},
+            uniqueIdCounter: 0,
+            
+            // Combobox state
+            comboboxOpen: false,
+            comboboxSearch: '',
+            comboboxActiveIndex: -1,
+            comboboxFilteredDishes: [],
+
+            init() {
+                this.resetNewDish();
+                this.menuRows = dishesOnMenu.map(d => ({...d, unique_id: this.uniqueIdCounter++}));
+                this.comboboxFilteredDishes = this.allDishes;
+            },
+            resetNewDish() {
+                this.newDish = { dish_id: null, name: '', description: '', dine_in_price: '', dish_type: 'main_course', cafeteria_ids: [] };
+                this.comboboxSearch = '';
+                this.filterCombobox();
+            },
+            addDishFromInput() {
+                if (!this.newDish.name.trim()) {
+                    alert('Dish name is required.');
+                    return;
+                }
+                const isExistingInTableById = this.newDish.dish_id && this.menuRows.some(row => row.dish_id === this.newDish.dish_id);
+                if (isExistingInTableById) {
+                    alert(`"${this.newDish.name}" is already in the menu.`);
+                    return;
+                }
+                const isExistingInTableByName = this.menuRows.some(row => row.name.toLowerCase() === this.newDish.name.toLowerCase());
+                if(isExistingInTableByName) {
+                    alert(`A dish named "${this.newDish.name}" is already in the menu.`);
+                    return;
+                }
+                
+                this.menuRows.push({ ...this.newDish, unique_id: this.uniqueIdCounter++ });
+                this.resetNewDish();
+            },
+            removeDish(index) {
+                this.menuRows.splice(index, 1);
+            },
+            filterCombobox() {
+                if (this.comboboxSearch === '') {
+                    this.comboboxFilteredDishes = this.allDishes;
+                } else {
+                    this.comboboxFilteredDishes = this.allDishes.filter(
+                        d => d.name.toLowerCase().includes(this.comboboxSearch.toLowerCase())
+                    );
+                }
+                this.comboboxActiveIndex = -1;
+
+                const exactMatch = this.allDishes.find(d => d.name.toLowerCase() === this.comboboxSearch.toLowerCase());
+                if (!exactMatch) {
+                    this.newDish.name = this.comboboxSearch;
+                    this.newDish.dish_id = null;
+                }
+            },
+            selectFromCombobox(dish) {
+                this.comboboxSearch = dish.name;
+                this.comboboxOpen = false;
+                this.newDish = { ...dish, cafeteria_ids: [] }; // Reset cafeteria selection on new dish select
+            },
+            selectComboboxFirstOrCurrent() {
+                if (this.comboboxFilteredDishes.length > 0) {
+                    const selected = this.comboboxFilteredDishes[this.comboboxActiveIndex > -1 ? this.comboboxActiveIndex : 0];
+                    this.selectFromCombobox(selected);
+                }
+            }
+        };
     }
-}
 </script>
 {% endblock %}

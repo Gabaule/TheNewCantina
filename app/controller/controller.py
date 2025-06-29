@@ -10,6 +10,7 @@ from decimal import Decimal
 from functools import wraps
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify, make_response
 from sqlalchemy import text
+from sqlalchemy.orm import joinedload
 import json
 from collections import defaultdict
 import traceback
@@ -245,28 +246,75 @@ def orders():
 @app.route("/admin/dashboard")
 @admin_web_required
 def admin_dashboard(current_user):
-    return render_template("admin/dashboard.html", user=current_user,
-        cafeterias=[c.to_dict() for c in Cafeteria.query.order_by(Cafeteria.name).all()],
-        dishes={'all': [d.to_dict() for d in Dish.query.order_by(Dish.name).all()]}, # simplified for example
-        selected_date=request.args.get("date", date.today().strftime('%Y-%m-%d')))
+    selected_date_str = request.args.get("date", date.today().strftime('%Y-%m-%d'))
+    try:
+        selected_date_obj = datetime.strptime(selected_date_str, "%Y-%m-%d").date()
+    except ValueError:
+        selected_date_str = date.today().strftime('%Y-%m-%d')
+        selected_date_obj = date.today()
+        flash("Invalid date format, defaulting to today.", "warning")
+
+    all_cafeterias = Cafeteria.query.order_by(Cafeteria.name).all()
+    all_dishes = Dish.query.order_by(Dish.name).all()
+
+    # Build a dictionary of dishes on the menu for the selected date
+    dishes_on_menu = defaultdict(lambda: {'dish': None, 'cafeteria_ids': set()})
+    
+    # Eager load related dishes to avoid N+1 queries in the loop
+    menu_items_for_date = db.session.query(DailyMenuItem, DailyMenu.cafeteria_id).\
+        join(DailyMenu, DailyMenuItem.menu_id == DailyMenu.menu_id).\
+        filter(DailyMenu.menu_date == selected_date_obj).\
+        options(joinedload(DailyMenuItem.dish)).\
+        all()
+
+    for menu_item, cafeteria_id in menu_items_for_date:
+        dish = menu_item.dish
+        if dish:
+            dishes_on_menu[dish.dish_id]['dish'] = dish
+            dishes_on_menu[dish.dish_id]['cafeteria_ids'].add(cafeteria_id)
+
+    # Convert the defaultdict to a list of dicts for the template
+    menu_for_template = []
+    for dish_id, data in sorted(dishes_on_menu.items()):
+        dish_dict = data['dish'].to_dict()
+        dish_dict['cafeteria_ids'] = sorted(list(data['cafeteria_ids']))
+        menu_for_template.append(dish_dict)
+    
+    menu_for_template.sort(key=lambda x: x['name'])
+
+    return render_template("admin/dashboard.html",
+                           user=current_user,
+                           all_cafeterias=[c.to_dict() for c in all_cafeterias],
+                           all_dishes=[d.to_dict() for d in all_dishes],
+                           dishes_on_menu=menu_for_template,
+                           selected_date=selected_date_str)
 
 @app.route("/admin/menu", methods=['POST'])
 @admin_web_required
 def create_admin_menu(current_user):
-    # This route's logic is complex and remains as is, focusing on the student-facing fixes.
-    # It correctly redirects upon completion.
     menu_date_str = request.form.get('menu_date')
     try:
         menu_date = datetime.strptime(menu_date_str, "%Y-%m-%d").date()
-        affected_cafeterias = set()
+
+        # Delete all menu items and menus for this date to ensure a clean slate.
+        # Cascade will handle deleting items.
+        DailyMenu.query.filter_by(menu_date=menu_date).delete()
+        db.session.flush()
+
+        # Process submitted dishes
         dishes_to_process = []
         i = 0
-        while name := request.form.get(f"dishes[{i}][name]"):
-            cafeteria_ids = [int(cid) for cid in request.form.getlist(f"dishes[{i}][cafeterias]")]
-            if name.strip() and cafeteria_ids:
-                affected_cafeterias.update(cafeteria_ids)
+        while f"dishes[{i}][name]" in request.form:
+            name = request.form.get(f"dishes[{i}][name]", "").strip()
+            if name: # Only process rows that have a dish name
+                cafeteria_ids = [int(cid) for cid in request.form.getlist(f"dishes[{i}][cafeterias]")]
+                if not cafeteria_ids: # Skip if no cafeterias are selected
+                    i += 1
+                    continue
+                
                 dishes_to_process.append({
-                    "name": name.strip(),
+                    "dish_id": request.form.get(f"dishes[{i}][dish_id]"),
+                    "name": name,
                     "description": request.form.get(f"dishes[{i}][description]", "").strip(),
                     "dine_in_price": Decimal(request.form.get(f"dishes[{i}][dine_in_price]", "0.0")),
                     "dish_type": request.form.get(f"dishes[{i}][dish_type]"),
@@ -274,23 +322,44 @@ def create_admin_menu(current_user):
                 })
             i += 1
         
-        for cid in affected_cafeterias:
-            DailyMenu.query.filter_by(cafeteria_id=cid, menu_date=menu_date).delete()
+        menu_cache = {} # Cache for DailyMenu instances {cafeteria_id: menu_object}
 
         for dish_data in dishes_to_process:
-            dish = Dish.query.filter(Dish.name.ilike(dish_data['name'])).first()
-            if not dish: dish = Dish()
-            dish.name, dish.description, dish.dine_in_price, dish.dish_type = dish_data['name'], dish_data['description'], dish_data['dine_in_price'], dish_data['dish_type']
+            dish = None
+            # If an ID is provided and the name hasn't changed, use that dish.
+            if dish_data['dish_id'] and dish_data['dish_id'].isdigit():
+                temp_dish = Dish.get_by_id(int(dish_data['dish_id']))
+                if temp_dish and temp_dish.name == dish_data['name']:
+                    dish = temp_dish
+
+            # If no dish was found by ID (or name was changed), find by name.
+            if not dish:
+                dish = Dish.query.filter(Dish.name.ilike(dish_data['name'])).first()
+            
+            if dish: # Update existing dish
+                dish.description = dish_data['description']
+                dish.dine_in_price = dish_data['dine_in_price']
+                dish.dish_type = dish_data['dish_type']
+            else: # Create new dish
+                dish = Dish(
+                    name=dish_data['name'],
+                    description=dish_data['description'],
+                    dine_in_price=dish_data['dine_in_price'],
+                    dish_type=dish_data['dish_type']
+                )
             db.session.add(dish)
-            db.session.flush()
+            db.session.flush() # Ensure dish has an ID
 
             for cid in dish_data['cafeteria_ids']:
-                menu = DailyMenu.query.filter_by(cafeteria_id=cid, menu_date=menu_date).first()
+                menu = menu_cache.get(cid)
                 if not menu:
                     menu = DailyMenu(cafeteria_id=cid, menu_date=menu_date)
                     db.session.add(menu)
                     db.session.flush()
-                db.session.add(DailyMenuItem(menu_id=menu.menu_id, dish_id=dish.dish_id, dish_role=dish.dish_type))
+                    menu_cache[cid] = menu
+                
+                item = DailyMenuItem(menu_id=menu.menu_id, dish_id=dish.dish_id, dish_role=dish_data['dish_type'])
+                db.session.add(item)
         
         db.session.commit()
         flash(f"Menus for {menu_date_str} updated successfully.", "success")
