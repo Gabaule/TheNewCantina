@@ -31,7 +31,7 @@
                     <div class="text-right">
                         <span class="text-sm">{{ user.first_name }} {{ user.last_name }} ({{ user.role }})</span>
                     </div>
-                    <a href="{{ url_for('logout') }}" class="text-sm text-blue-600 hover:text-blue-800 hidden sm:block">Logout</a>
+                    <a href="{{ url_for('logout') }}" class="text-sm text-blue-600 hover:text-blue-800 hidden md:block">Logout</a>
                 </div>
             </div>
         </div>
@@ -39,7 +39,7 @@
 
     <div class="flex">
         <!-- Admin Sidebar -->
-        <aside class="w-64 bg-white dark:bg-slate-800 shadow-sm min-h-screen flex-shrink-0 fixed md:relative z-30 md:z-auto transform md:transform-none transition-transform duration-300"
+        <aside class="w-64 bg-white dark:bg-slate-800 shadow-sm flex-shrink-0 fixed md:relative z-30 md:z-auto transform md:transform-none transition-transform duration-300 top-16 bottom-0 overflow-y-auto md:top-auto"
                :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }">
             <nav class="p-6">
                 <!-- Navigation back to student view -->
@@ -65,6 +65,10 @@
                         </li>
                         <li>
                             <a href="{{ url_for('admin_users') }}" class="block px-3 py-2 rounded-md text-sm font-medium {% if request.endpoint == 'admin_users' %}bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700{% endif %}">Manage Users</a>
+                        </li>
+                        <!-- Mobile-only logout link -->
+                        <li class="md:hidden pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+                           <a href="{{ url_for('logout') }}" class="block px-3 py-2 rounded-md text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">Logout</a>
                         </li>
                     </ul>
                 </div>
