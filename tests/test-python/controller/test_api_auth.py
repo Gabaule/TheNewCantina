@@ -1,8 +1,10 @@
 import pytest
 import requests
+from bs4 import BeautifulSoup
 
-BASE_URL = "http://localhost:8081/api/v1"
-LOGIN_URL = "http://localhost:8081/login"
+BASE_URL = "http://localhost:8081"
+API_URL = f"{BASE_URL}/api/v1"
+LOGIN_URL = f"{BASE_URL}/login"
 
 # Utilisateur non-admin existant dans ton seeder :
 USER_CREDENTIALS = {
@@ -63,23 +65,38 @@ ENDPOINTS = [
     {"method": "PUT", "url": f"{BASE_URL}/reservations/1/cancel", "desc": "Cancel réservation", "allowed": False},  # Idem
 ]
 
+def login_and_get_session(username, password):
+    s = requests.Session()
+    r = s.get(LOGIN_URL)
+    csrf_token = None
+    if 'csrf_token' in r.text:
+        soup = BeautifulSoup(r.text, 'html.parser')
+        csrf = soup.find('input', {'name': 'csrf_token'})
+        if csrf:
+            csrf_token = csrf['value']
+
+    data = {
+        "username": username,
+        "password": password,
+    }
+    if csrf_token:
+        data['csrf_token'] = csrf_token
+
+    resp = s.post(LOGIN_URL, data=data, allow_redirects=True)
+    assert "session" in s.cookies, f"Echec login admin ({resp.status_code}) :\n{resp.text[:500]}"
+    if "identifiants incorrects" in resp.text.lower():
+        raise Exception("Mot de passe ou user incorrect")
+    return s
+
 @pytest.fixture(scope="session")
 def user_session():
-    """Se connecte en tant qu'user normal et récupère les cookies de session."""
-    s = requests.Session()
-    resp = s.post(LOGIN_URL, data=USER_CREDENTIALS, allow_redirects=False)
-    # La connexion doit rediriger (302) si succès
-    assert resp.status_code in (302, 303), f"Échec login user : {resp.status_code} {resp.text}"
-    return s
+    return login_and_get_session(USER_CREDENTIALS["username"], USER_CREDENTIALS["password"])
 
 @pytest.mark.parametrize(
     "endpoint", ENDPOINTS,
     ids=[f"{ep['method']} {ep['url']} ({ep['desc']})" for ep in ENDPOINTS]
 )
-def test_api_user_rights(endpoint, user_session):
-    """
-    Vérifie pour chaque endpoint si un user 'normal' y a accès ou non.
-    """
+def test_api_admin_rights(endpoint, user_session):
     method = endpoint["method"]
     url = endpoint["url"]
     allowed = endpoint["allowed"]
@@ -89,10 +106,10 @@ def test_api_user_rights(endpoint, user_session):
         url=url,
         json=endpoint.get("json"),
         timeout=5,
-        allow_redirects=False
+        allow_redirects=True,
     )
 
     if allowed:
         assert resp.status_code in (200, 201, 204), f"[KO] Accès refusé à l'endpoint ALLOWED : {method} {url} ({resp.status_code})\n{resp.text[:300]}"
     else:
-        assert resp.status_code in (401, 403), f"[KO] Endpoint réservé NON protégé : {method} {url} (code reçu: {resp.status_code})\n{resp.text[:300]}"
+        assert resp.status_code in (401, 403), f"[KO] Endpoint interdit à l'admin NON protégé : {method} {url} (code reçu: {resp.status_code})\n{resp.text[:300]}"
