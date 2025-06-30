@@ -56,3 +56,43 @@ def test_delete_user(app):
         assert AppUser.get_by_id(user_id)
         user.delete_user()
         assert AppUser.get_by_id(user_id) is None
+
+def test_app_user_update_nothing_returns_false(app):
+    """Vérifie que appeler update_user sans arguments ne fait rien et renvoie False."""
+    with app.app_context():
+        user = AppUser.create_user("Test", "User", "coverage@test.com", "pass")
+        db.session.commit()
+        assert user.update_user() is False
+
+def test_app_user_update_password_and_role(app):
+    """Vérifie que la mise à jour du mot de passe et du rôle fonctionne."""
+    with app.app_context():
+        user = AppUser.create_user("Test", "User", "pw_role@test.com", "old_pass")
+        db.session.commit()
+        
+        ok = user.update_user(password="new_pass", role="admin")
+        assert ok is True
+        assert user.role == "admin"
+        assert user.verify_password("new_pass")
+        assert not user.verify_password("old_pass")
+
+def test_app_user_update_to_existing_email_fails(app):
+    """Vérifie que la mise à jour vers un email existant échoue et renvoie False."""
+    with app.app_context():
+        AppUser.create_user("User", "One", "one@example.com", "p")
+        user2 = AppUser.create_user("User", "Two", "two@example.com", "p")
+        db.session.commit()
+        
+        ok = user2.update_user(email="one@example.com")
+        assert ok is False
+
+def test_app_user_get_all_dicts(app):
+    """Teste la méthode utilitaire get_all_dicts."""
+    with app.app_context():
+        db.session.query(AppUser).delete()
+        AppUser.create_user("A", "A", "a@a.com", "p")
+        AppUser.create_user("B", "B", "b@b.com", "p")
+        db.session.commit()
+        users = AppUser.get_all_dicts()
+        assert len(users) == 2
+        assert users[0]['email'] == 'a@a.com'
