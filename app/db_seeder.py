@@ -88,12 +88,14 @@ def populate_database_if_empty():
         main_menu = DailyMenu.create_menu(cafeteria_id=nova_menza.cafeteria_id, menu_date=menu_date)
         db.session.commit() # Commit to get menu_id
         
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Polievka Zeleninová s mrveničkou'].dish_id, dish_role='soup', display_order=0)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Prírodné kuracie prsia s opraženou slaninkou, ryža, mrkvový šalát'].dish_id, dish_role='main_course', display_order=1)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Pastierske bravčové stehno, pučené zemiaky, obloha'].dish_id, dish_role='main_course', display_order=2)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Zapekané zemiaky so zeleninou, cviklou a syrom, obloha'].dish_id, dish_role='main_course', display_order=3)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Pizza Prosciutto, suchá saláma, olivy, cibuľa, syr'].dish_id, dish_role='main_course', display_order=5)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Bageta plnená'].dish_id, dish_role='main_course', display_order=8)
+        # Après dish_map = {d.name: d for d in Dish.query.all()}
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Vegetable Soup with Vermicelli'].dish_id, dish_role='soup', display_order=0)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Grilled Chicken Breast with Bacon, Rice, Carrot Salad'].dish_id, dish_role='main_course', display_order=1)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map["Shepherd's Pork Leg, Mashed Potatoes, Garnish"].dish_id, dish_role='main_course', display_order=2)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Baked Potatoes with Vegetables, Beetroot and Cheese, Garnish'].dish_id, dish_role='main_course', display_order=3)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Pizza Prosciutto, Salami, Olives, Onion, Cheese'].dish_id, dish_role='main_course', display_order=5)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Stuffed Baguette'].dish_id, dish_role='main_course', display_order=8)
+
         
         db.session.commit()
         print(f"  - Menu for {menu_date} at '{nova_menza.name}' created successfully.")
