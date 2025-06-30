@@ -4,7 +4,34 @@
 <!-- Styles shared across admin pages -->
 <style>
 .table-header { padding: 0.75rem 0.5rem; text-align: left; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; } .dark .table-header { color: #94a3b8; }
-.input-style { display: block; width: 100%; border-radius: 0.375rem; border: 1px solid #cbd5e1; background-color: white; padding: 0.5rem 0.75rem; font-size: 0.875rem; line-height: 1.25rem; } .dark .input-style { background-color: #334155; border-color: #475569; } .input-style:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-color: #3b82f6; box-shadow: 0 0 0 2px var(--tw-ring-color); border-color: #3b82f6; }
+.input-style { 
+    display: block; 
+    width: 100%; 
+    border-radius: 0.375rem; 
+    border: 1px solid #cbd5e1; /* slate-300 */
+    background-color: #ffffff; 
+    padding: 0.5rem 0.75rem; 
+    font-size: 0.875rem; 
+    line-height: 1.25rem;
+    color: #1e293b; /* slate-800 */
+    transition: border-color 0.2s, box-shadow 0.2s;
+} 
+.input-style::placeholder { color: #94a3b8; /* slate-400 */ }
+
+.dark .input-style { 
+    background-color: #334155; /* slate-700 */
+    border-color: #475569; /* slate-600 */
+    color: #f1f5f9; /* slate-100 */
+}
+.dark .input-style::placeholder { color: #64748b; /* slate-500 */ }
+
+.input-style:focus { 
+    outline: 2px solid transparent; 
+    outline-offset: 2px; 
+    --tw-ring-color: #3b82f6; /* blue-500 */
+    box-shadow: 0 0 0 2px var(--tw-ring-color); 
+    border-color: #3b82f6;
+}
 .checkbox-style { width: 1.25rem; height: 1.25rem; border-radius: 0.25rem; color: #2563eb; background-color: #e0e7ff; border-color: #a5b4fc; } .dark .checkbox-style { background-color: #3730a3; border-color: #6366f1; }
 .button-primary { display: inline-flex; justify-content: center; padding: 0.5rem 1rem; border: 1px solid transparent; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: white; background-color: #2563eb; transition: background-color 0.2s; } .button-primary:hover { background-color: #1d4ed8; }
 .button-danger { display: inline-flex; justify-content: center; padding: 0.5rem 0.75rem; border: 1px solid transparent; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: white; background-color: #dc2626; transition: background-color 0.2s; } .button-danger:hover { background-color: #b91c1c; }
@@ -28,6 +55,13 @@
                 </div>
 
                 <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle Button -->
+                    <button @click="toggle()" type="button" class="p-2 rounded-full text-slate-400 hover:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900">
+                        <span class="sr-only">Toggle theme</span>
+                        <svg x-show="!darkMode" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <svg x-show="darkMode" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    </button>
+
                     <div class="text-right">
                         <span class="text-sm">{{ user.first_name }} {{ user.last_name }} ({{ user.role }})</span>
                     </div>

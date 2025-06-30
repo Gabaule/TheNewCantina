@@ -9,7 +9,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}University Meal Ordering{% endblock %}</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    
+    <!--
+      1. This anti-flicker script runs immediately to set the 'dark' class on the <html> element
+         based on localStorage before the page content renders.
+    -->
+    <script>
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    </script>
+
+    <!--
+      2. Load Tailwind CSS from CDN
+    -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!--
+      3. Configure Tailwind AFTER it loads
+    -->
+    <script>
+      tailwind.config = {
+        darkMode: 'class'
+      }
+    </script>
+
     <script src="https://unpkg.com/htmx.org@2.0.0"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
@@ -20,7 +46,7 @@
     {% block extra_head %}{% endblock %}
 </head>
 
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased">
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased" x-data="themeSwitcher()">
 {% endif %}
 
     {% block content %}{% endblock %}
@@ -100,6 +126,22 @@
                     this.year++;
                 }
                 this.getDaysInMonth();
+            }
+        }
+    }
+
+    function themeSwitcher() {
+        return {
+            // The initial state is based on the class set by the anti-flicker script.
+            darkMode: document.documentElement.classList.contains('dark'),
+            toggle() {
+                this.darkMode = !this.darkMode;
+                localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+                if (this.darkMode) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
             }
         }
     }

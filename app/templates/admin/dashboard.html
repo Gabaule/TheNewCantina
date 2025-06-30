@@ -65,12 +65,17 @@
                         <td class="p-2 align-top"><input type="text" x-model="newDish.description" placeholder="Allergens, etc." class="input-style"></td>
                         <td class="p-2 align-top"><input type="number" step="0.01" min="0" x-model="newDish.dine_in_price" placeholder="0.00" class="input-style"></td>
                         <td class="p-2 align-top">
-                             <select x-model="newDish.dish_type" class="input-style">
-                                <option value="soup">Soup</option>
-                                <option value="main_course">Main Course</option>
-                                <option value="side_dish">Side Dish</option>
-                                <option value="drink">Drink</option>
-                            </select>
+                            <div class="relative">
+                                <select x-model="newDish.dish_type" class="input-style appearance-none pr-10">
+                                    <option value="soup">Soup</option>
+                                    <option value="main_course">Main Course</option>
+                                    <option value="side_dish">Side Dish</option>
+                                    <option value="drink">Drink</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500 dark:text-slate-400">
+                                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.24a.75.75 0 011.06 0L10 14.148l2.7-2.908a.75.75 0 111.06 1.06l-3.25 3.5a.75.75 0 01-1.06 0l-3.25-3.5a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
+                                </div>
+                            </div>
                         </td>
                         <template x-for="cafeteria in allCafeterias" :key="cafeteria.cafeteria_id">
                             <td class="p-2 align-top text-center"><input type="checkbox" :value="cafeteria.cafeteria_id" x-model="newDish.cafeteria_ids" class="checkbox-style"></td>
@@ -81,18 +86,23 @@
                     </tr>
                     <!-- === DATA ROWS === -->
                     <template x-for="(dish, index) in menuRows" :key="dish.unique_id">
-                        <tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50">
                             <input type="hidden" :name="`dishes[${index}][dish_id]`" x-model="dish.dish_id">
-                            <td class="p-2"><input type="text" :name="`dishes[${index}][name]`" x-model="dish.name" class="input-style bg-transparent border-0 focus:ring-1 focus:bg-white dark:focus:bg-slate-700"></td>
-                            <td class="p-2"><input type="text" :name="`dishes[${index}][description]`" x-model="dish.description" class="input-style bg-transparent border-0 focus:ring-1 focus:bg-white dark:focus:bg-slate-700"></td>
-                            <td class="p-2"><input type="number" step="0.01" min="0" :name="`dishes[${index}][dine_in_price]`" x-model="dish.dine_in_price" class="input-style bg-transparent border-0 focus:ring-1 focus:bg-white dark:focus:bg-slate-700"></td>
+                            <td class="p-2"><input type="text" :name="`dishes[${index}][name]`" x-model="dish.name" class="input-style"></td>
+                            <td class="p-2"><input type="text" :name="`dishes[${index}][description]`" x-model="dish.description" class="input-style"></td>
+                            <td class="p-2"><input type="number" step="0.01" min="0" :name="`dishes[${index}][dine_in_price]`" x-model="dish.dine_in_price" class="input-style"></td>
                             <td class="p-2">
-                                <select :name="`dishes[${index}][dish_type]`" x-model="dish.dish_type" class="input-style bg-transparent border-0 focus:ring-1 focus:bg-white dark:focus:bg-slate-700">
-                                    <option value="soup">Soup</option>
-                                    <option value="main_course">Main Course</option>
-                                    <option value="side_dish">Side Dish</option>
-                                    <option value="drink">Drink</option>
-                                </select>
+                                <div class="relative">
+                                    <select :name="`dishes[${index}][dish_type]`" x-model="dish.dish_type" class="input-style appearance-none pr-10">
+                                        <option value="soup">Soup</option>
+                                        <option value="main_course">Main Course</option>
+                                        <option value="side_dish">Side Dish</option>
+                                        <option value="drink">Drink</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500 dark:text-slate-400">
+                                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.24a.75.75 0 011.06 0L10 14.148l2.7-2.908a.75.75 0 111.06 1.06l-3.25 3.5a.75.75 0 01-1.06 0l-3.25-3.5a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
+                                    </div>
+                                </div>
                             </td>
                             <template x-for="cafeteria in allCafeterias" :key="cafeteria.cafeteria_id">
                                 <td class="p-2 text-center"><input type="checkbox" :name="`dishes[${index}][cafeterias]`" :value="cafeteria.cafeteria_id" x-model="dish.cafeteria_ids" class="checkbox-style"></td>
