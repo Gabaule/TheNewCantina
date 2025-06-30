@@ -45,7 +45,8 @@ class OrderItem(db.Model):
         Retrieve an order item by its ID.
         Returns the OrderItem instance or None if not found.
         """
-        return cls.query.get(item_id)
+        return db.session.get(cls, item_id)
+
 
     @classmethod
     def get_all_dicts(cls):

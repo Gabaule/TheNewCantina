@@ -38,7 +38,7 @@ class Dish(db.Model):
     
     @classmethod
     def get_by_id(cls, dish_id):
-        return cls.query.get(dish_id)
+        return db.session.get(cls, dish_id)
     
     @classmethod
     def create_dish(cls, name, description, dine_in_price, dish_type):

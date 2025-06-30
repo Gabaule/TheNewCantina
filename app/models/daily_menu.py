@@ -38,7 +38,8 @@ class DailyMenu(db.Model):
         Retrieve a daily menu by its ID.
         Returns the DailyMenu instance or None if not found.
         """
-        return cls.query.get(menu_id)
+        return db.session.get(cls, menu_id)
+
 
     @classmethod
     def get_all_dicts(cls):

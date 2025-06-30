@@ -51,8 +51,8 @@ class AppUser(db.Model):
         Retrieve a user by their user_id.
         Returns the AppUser instance or None if not found.
         """
-        return cls.query.get(user_id)
-
+        return db.session.get(cls, user_id)
+    
     @classmethod
     def get_by_email(cls, email: str):
         """

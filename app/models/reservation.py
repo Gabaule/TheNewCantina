@@ -47,7 +47,8 @@ class Reservation(db.Model):
         Retrieve a reservation by its ID.
         Returns the Reservation instance or None if not found.
         """
-        return cls.query.get(reservation_id)
+        return db.session.get(cls, reservation_id)
+
 
     @classmethod
     def get_all_dicts(cls):

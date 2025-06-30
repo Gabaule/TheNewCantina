@@ -36,7 +36,7 @@ class Cafeteria(db.Model):
         Retrieve a cafeteria by its ID.
         Returns the Cafeteria instance or None if not found.
         """
-        return cls.query.get(cafeteria_id)
+        return db.session.get(cls, cafeteria_id)
 
     @classmethod
     def get_all_dicts(cls):
