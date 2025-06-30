@@ -13,3 +13,4 @@ dockerfile-ishan
 notes.txt
 .vscode/
 coverage/
+.coverage

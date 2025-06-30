@@ -37,3 +37,23 @@ def test_delete_reservation(app):
         id_ = r.reservation_id
         assert r.delete_reservation()
         assert Reservation.get_by_id(id_) is None
+
+def test_update_reservation_with_no_data(app):
+    with app.app_context():
+        user = AppUser.create_user("R4", "T", "r4@ex.com", "p")
+        caf = Cafeteria.create_cafeteria("RC4")
+        db.session.commit()
+        r = Reservation.create_reservation(user.user_id, caf.cafeteria_id, total=1)
+        db.session.commit()
+        assert r.update_reservation() is False
+
+def test_get_all_reservations_as_dicts(app):
+    with app.app_context():
+        db.session.query(Reservation).delete()
+        user = AppUser.create_user("R5", "T", "r5@ex.com", "p")
+        caf = Cafeteria.create_cafeteria("RC5")
+        db.session.commit()
+        Reservation.create_reservation(user.user_id, caf.cafeteria_id, total=1)
+        db.session.commit()
+        reservations = Reservation.get_all_dicts()
+        assert len(reservations) == 1

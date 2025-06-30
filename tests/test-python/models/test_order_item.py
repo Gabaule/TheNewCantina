@@ -47,3 +47,29 @@ def test_delete_order_item(app):
         id_ = oi.item_id
         assert oi.delete_order_item()
         assert OrderItem.get_by_id(id_) is None
+
+def test_update_order_item_with_no_data(app):
+    with app.app_context():
+        user = AppUser.create_user("OI4", "U", "oi4@ex.com", "p")
+        caf = Cafeteria.create_cafeteria("OICaf4")
+        dish = Dish.create_dish("DOI4", "", 1, "main_course")
+        db.session.commit()
+        r = Reservation.create_reservation(user.user_id, caf.cafeteria_id, total=1)
+        db.session.commit()
+        oi = OrderItem.create_order_item(r.reservation_id, dish.dish_id, 1, False, 1)
+        db.session.commit()
+        assert oi.update_order_item() is False
+
+def test_get_all_order_items_as_dicts(app):
+    with app.app_context():
+        db.session.query(OrderItem).delete()
+        user = AppUser.create_user("OI5", "U", "oi5@ex.com", "p")
+        caf = Cafeteria.create_cafeteria("OICaf5")
+        dish = Dish.create_dish("DOI5", "", 1, "main_course")
+        db.session.commit()
+        r = Reservation.create_reservation(user.user_id, caf.cafeteria_id, total=1)
+        db.session.commit()
+        OrderItem.create_order_item(r.reservation_id, dish.dish_id, 1, False, 1)
+        db.session.commit()
+        items = OrderItem.get_all_dicts()
+        assert len(items) == 1
