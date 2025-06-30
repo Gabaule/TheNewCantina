@@ -5,7 +5,7 @@ from datetime import date, datetime
 # Add parent directory to path to allow model imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from models import (
+from app.models import (
     db, AppUser, Cafeteria, Dish, DailyMenu, DailyMenuItem, Reservation, OrderItem
 )
 

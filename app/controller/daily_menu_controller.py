@@ -1,12 +1,10 @@
-# app/controller/daily_menu_controller.py
-
 from flask import Blueprint, request, jsonify
 from datetime import datetime
-from models import db
-from models.daily_menu import DailyMenu
-from models.dish import Dish
-from models.daily_menu_item import DailyMenuItem
-from .auth import admin_required, api_require_login
+from app.models import db                      # <-- Absolu
+from app.models.daily_menu import DailyMenu    # <-- Absolu
+from app.models.dish import Dish               # <-- Absolu
+from app.models.daily_menu_item import DailyMenuItem  # <-- Absolu
+from app.controller.auth import admin_required, api_require_login  # <-- Absolu
 
 daily_menu_bp = Blueprint('daily_menu_bp', __name__, url_prefix='/api/v1/daily-menu')
 

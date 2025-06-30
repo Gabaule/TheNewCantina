@@ -1,9 +1,6 @@
 FROM python:3-alpine
 WORKDIR /app
-COPY app/ .
-COPY docker/requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
-
-
-CMD ["python", "app.py"]
+COPY app /app/app
+COPY docker/requirements.txt /app/
+RUN pip install -r requirements.txt
+CMD ["python", "-m", "app.main"]

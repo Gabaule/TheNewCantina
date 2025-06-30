@@ -1,9 +1,9 @@
 # app/controller/order_item_controller.py
 
 from flask import Blueprint, request, jsonify
-from models import db
-from models.order_item import OrderItem
-from .auth import admin_required, api_require_login
+from app.models import db
+from app.models.order_item import OrderItem
+from app.controller.auth import admin_required, api_require_login
 
 order_item_bp = Blueprint('order_item_bp', __name__, url_prefix='/api/v1/order-item')
 

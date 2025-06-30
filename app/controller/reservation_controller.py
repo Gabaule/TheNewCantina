@@ -3,13 +3,13 @@
 from flask import Blueprint, request, jsonify
 from decimal import Decimal
 
-# Import necessary models and the db session
-from models import db
-from models.app_user import AppUser
-from models.cafeteria import Cafeteria
-from models.dish import Dish
-from models.reservation import Reservation
-from models.order_item import OrderItem
+# Import models et db avec imports absolus (important !)
+from app.models.order_item import OrderItem
+from app.models.reservation import Reservation
+from app.models.dish import Dish
+from app.models.cafeteria import Cafeteria
+from app.models.app_user import AppUser
+from app.models import db
 
 # Import the authentication decorator from the main controller
 from .auth import admin_required, api_require_login
