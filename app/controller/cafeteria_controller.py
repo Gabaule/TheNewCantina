@@ -15,13 +15,13 @@ cafeteria_bp = Blueprint('cafeteria_bp', __name__, url_prefix='/api/v1/cafeteria
 # GET /api/v1/cafeteria - Liste toutes les cafétérias (public)
 @cafeteria_bp.route('/', methods=['GET'])
 @api_require_login
-def get_all_cafeterias():
+def get_all_cafeterias(current_user):
     return jsonify(Cafeteria.get_all_dicts()), 200
 
 # GET /api/v1/cafeteria/<int:cafeteria_id> - Affiche une cafétéria (public)
 @cafeteria_bp.route('/<int:cafeteria_id>', methods=['GET'])
 @api_require_login
-def get_cafeteria(cafeteria_id):
+def get_cafeteria(cafeteria_id,current_user):
     cafeteria = Cafeteria.get_by_id(cafeteria_id)
     if not cafeteria:
         return jsonify({'error': 'Cafétéria non trouvée'}), 404

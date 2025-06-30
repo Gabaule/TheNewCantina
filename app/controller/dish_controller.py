@@ -13,13 +13,13 @@ dish_bp = Blueprint('dish_bp', __name__, url_prefix='/api/v1/dish')
 # GET /api/v1/dish - Liste tous les plats (lecture publique)
 @dish_bp.route('/', methods=['GET'])
 @api_require_login
-def get_all_dishes():
+def get_all_dishes(current_user):
     return jsonify([dish.to_dict() for dish in Dish.query.all()]), 200
 
 # GET /api/v1/dish/<int:dish_id> - Affiche un plat (lecture publique)
 @dish_bp.route('/<int:dish_id>', methods=['GET'])
 @api_require_login
-def get_dish(dish_id):
+def get_dish(dish_id,current_user):
     dish = Dish.query.get(dish_id)
     if not dish:
         return jsonify({'error': 'Plat non trouvé'}), 404
