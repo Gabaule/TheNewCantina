@@ -12,7 +12,7 @@ from flask import (
     Flask, render_template, request, session, redirect, url_for,
     flash, jsonify, make_response
 )
-from sqlalchemy import text
+from sqlalchemy import text, or_
 from sqlalchemy.orm import joinedload
 import json
 from collections import defaultdict
@@ -363,7 +363,35 @@ def create_app(test_config=None):
     @app.route("/admin/users")
     @admin_web_required
     def admin_users(current_user):
-        return render_template("admin/users.html", user=current_user, users=AppUser.query.order_by(AppUser.last_name, AppUser.first_name).all())
+        search_query = request.args.get('q', '').strip()
+        role_filter = request.args.get('role', '').strip()
+
+        query = AppUser.query
+
+        if search_query:
+            like_pattern = f"%{search_query}%"
+            query = query.filter(or_(
+                AppUser.last_name.ilike(like_pattern),
+                AppUser.first_name.ilike(like_pattern),
+                AppUser.email.ilike(like_pattern)
+            ))
+        
+        if role_filter:
+            query = query.filter(AppUser.role == role_filter)
+
+        users = query.order_by(AppUser.last_name, AppUser.first_name).all()
+        
+        # If the request is from HTMX, render only the partial table body
+        if 'HX-Request' in request.headers:
+            return render_template("admin/partials/users_table_body.html", users=users)
+
+        return render_template(
+            "admin/users.html",
+            user=current_user,
+            users=users,
+            search_query=search_query,
+            role_filter=role_filter
+        )
 
     @app.route("/admin/cafeterias")
     @admin_web_required
@@ -406,4 +434,3 @@ def create_app(test_config=None):
     app.register_blueprint(order_item_bp)
 
     return app
-

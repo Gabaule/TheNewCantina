@@ -1,0 +1,66 @@
+<!-- Add User Row -->
+<tr class="bg-slate-100 dark:bg-slate-900/50" id="add-user-row">
+    <td class="p-2 align-top">
+        <div class="space-y-1">
+            <input type="text" id="new-first-name" placeholder="First Name" required class="input-style">
+            <input type="text" id="new-last-name" placeholder="Last Name" required class="input-style">
+        </div>
+    </td>
+    <td class="p-2 align-top"><input type="email" id="new-email" placeholder="email@example.com" required class="input-style"></td>
+    <td class="p-2 align-top">
+        <select id="new-role" class="input-style">
+            <option value="student">Student</option>
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+        </select>
+    </td>
+    <td class="p-2 align-top"><input type="number" step="0.01" id="new-balance" value="0.00" class="input-style text-right"></td>
+    <td class="p-2 align-top"><input type="password" id="new-password" placeholder="New Password" required class="input-style"></td>
+    <td class="p-2 align-top text-center">
+        <button type="button"
+                onclick="addUser()"
+                class="button-primary w-full">
+            Add
+        </button>
+    </td>
+</tr>
+
+<!-- Existing Users -->
+{% for u in users %}
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+    <td class="px-4 py-3 whitespace-nowrap">
+        <div class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ u.first_name }} {{ u.last_name }}</div>
+    </td>
+    <td class="px-4 py-3 whitespace-nowrap">
+        <div class="text-sm text-slate-600 dark:text-slate-400">{{ u.email }}</div>
+    </td>
+    <td class="px-4 py-3 whitespace-nowrap">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+            {% if u.role == 'admin' %} bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200
+            {% elif u.role == 'staff' %} bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200
+            {% else %} bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 {% endif %}">
+            {{ u.role|capitalize }}
+        </span>
+    </td>
+    <td class="px-4 py-3 whitespace-nowrap text-right">
+        <div class="text-sm font-medium text-green-600 dark:text-green-400">${{ "%.2f"|format(u.balance) }}</div>
+    </td>
+    <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+        {{ u.created_at.strftime('%Y-%m-%d') if u.created_at else 'N/A' }}
+    </td>
+    <td class="px-4 py-3 whitespace-nowrap text-center">
+        <button type="button" 
+                hx-delete="/api/v1/user/{{ u.user_id }}"
+                hx-confirm="Are you sure you want to delete the user '{{ u.email }}'?"
+                hx-target="closest tr"
+                hx-swap="outerHTML swap:0.5s"
+                class="button-danger">
+            Delete
+        </button>
+    </td>
+</tr>
+{% else %}
+<tr>
+    <td colspan="6" class="text-center py-8 text-slate-500">No users found for the selected filters.</td>
+</tr>
+{% endfor %}

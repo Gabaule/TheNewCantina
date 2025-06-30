@@ -8,6 +8,34 @@
         <p class="mt-1 text-slate-600 dark:text-slate-400">Add, view, and remove users from the system.</p>
     </div>
 
+    <!-- Filter Bar as a FORM for HTMX -->
+    <form id="user-filter-form"
+          class="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50"
+          hx-get="{{ url_for('admin_users') }}"
+          hx-trigger="keyup changed delay:50ms from:#search-input, change from:#role-select"
+          hx-target="#users-table-body"
+          hx-push-url="true"
+          hx-indicator="#htmx-indicator">
+        <div class="flex flex-col sm:flex-row items-center gap-4">
+            <div class="flex-grow">
+                <label for="search-input" class="sr-only">Search</label>
+                <input type="search" id="search-input" name="q" value="{{ search_query or '' }}" placeholder="Search by name or email..." class="input-style w-full">
+            </div>
+            <div class="flex-shrink-0">
+                <label for="role-select" class="sr-only">Role</label>
+                <select id="role-select" name="role" class="input-style w-full sm:w-auto">
+                    <option value="" {% if not role_filter %}selected{% endif %}>All Roles</option>
+                    <option value="student" {% if role_filter == 'student' %}selected{% endif %}>Student</option>
+                    <option value="staff" {% if role_filter == 'staff' %}selected{% endif %}>Staff</option>
+                    <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+                </select>
+            </div>
+            <span id="htmx-indicator" class="htmx-indicator">
+                <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </span>
+        </div>
+    </form>
+
     <div class="overflow-x-auto">
         <table class="w-full min-w-max">
             <thead class="bg-slate-50 dark:bg-slate-700">
@@ -20,73 +48,9 @@
                     <th class="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-                <!-- Add User Row -->
-                <tr class="bg-slate-100 dark:bg-slate-900/50" id="add-user-row">
-                    <td class="p-2 align-top">
-                        <div class="space-y-1">
-                            <input type="text" id="new-first-name" placeholder="First Name" required class="input-style">
-                            <input type="text" id="new-last-name" placeholder="Last Name" required class="input-style">
-                        </div>
-                    </td>
-                    <td class="p-2 align-top"><input type="email" id="new-email" placeholder="email@example.com" required class="input-style"></td>
-                    <td class="p-2 align-top">
-                        <select id="new-role" class="input-style">
-                            <option value="student">Student</option>
-                            <option value="staff">Staff</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </td>
-                    <td class="p-2 align-top"><input type="number" step="0.01" id="new-balance" value="0.00" class="input-style text-right"></td>
-                    <td class="p-2 align-top"><input type="password" id="new-password" placeholder="New Password" required class="input-style"></td>
-                    <td class="p-2 align-top text-center">
-                        <button type="button"
-                                onclick="addUser()"
-                                class="button-primary w-full">
-                            Add
-                        </button>
-                    </td>
-                </tr>
-
-                <!-- Existing Users -->
-                {% for u in users %}
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ u.first_name }} {{ u.last_name }}</div>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="text-sm text-slate-600 dark:text-slate-400">{{ u.email }}</div>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                            {% if u.role == 'admin' %} bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200
-                            {% elif u.role == 'staff' %} bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200
-                            {% else %} bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 {% endif %}">
-                            {{ u.role|capitalize }}
-                        </span>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-right">
-                        <div class="text-sm font-medium text-green-600 dark:text-green-400">${{ "%.2f"|format(u.balance) }}</div>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                        {{ u.created_at.strftime('%Y-%m-%d') if u.created_at else 'N/A' }}
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-center">
-                        <button type="button" 
-                                hx-delete="/api/v1/user/{{ u.user_id }}"
-                                hx-confirm="Are you sure you want to delete the user '{{ u.email }}'?"
-                                hx-target="closest tr"
-                                hx-swap="outerHTML swap:0.5s"
-                                class="button-danger">
-                            Delete
-                        </button>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="6" class="text-center py-8 text-slate-500">No users found.</td>
-                </tr>
-                {% endfor %}
+            <!-- The target for HTMX swaps -->
+            <tbody id="users-table-body" class="divide-y divide-slate-200 dark:divide-slate-700">
+                {% include 'admin/partials/users_table_body.html' %}
             </tbody>
         </table>
     </div>
@@ -94,7 +58,6 @@
 
 <script>
 function addUser() {
-    // Get values from input fields
     const firstName = document.getElementById('new-first-name').value.trim();
     const lastName = document.getElementById('new-last-name').value.trim();
     const email = document.getElementById('new-email').value.trim();
@@ -102,13 +65,11 @@ function addUser() {
     const balance = parseFloat(document.getElementById('new-balance').value) || 0;
     const password = document.getElementById('new-password').value;
 
-    // Validate required fields
     if (!firstName || !lastName || !email || !password) {
         alert('Please fill in all required fields (First Name, Last Name, Email, and Password).');
         return;
     }
 
-    // Prepare the data
     const userData = {
         first_name: firstName,
         last_name: lastName,
@@ -118,27 +79,30 @@ function addUser() {
         password: password
     };
 
-    // Send the request
     fetch('/api/v1/user', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
     })
-    .then(response => response.json().then(data => ({status: response.status, body: data})))
-    .then(result => {
-        if (result.status === 201) {
-            // Success - reload the page to show the new user
-            window.location.reload();
-        } else {
-            // Error - show the error message
-            alert(result.body.error || 'An error occurred while creating the user.');
-        }
+    .then(response => {
+        if (response.ok) return response.json();
+        return response.json().then(err => { throw new Error(err.error || 'API Error'); });
+    })
+    .then(data => {
+        // Success: clear inputs and trigger HTMX refresh of the table
+        document.getElementById('new-first-name').value = '';
+        document.getElementById('new-last-name').value = '';
+        document.getElementById('new-email').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('new-balance').value = '0.00';
+        document.getElementById('new-role').value = 'student';
+        
+        // Trigger the filter form to refresh the table content
+        htmx.trigger('#user-filter-form', 'change');
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An unexpected error occurred. Please try again.');
+        alert('An error occurred while creating the user: ' + error.message);
     });
 }
 
