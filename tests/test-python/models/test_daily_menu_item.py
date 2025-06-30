@@ -43,3 +43,25 @@ def test_delete_menu_item(app):
         id_ = item.menu_item_id
         assert item.delete_menu_item()
         assert DailyMenuItem.get_by_id(id_) is None
+
+def test_update_menu_item_with_no_data(app):
+    with app.app_context():
+        caf = Cafeteria.create_cafeteria("DMI4")
+        dish = Dish.create_dish("D4", "", 1, "main_course")
+        menu = DailyMenu.create_menu(caf.cafeteria_id, date.today())
+        db.session.commit()
+        item = DailyMenuItem.create_menu_item(menu.menu_id, dish.dish_id, "main_course")
+        db.session.commit()
+        assert item.update_menu_item() is False
+
+def test_get_all_menu_items_as_dicts(app):
+    with app.app_context():
+        db.session.query(DailyMenuItem).delete()
+        caf = Cafeteria.create_cafeteria("DMI5")
+        dish = Dish.create_dish("D5", "", 1, "main_course")
+        menu = DailyMenu.create_menu(caf.cafeteria_id, date.today())
+        db.session.commit()
+        DailyMenuItem.create_menu_item(menu.menu_id, dish.dish_id, "main_course")
+        db.session.commit()
+        items = DailyMenuItem.get_all_dicts()
+        assert len(items) == 1

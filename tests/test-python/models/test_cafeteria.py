@@ -36,3 +36,10 @@ def test_delete_cafeteria(app):
         id_ = cafeteria.cafeteria_id
         assert cafeteria.delete_cafeteria()
         assert Cafeteria.get_by_id(id_) is None
+
+def test_update_cafeteria_with_no_data(app):
+    """Teste que l'appel à update_cafeteria sans données renvoie False."""
+    with app.app_context():
+        caf = Cafeteria.create_cafeteria("No Update")
+        db.session.commit()
+        assert caf.update_cafeteria() is False
