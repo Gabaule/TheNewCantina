@@ -8,7 +8,7 @@ class Dish(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     dine_in_price = db.Column(db.Numeric(10,2), nullable=False)
-    dish_type = db.Column(db.String(20), nullable=False)  # ('main_course', 'side_dish', 'soup', 'drink')
+    dish_type = db.Column(db.String(20), nullable=False)  # ('main_course', 'side_dish', 'soup', 'drink', 'dessert')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

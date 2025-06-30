@@ -41,7 +41,7 @@ CREATE TABLE dish (
     description     TEXT,
     dine_in_price   NUMERIC(10,2) NOT NULL CHECK (dine_in_price >= 0),
     dish_type       VARCHAR(20) NOT NULL CHECK (
-        dish_type IN ('main_course', 'side_dish', 'soup', 'drink')
+        dish_type IN ('main_course', 'side_dish', 'soup', 'dessert', 'drink')
     ),
     created_at      TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -64,7 +64,7 @@ CREATE TABLE daily_menu_item (
     menu_id       INT NOT NULL REFERENCES daily_menu(menu_id) ON DELETE CASCADE,
     dish_id       INT NOT NULL REFERENCES dish(dish_id),
     dish_role     VARCHAR(20) NOT NULL CHECK (
-        dish_role IN ('main_course', 'side_dish', 'soup', 'drink')
+        dish_role IN ('main_course', 'side_dish', 'soup', 'dessert', 'drink')
     ),
     display_order INT DEFAULT 1
 );

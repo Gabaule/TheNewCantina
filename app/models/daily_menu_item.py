@@ -7,7 +7,7 @@ class DailyMenuItem(db.Model):
     menu_item_id = db.Column(db.Integer, primary_key=True)
     menu_id = db.Column(db.Integer, db.ForeignKey('daily_menu.menu_id'), nullable=False)
     dish_id = db.Column(db.Integer, db.ForeignKey('dish.dish_id'), nullable=False)
-    dish_role = db.Column(db.String(20), nullable=False)  # e.g. 'main_course', 'side_dish', 'soup', 'drink'
+    dish_role = db.Column(db.String(20), nullable=False)  # e.g. 'main_course', 'side_dish', 'soup', 'drink', 'dessert'
     display_order = db.Column(db.Integer, default=1)
 
     # Relationships (if you want to access the menu or dish from this item)
