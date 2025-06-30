@@ -27,7 +27,7 @@
                         <div class="flex items-center space-x-4">
                             <div class="text-right">
                                 <span class="text-sm font-medium">{{ user.first_name }} {{ user.last_name }} ({{ user.role }})</span>
-                                <div class="text-xs text-green-600 dark:text-green-400 font-medium">Balance: ${{ "%.2f"|format(user.balance) }}</div>
+                                <div id="header-balance" class="text-xs text-green-600 dark:text-green-400 font-medium">Balance: ${{ "%.2f"|format(user.balance) }}</div>
                             </div>
                             <a href="{{ url_for('logout') }}" class="text-sm text-blue-600 hover:text-blue-800 hidden md:block">Logout</a>
                         </div>

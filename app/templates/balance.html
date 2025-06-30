@@ -2,6 +2,11 @@
 {% block title %}Account Balance - University Meal Ordering{% endblock %}
 
 {% block main_content %}
+{# Out-of-band swap for header balance. Rendered only on successful POST. #}
+{% if request.method == 'POST' and success_msg %}
+<div id="header-balance" hx-swap-oob="true" class="text-xs text-green-600 dark:text-green-400 font-medium">Balance: ${{ "%.2f"|format(user.balance) }}</div>
+{% endif %}
+
 <div id="balance-content" class="max-w-3xl mx-auto space-y-8">
     <!-- Page Header -->
     <div>
