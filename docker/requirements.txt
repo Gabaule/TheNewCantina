@@ -5,3 +5,4 @@ Flask-SQLAlchemy
 Flask-Login
 pytest
 requests
+pytest-cov
