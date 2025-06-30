@@ -2,10 +2,12 @@
 
 from flask import Blueprint, request, jsonify, session
 from decimal import Decimal
-from models.app_user import AppUser
-from models import db
-from .auth import admin_required, api_require_login # Import api_require_login
 from sqlalchemy.exc import IntegrityError
+
+# IMPORTS ABSOLUS OBLIGATOIRES :
+from app.models.app_user import AppUser
+from app.models import db
+from app.controller.auth import admin_required, api_require_login
 
 user_bp = Blueprint('user_bp', __name__, url_prefix='/api/v1/user')
 

@@ -2,7 +2,7 @@
 
 from functools import wraps
 from flask import session, jsonify, redirect, url_for, flash
-from models import AppUser
+from app.models import AppUser
 
 def get_current_user():
     """Helper to get the currently logged-in user object from session."""

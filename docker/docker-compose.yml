@@ -1,25 +1,21 @@
 services:
   postgres-db:
     image: postgres:16-alpine
-    container_name: postgres-db
-    restart: unless-stopped
     environment:
       POSTGRES_DB: TheNewCantina
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
-      TZ: Europe/Paris
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../db-init/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d TheNewCantina"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 6
 
-    # Datas access from the host
-    volumes:
-      - ../db-init/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ../docker-data/postgres:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -46,3 +42,6 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+
+volumes:
+  pgdata:

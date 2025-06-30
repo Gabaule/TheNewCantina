@@ -5,7 +5,7 @@ from datetime import date, datetime
 # Add parent directory to path to allow model imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from models import (
+from app.models import (
     db, AppUser, Cafeteria, Dish, DailyMenu, DailyMenuItem, Reservation, OrderItem
 )
 
@@ -28,16 +28,45 @@ def populate_database_if_empty():
         ]
         cafeterias = [Cafeteria.create_cafeteria(name=name) for name in cafeterias_names]
         nova_menza = next((c for c in cafeterias if c.name == 'Nová Menza'), cafeterias[0])
-        
-        # Create Dishes
+            
+            # Create Dishes
         dishes_data = [
-            {'name': 'Polievka Zeleninová s mrveničkou', 'description': 'Alergény: lepok, vajcia, zeler', 'dine_in_price': 0.00, 'dish_type': 'soup'},
-            {'name': 'Prírodné kuracie prsia s opraženou slaninkou, ryža, mrkvový šalát', 'description': 'Alergény: zeler', 'dine_in_price': 3.60, 'dish_type': 'main_course'},
-            {'name': 'Pastierske bravčové stehno, pučené zemiaky, obloha', 'description': 'Alergény: lepok, mlieko, zeler', 'dine_in_price': 3.60, 'dish_type': 'main_course'},
-            {'name': 'Zapekané zemiaky so zeleninou, cviklou a syrom, obloha', 'description': 'Alergény: lepok, mlieko, zeler', 'dine_in_price': 3.60, 'dish_type': 'main_course'},
-            {'name': 'Pizza Prosciutto, suchá saláma, olivy, cibuľa, syr', 'description': 'Alergény: lepok, mlieko', 'dine_in_price': 3.90, 'dish_type': 'main_course'},
-            {'name': 'Bageta plnená', 'description': 'Alergény: lepok, vajcia, mlieko, horčica', 'dine_in_price': 1.50, 'dish_type': 'main_course'}
+            # Soups
+            {"name": "Vegetable Soup with Vermicelli", "description": "Allergens: gluten, egg, celery", "dine_in_price": 0.00, "dish_type": "soup"},
+            {"name": "Lentil Soup", "description": "Allergens: celery", "dine_in_price": 0.00, "dish_type": "soup"},
+            {"name": "Tomato Cream Soup", "description": "Allergens: milk, celery", "dine_in_price": 0.00, "dish_type": "soup"},
+
+            # Main Courses
+            {"name": "Grilled Chicken Breast with Bacon, Rice, Carrot Salad", "description": "Allergens: celery", "dine_in_price": 3.60, "dish_type": "main_course"},
+            {"name": "Shepherd's Pork Leg, Mashed Potatoes, Garnish", "description": "Allergens: gluten, milk, celery", "dine_in_price": 3.60, "dish_type": "main_course"},
+            {"name": "Baked Potatoes with Vegetables, Beetroot and Cheese, Garnish", "description": "Allergens: gluten, milk, celery", "dine_in_price": 3.60, "dish_type": "main_course"},
+            {"name": "Pizza Prosciutto, Salami, Olives, Onion, Cheese", "description": "Allergens: gluten, milk", "dine_in_price": 3.90, "dish_type": "main_course"},
+            {"name": "Stuffed Baguette", "description": "Allergens: gluten, egg, milk, mustard", "dine_in_price": 1.50, "dish_type": "main_course"},
+            {"name": "Fried Cheese with French Fries and Tartar Sauce", "description": "Allergens: milk, egg, gluten", "dine_in_price": 3.90, "dish_type": "main_course"},
+            {"name": "Spaghetti Carbonara", "description": "Allergens: gluten, milk, egg", "dine_in_price": 3.80, "dish_type": "main_course"},
+            {"name": "Roast Duck with Red Cabbage and Dumplings", "description": "Allergens: egg, gluten, milk", "dine_in_price": 4.20, "dish_type": "main_course"},
+            {"name": "Chicken Caesar Salad", "description": "Allergens: egg, milk, fish, gluten", "dine_in_price": 3.50, "dish_type": "main_course"},
+
+            # Sides
+            {"name": "French Fries", "description": "Allergens: gluten", "dine_in_price": 1.50, "dish_type": "side_dish"},
+            {"name": "Steamed Rice", "description": "", "dine_in_price": 1.20, "dish_type": "side_dish"},
+            {"name": "Mashed Potatoes", "description": "Allergens: milk", "dine_in_price": 1.20, "dish_type": "side_dish"},
+            {"name": "Boiled Potatoes", "description": "", "dine_in_price": 1.00, "dish_type": "side_dish"},
+            {"name": "Grilled Vegetables", "description": "", "dine_in_price": 1.70, "dish_type": "side_dish"},
+            {"name": "Coleslaw Salad", "description": "Allergens: egg, mustard", "dine_in_price": 1.00, "dish_type": "side_dish"},
+            {"name": "Bread Roll", "description": "Allergens: gluten", "dine_in_price": 0.40, "dish_type": "side_dish"},
+
+            # Desserts
+            {"name": "Apple Pie", "description": "Allergens: egg, milk, gluten", "dine_in_price": 1.70, "dish_type": "main_course"},
+            {"name": "Pancakes with Jam", "description": "Allergens: gluten, egg, milk", "dine_in_price": 1.70, "dish_type": "main_course"},
+
+            # Drinks
+            {"name": "Mineral Water", "description": "", "dine_in_price": 0.70, "dish_type": "drink"},
+            {"name": "Orange Juice", "description": "", "dine_in_price": 1.20, "dish_type": "drink"},
+            {"name": "Apple Juice", "description": "", "dine_in_price": 1.20, "dish_type": "drink"},
+            {"name": "Cola", "description": "", "dine_in_price": 1.20, "dish_type": "drink"}
         ]
+
         dishes = [Dish.create_from_dict(d) for d in dishes_data]
         db.session.add_all(dishes)
         
@@ -59,12 +88,14 @@ def populate_database_if_empty():
         main_menu = DailyMenu.create_menu(cafeteria_id=nova_menza.cafeteria_id, menu_date=menu_date)
         db.session.commit() # Commit to get menu_id
         
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Polievka Zeleninová s mrveničkou'].dish_id, dish_role='soup', display_order=0)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Prírodné kuracie prsia s opraženou slaninkou, ryža, mrkvový šalát'].dish_id, dish_role='main_course', display_order=1)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Pastierske bravčové stehno, pučené zemiaky, obloha'].dish_id, dish_role='main_course', display_order=2)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Zapekané zemiaky so zeleninou, cviklou a syrom, obloha'].dish_id, dish_role='main_course', display_order=3)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Pizza Prosciutto, suchá saláma, olivy, cibuľa, syr'].dish_id, dish_role='main_course', display_order=5)
-        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Bageta plnená'].dish_id, dish_role='main_course', display_order=8)
+        # Après dish_map = {d.name: d for d in Dish.query.all()}
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Vegetable Soup with Vermicelli'].dish_id, dish_role='soup', display_order=0)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Grilled Chicken Breast with Bacon, Rice, Carrot Salad'].dish_id, dish_role='main_course', display_order=1)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map["Shepherd's Pork Leg, Mashed Potatoes, Garnish"].dish_id, dish_role='main_course', display_order=2)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Baked Potatoes with Vegetables, Beetroot and Cheese, Garnish'].dish_id, dish_role='main_course', display_order=3)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Pizza Prosciutto, Salami, Olives, Onion, Cheese'].dish_id, dish_role='main_course', display_order=5)
+        DailyMenuItem.create_menu_item(menu_id=main_menu.menu_id, dish_id=dish_map['Stuffed Baguette'].dish_id, dish_role='main_course', display_order=8)
+
         
         db.session.commit()
         print(f"  - Menu for {menu_date} at '{nova_menza.name}' created successfully.")

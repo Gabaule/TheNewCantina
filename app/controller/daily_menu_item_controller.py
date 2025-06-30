@@ -1,9 +1,9 @@
 # app/controller/daily_menu_item_controller.py
 
 from flask import Blueprint, request, jsonify
-from models import db
-from models.daily_menu_item import DailyMenuItem
-from .auth import admin_required, api_require_login
+from app.models import db
+from app.models.daily_menu_item import DailyMenuItem
+from app.controller.auth import admin_required, api_require_login
 
 daily_menu_item_bp = Blueprint('daily_menu_item_bp', __name__, url_prefix='/api/v1/daily-menu-item')
 

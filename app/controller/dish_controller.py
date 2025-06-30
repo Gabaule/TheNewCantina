@@ -1,10 +1,10 @@
 from flask import Blueprint, request, jsonify, session
 from functools import wraps
 from sqlalchemy.exc import IntegrityError
-from models.dish import Dish
-from models.app_user import AppUser
-from models import db
-from .auth import admin_required, api_require_login
+from app.models.dish import Dish
+from app.models.app_user import AppUser
+from app.models import db
+from app.controller.auth import admin_required, api_require_login
 
 dish_bp = Blueprint('dish_bp', __name__, url_prefix='/api/v1/dish')
 

@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify, session
 from functools import wraps
-from models.cafeteria import Cafeteria
-from models.app_user import AppUser
-from models import db
-from .auth import admin_required, api_require_login
+from app.models.cafeteria import Cafeteria       # Correction ici
+from app.models.app_user import AppUser          # Correction ici
+from app.models import db                        # Correction ici
+from app.controller.auth import admin_required, api_require_login   # Correction ici
 from sqlalchemy.exc import IntegrityError
 
 
