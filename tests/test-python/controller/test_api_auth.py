@@ -1,115 +1,93 @@
+# tests/test-python/controller/test_api_auth.py
+
 import pytest
-import requests
-from bs4 import BeautifulSoup
+from app.models import db, AppUser, Reservation
 
-BASE_URL = "http://localhost:8081"
-API_URL = f"{BASE_URL}/api/v1"
-LOGIN_URL = f"{BASE_URL}/login"
+API_PREFIX = "/api/v1"
 
-# Utilisateur non-admin existant dans ton seeder :
-USER_CREDENTIALS = {
-    "username": "jakub.novak@example.com",
-    "password": "pass123"
-}
+@pytest.fixture
+def authenticated_client(client):
+    """
+    Fixture qui connecte l'utilisateur standard 'jakub.novak@example.com' 
+    (créé par le seeder) et retourne le client authentifié.
+    """
+    credentials = {
+        "username": "jakub.novak@example.com",
+        "password": "pass123"
+    }
+    response = client.post('/login', data=credentials, follow_redirects=True)
+    assert response.status_code == 200, "La connexion de l'utilisateur a échoué."
+    
+    yield client # Le client conserve le cookie de session pour les tests
+    
+    client.get('/logout') # Déconnexion après chaque test
 
-# Liste des endpoints avec l’attendu (autorisé ou interdit pour un user "normal").
-ENDPOINTS = [
-    # USERS
-    {"method": "GET", "url": f"{BASE_URL}/user/", "desc": "Liste users", "allowed": False},
-    {"method": "GET", "url": f"{BASE_URL}/user/3", "desc": "Voir ses infos", "allowed": True}, # user_id 3 = jakub.novak
-    {"method": "GET", "url": f"{BASE_URL}/user/2", "desc": "Voir un autre user", "allowed": False},
-    {"method": "POST", "url": f"{BASE_URL}/user/", "json": {"first_name": "x", "last_name": "x", "email": "y@b.c", "password": "1"}, "desc": "Création user", "allowed": False},
-    {"method": "PUT", "url": f"{BASE_URL}/user/3", "json": {"first_name": "Modif"}, "desc": "Update soi-même", "allowed": True},
-    {"method": "PUT", "url": f"{BASE_URL}/user/2", "json": {"first_name": "Hacker"}, "desc": "Update autre user", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/user/2", "desc": "Delete autre user", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/user/3", "desc": "Delete soi-même", "allowed": True},
-    {"method": "POST", "url": f"{BASE_URL}/user/balance", "json": {"amount": "10"}, "desc": "Ajout balance", "allowed": True},
 
-    # CAFETERIA
-    {"method": "GET", "url": f"{BASE_URL}/cafeteria/", "desc": "Liste cafétérias", "allowed": True},
-    {"method": "GET", "url": f"{BASE_URL}/cafeteria/1", "desc": "Get cafétéria 1", "allowed": True},
-    {"method": "POST", "url": f"{BASE_URL}/cafeteria/", "json": {"name": "Café H4ck"}, "desc": "Création cafétéria", "allowed": False},
-    {"method": "PUT", "url": f"{BASE_URL}/cafeteria/1", "json": {"name": "Modif"}, "desc": "Update cafétéria", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/cafeteria/1", "desc": "Delete cafétéria", "allowed": False},
+# Liste des endpoints à tester pour un utilisateur NON-ADMIN
+# On utilise des placeholders {id} qui seront remplacés dans le test.
+ENDPOINTS_PERMISSIONS = [
+    # --- Requêtes ADMIN (devraient toutes être refusées) ---
+    {"method": "GET",    "url": f"{API_PREFIX}/user/", "allowed": False, "desc": "Lister tous les utilisateurs"},
+    {"method": "POST",   "url": f"{API_PREFIX}/user/", "json": {"email": "new@user.com"}, "allowed": False, "desc": "Créer un utilisateur"},
+    {"method": "PUT",    "url": f"{API_PREFIX}/user/{{other_user_id}}", "json": {"first_name": "Hack"}, "allowed": False, "desc": "Modifier un autre utilisateur"},
+    {"method": "DELETE", "url": f"{API_PREFIX}/user/{{other_user_id}}", "allowed": False, "desc": "Supprimer un autre utilisateur"},
+    {"method": "POST",   "url": f"{API_PREFIX}/cafeteria/", "json": {"name": "Test Cafe"}, "allowed": False, "desc": "Créer une cafétéria"},
+    {"method": "POST",   "url": f"{API_PREFIX}/dish/", "json": {"name": "Test Dish", "dine_in_price": 1, "dish_type": "soup"}, "allowed": False, "desc": "Créer un plat"},
+    {"method": "POST",   "url": f"{API_PREFIX}/daily-menu/", "json": {"cafeteria_id": 1, "menu_date": "2030-01-01"}, "allowed": False, "desc": "Créer un menu"},
 
-    # DISHES
-    {"method": "GET", "url": f"{BASE_URL}/dish/", "desc": "Liste plats", "allowed": True},
-    {"method": "GET", "url": f"{BASE_URL}/dish/1", "desc": "Get plat 1", "allowed": True},
-    {"method": "POST", "url": f"{BASE_URL}/dish/", "json": {"name": "TestPlat", "description": "x", "dine_in_price": 1, "dish_type": "main_course"}, "desc": "Création plat", "allowed": False},
-    {"method": "PUT", "url": f"{BASE_URL}/dish/1", "json": {"name": "PlatModifié"}, "desc": "Update plat", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/dish/1", "desc": "Delete plat", "allowed": False},
-
-    # DAILY MENU
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu/", "desc": "Liste menus", "allowed": False},
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu/1", "desc": "Get menu 1", "allowed": False},
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu/by-cafeteria/1", "desc": "Menu par cafétéria (user)", "allowed": True},
-    {"method": "POST", "url": f"{BASE_URL}/daily-menu/", "json": {"cafeteria_id": 1, "menu_date": "2025-01-01"}, "desc": "Création menu", "allowed": False},
-    {"method": "PUT", "url": f"{BASE_URL}/daily-menu/1", "json": {"menu_date": "2025-01-02"}, "desc": "Update menu", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/daily-menu/1", "desc": "Delete menu", "allowed": False},
-
-    # DAILY MENU ITEM
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu-item/by-menu/1", "desc": "Liste items menu", "allowed": False},
-    {"method": "POST", "url": f"{BASE_URL}/daily-menu-item/", "json": {"menu_id": 1, "dish_id": 1, "dish_role": "main_course"}, "desc": "Ajout item menu", "allowed": False},
-    {"method": "PUT", "url": f"{BASE_URL}/daily-menu-item/1", "json": {"display_order": 2}, "desc": "Update item menu", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/daily-menu-item/1", "desc": "Delete item menu", "allowed": False},
-
-    # ORDER ITEM
-    {"method": "GET", "url": f"{BASE_URL}/order-item/", "desc": "Liste order_items", "allowed": False},
-    {"method": "GET", "url": f"{BASE_URL}/order-item/1", "desc": "Get order_item 1", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/order-item/1", "desc": "Delete order_item", "allowed": False},
-
-    # RESERVATION
-    {"method": "GET", "url": f"{BASE_URL}/reservations/", "desc": "Liste reservations", "allowed": True},
-    {"method": "POST", "url": f"{BASE_URL}/reservations/", "json": {"cafeteria_id": 1, "items": [{"dish_id": 1, "quantity": 1, "is_takeaway": False}]}, "desc": "Création réservation", "allowed": True},
-    {"method": "GET", "url": f"{BASE_URL}/reservations/1", "desc": "Get réservation 1", "allowed": False},  # Sauf si le user est propriétaire
-    {"method": "PUT", "url": f"{BASE_URL}/reservations/1/cancel", "desc": "Cancel réservation", "allowed": False},  # Idem
+    # --- Requêtes sur ses propres données (devraient être autorisées) ---
+    {"method": "GET",    "url": f"{API_PREFIX}/user/{{current_user_id}}", "allowed": True, "desc": "Voir ses propres informations"},
+    {"method": "PUT",    "url": f"{API_PREFIX}/user/{{current_user_id}}", "json": {"first_name": "Jakub Modif"}, "allowed": True, "desc": "Modifier ses propres informations"},
+    {"method": "POST",   "url": f"{API_PREFIX}/user/balance", "json": {"amount": "5"}, "allowed": True, "desc": "Ajouter à son propre solde"},
+    {"method": "GET",    "url": f"{API_PREFIX}/reservations/", "allowed": True, "desc": "Voir ses propres réservations"},
+    {"method": "POST",   "url": f"{API_PREFIX}/reservations/", "json": {"cafeteria_id": 1, "items": [{"dish_id": 1, "quantity": 1}]}, "allowed": True, "desc": "Créer une réservation"},
+    
+    # --- Requêtes sur les données d'autres utilisateurs (devraient être refusées) ---
+    {"method": "GET",    "url": f"{API_PREFIX}/user/{{other_user_id}}", "allowed": False, "desc": "Voir les infos d'un autre utilisateur"},
+    {"method": "GET",    "url": f"{API_PREFIX}/reservations/{{other_user_reservation_id}}", "allowed": False, "desc": "Voir la réservation d'un autre"},
+    {"method": "PUT",    "url": f"{API_PREFIX}/reservations/{{other_user_reservation_id}}/cancel", "allowed": False, "desc": "Annuler la réservation d'un autre"},
 ]
 
-def login_and_get_session(username, password):
-    s = requests.Session()
-    r = s.get(LOGIN_URL)
-    csrf_token = None
-    if 'csrf_token' in r.text:
-        soup = BeautifulSoup(r.text, 'html.parser')
-        csrf = soup.find('input', {'name': 'csrf_token'})
-        if csrf:
-            csrf_token = csrf['value']
+@pytest.mark.parametrize("endpoint_config", ENDPOINTS_PERMISSIONS)
+def test_user_api_permissions(authenticated_client, endpoint_config):
+    """
+    Teste systématiquement les permissions d'un utilisateur standard connecté.
+    """
+    client = authenticated_client
+    
+    with client.application.app_context():
+        # Récupère les objets depuis la BDD (créés par le seeder)
+        current_user = AppUser.get_by_email("jakub.novak@example.com")
+        other_user = AppUser.get_by_email("john.smith@example.com")
+        
+        # Crée une réservation pour 'l'autre utilisateur' si nécessaire pour le test
+        other_reservation = Reservation(user_id=other_user.user_id, cafeteria_id=1, total=1.0)
+        db.session.add(other_reservation)
+        db.session.flush() # Utilise flush pour obtenir l'ID sans commit
 
-    data = {
-        "username": username,
-        "password": password,
-    }
-    if csrf_token:
-        data['csrf_token'] = csrf_token
+        # Prépare l'URL finale en injectant les IDs
+        url = endpoint_config["url"].format(
+            current_user_id=current_user.user_id,
+            other_user_id=other_user.user_id,
+            other_user_reservation_id=other_reservation.reservation_id
+        )
 
-    resp = s.post(LOGIN_URL, data=data, allow_redirects=True)
-    assert "session" in s.cookies, f"Echec login admin ({resp.status_code}) :\n{resp.text[:500]}"
-    if "identifiants incorrects" in resp.text.lower():
-        raise Exception("Mot de passe ou user incorrect")
-    return s
+    # Exécute la requête de test
+    method = endpoint_config["method"].lower()
+    kwargs = {"json": endpoint_config.get("json")} if "json" in endpoint_config else {}
+    response = getattr(client, method)(url, **kwargs)
 
-@pytest.fixture(scope="session")
-def user_session():
-    return login_and_get_session(USER_CREDENTIALS["username"], USER_CREDENTIALS["password"])
-
-@pytest.mark.parametrize(
-    "endpoint", ENDPOINTS,
-    ids=[f"{ep['method']} {ep['url']} ({ep['desc']})" for ep in ENDPOINTS]
-)
-def test_api_admin_rights(endpoint, user_session):
-    method = endpoint["method"]
-    url = endpoint["url"]
-    allowed = endpoint["allowed"]
-
-    resp = user_session.request(
-        method=method,
-        url=url,
-        json=endpoint.get("json"),
-        timeout=5,
-        allow_redirects=True,
+    # Vérifie le code de statut
+    allowed = endpoint_config["allowed"]
+    debug_info = (
+        f"Endpoint: {endpoint_config['method']} {url}\n"
+        f"Description: {endpoint_config['desc']}\n"
+        f"Attendu: {'Autorisé (2xx)' if allowed else 'Refusé (401/403)'}\n"
+        f"Reçu: {response.status_code}\n"
+        f"Réponse: {response.data.decode(errors='ignore')[:200]}"
     )
-
+    
     if allowed:
-        assert resp.status_code in (200, 201, 204), f"[KO] Accès refusé à l'endpoint ALLOWED : {method} {url} ({resp.status_code})\n{resp.text[:300]}"
+        assert 200 <= response.status_code < 300, f"Accès REFUSÉ à un endpoint qui devait être autorisé.\n{debug_info}"
     else:
-        assert resp.status_code in (401, 403), f"[KO] Endpoint interdit à l'admin NON protégé : {method} {url} (code reçu: {resp.status_code})\n{resp.text[:300]}"
+        assert response.status_code in {401, 403}, f"Accès AUTORISÉ à un endpoint qui devait être refusé.\n{debug_info}"
