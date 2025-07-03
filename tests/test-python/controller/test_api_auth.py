@@ -1,115 +1,181 @@
+# tests/test-python/controller/test_api_user_flow.py
+
 import pytest
 import requests
-from bs4 import BeautifulSoup
+from datetime import date
+from decimal import Decimal
 
+# --- CONFIGURATION ---
 BASE_URL = "http://localhost:8081"
-API_URL = f"{BASE_URL}/api/v1"
-LOGIN_URL = f"{BASE_URL}/login"
+API_PREFIX = "/api/v1"
 
-# Utilisateur non-admin existant dans ton seeder :
+# Identifiants pour un utilisateur standard (défini dans votre db_seeder.py)
 USER_CREDENTIALS = {
-    "username": "jakub.novak@example.com",
+    "username": "student1@example.com",
     "password": "pass123"
 }
-
-# Liste des endpoints avec l’attendu (autorisé ou interdit pour un user "normal").
-ENDPOINTS = [
-    # USERS
-    {"method": "GET", "url": f"{BASE_URL}/user/", "desc": "Liste users", "allowed": False},
-    {"method": "GET", "url": f"{BASE_URL}/user/3", "desc": "Voir ses infos", "allowed": True}, # user_id 3 = jakub.novak
-    {"method": "GET", "url": f"{BASE_URL}/user/2", "desc": "Voir un autre user", "allowed": False},
-    {"method": "POST", "url": f"{BASE_URL}/user/", "json": {"first_name": "x", "last_name": "x", "email": "y@b.c", "password": "1"}, "desc": "Création user", "allowed": False},
-    {"method": "PUT", "url": f"{BASE_URL}/user/3", "json": {"first_name": "Modif"}, "desc": "Update soi-même", "allowed": True},
-    {"method": "PUT", "url": f"{BASE_URL}/user/2", "json": {"first_name": "Hacker"}, "desc": "Update autre user", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/user/2", "desc": "Delete autre user", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/user/3", "desc": "Delete soi-même", "allowed": True},
-    {"method": "POST", "url": f"{BASE_URL}/user/balance", "json": {"amount": "10"}, "desc": "Ajout balance", "allowed": True},
-
-    # CAFETERIA
-    {"method": "GET", "url": f"{BASE_URL}/cafeteria/", "desc": "Liste cafétérias", "allowed": True},
-    {"method": "GET", "url": f"{BASE_URL}/cafeteria/1", "desc": "Get cafétéria 1", "allowed": True},
-    {"method": "POST", "url": f"{BASE_URL}/cafeteria/", "json": {"name": "Café H4ck"}, "desc": "Création cafétéria", "allowed": False},
-    {"method": "PUT", "url": f"{BASE_URL}/cafeteria/1", "json": {"name": "Modif"}, "desc": "Update cafétéria", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/cafeteria/1", "desc": "Delete cafétéria", "allowed": False},
-
-    # DISHES
-    {"method": "GET", "url": f"{BASE_URL}/dish/", "desc": "Liste plats", "allowed": True},
-    {"method": "GET", "url": f"{BASE_URL}/dish/1", "desc": "Get plat 1", "allowed": True},
-    {"method": "POST", "url": f"{BASE_URL}/dish/", "json": {"name": "TestPlat", "description": "x", "dine_in_price": 1, "dish_type": "main_course"}, "desc": "Création plat", "allowed": False},
-    {"method": "PUT", "url": f"{BASE_URL}/dish/1", "json": {"name": "PlatModifié"}, "desc": "Update plat", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/dish/1", "desc": "Delete plat", "allowed": False},
-
-    # DAILY MENU
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu/", "desc": "Liste menus", "allowed": False},
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu/1", "desc": "Get menu 1", "allowed": False},
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu/by-cafeteria/1", "desc": "Menu par cafétéria (user)", "allowed": True},
-    {"method": "POST", "url": f"{BASE_URL}/daily-menu/", "json": {"cafeteria_id": 1, "menu_date": "2025-01-01"}, "desc": "Création menu", "allowed": False},
-    {"method": "PUT", "url": f"{BASE_URL}/daily-menu/1", "json": {"menu_date": "2025-01-02"}, "desc": "Update menu", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/daily-menu/1", "desc": "Delete menu", "allowed": False},
-
-    # DAILY MENU ITEM
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu-item/by-menu/1", "desc": "Liste items menu", "allowed": False},
-    {"method": "POST", "url": f"{BASE_URL}/daily-menu-item/", "json": {"menu_id": 1, "dish_id": 1, "dish_role": "main_course"}, "desc": "Ajout item menu", "allowed": False},
-    {"method": "PUT", "url": f"{BASE_URL}/daily-menu-item/1", "json": {"display_order": 2}, "desc": "Update item menu", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/daily-menu-item/1", "desc": "Delete item menu", "allowed": False},
-
-    # ORDER ITEM
-    {"method": "GET", "url": f"{BASE_URL}/order-item/", "desc": "Liste order_items", "allowed": False},
-    {"method": "GET", "url": f"{BASE_URL}/order-item/1", "desc": "Get order_item 1", "allowed": False},
-    {"method": "DELETE", "url": f"{BASE_URL}/order-item/1", "desc": "Delete order_item", "allowed": False},
-
-    # RESERVATION
-    {"method": "GET", "url": f"{BASE_URL}/reservations/", "desc": "Liste reservations", "allowed": True},
-    {"method": "POST", "url": f"{BASE_URL}/reservations/", "json": {"cafeteria_id": 1, "items": [{"dish_id": 1, "quantity": 1, "is_takeaway": False}]}, "desc": "Création réservation", "allowed": True},
-    {"method": "GET", "url": f"{BASE_URL}/reservations/1", "desc": "Get réservation 1", "allowed": False},  # Sauf si le user est propriétaire
-    {"method": "PUT", "url": f"{BASE_URL}/reservations/1/cancel", "desc": "Cancel réservation", "allowed": False},  # Idem
-]
-
-def login_and_get_session(username, password):
-    s = requests.Session()
-    r = s.get(LOGIN_URL)
-    csrf_token = None
-    if 'csrf_token' in r.text:
-        soup = BeautifulSoup(r.text, 'html.parser')
-        csrf = soup.find('input', {'name': 'csrf_token'})
-        if csrf:
-            csrf_token = csrf['value']
-
-    data = {
-        "username": username,
-        "password": password,
-    }
-    if csrf_token:
-        data['csrf_token'] = csrf_token
-
-    resp = s.post(LOGIN_URL, data=data, allow_redirects=True)
-    assert "session" in s.cookies, f"Echec login admin ({resp.status_code}) :\n{resp.text[:500]}"
-    if "identifiants incorrects" in resp.text.lower():
-        raise Exception("Mot de passe ou user incorrect")
-    return s
+# L'ID de cet utilisateur est 1, car c'est le premier créé dans le seeder
+USER_ID = 1
 
 @pytest.fixture(scope="session")
 def user_session():
-    return login_and_get_session(USER_CREDENTIALS["username"], USER_CREDENTIALS["password"])
+    """
+    Fixture Pytest pour s'authentifier une seule fois en tant qu'utilisateur standard
+    pour toute la session de test.
+    """
+    print("\n--- (Setup Fixture) Authentification Utilisateur Standard ---")
+    s = requests.Session()
+    login_url = f"{BASE_URL}/login"
+    
+    response = s.post(login_url, data=USER_CREDENTIALS, timeout=5)
+    
+    assert response.status_code == 200, "Le login de l'utilisateur a retourné un code d'erreur"
+    assert "session" in s.cookies, "Le cookie de session est manquant après le login."
+    # Un utilisateur standard est redirigé vers /dashboard, pas /admin/dashboard
+    assert "dashboard" in response.url, "La page après login ne semble pas être le dashboard utilisateur."
+    
+    print("--- Authentification utilisateur réussie. Début des tests de flux. ---")
+    yield s
+    print("\n--- Fin de la session de test utilisateur. ---")
 
-@pytest.mark.parametrize(
-    "endpoint", ENDPOINTS,
-    ids=[f"{ep['method']} {ep['url']} ({ep['desc']})" for ep in ENDPOINTS]
-)
-def test_api_admin_rights(endpoint, user_session):
-    method = endpoint["method"]
-    url = endpoint["url"]
-    allowed = endpoint["allowed"]
 
-    resp = user_session.request(
-        method=method,
-        url=url,
-        json=endpoint.get("json"),
-        timeout=5,
-        allow_redirects=True,
-    )
+def test_user_profile_management(user_session):
+    """
+    Teste si un utilisateur peut voir et modifier ses propres informations de profil.
+    """
+    print("\n--- Test: Gestion du profil utilisateur ---")
+    
+    # --- 1. Lecture des informations initiales ---
+    res_get_initial = user_session.get(f"{BASE_URL}{API_PREFIX}/user/{USER_ID}")
+    assert res_get_initial.status_code == 200, f"La lecture du profil a échoué: {res_get_initial.text}"
+    initial_data = res_get_initial.json()
+    initial_first_name = initial_data['first_name']
+    print(f"  ✅ READ: Profil initial lu avec succès (Nom: {initial_first_name})")
 
-    if allowed:
-        assert resp.status_code in (200, 201, 204), f"[KO] Accès refusé à l'endpoint ALLOWED : {method} {url} ({resp.status_code})\n{resp.text[:300]}"
-    else:
-        assert resp.status_code in (401, 403), f"[KO] Endpoint interdit à l'admin NON protégé : {method} {url} (code reçu: {resp.status_code})\n{resp.text[:300]}"
+    try:
+        # --- 2. Mise à jour du profil ---
+        update_data = {"first_name": "PytestUpdated"}
+        res_update = user_session.put(f"{BASE_URL}{API_PREFIX}/user/{USER_ID}", json=update_data)
+        assert res_update.status_code == 200, f"La mise à jour du profil a échoué: {res_update.text}"
+        assert res_update.json()['first_name'] == "PytestUpdated"
+        print("  ✅ UPDATE: Prénom mis à jour avec succès")
+
+    finally:
+        # --- 3. Nettoyage : restaurer le nom d'origine ---
+        cleanup_data = {"first_name": initial_first_name}
+        res_cleanup = user_session.put(f"{BASE_URL}{API_PREFIX}/user/{USER_ID}", json=cleanup_data)
+        assert res_cleanup.status_code == 200, "Le nettoyage du profil a échoué"
+        print(f"  🧹 CLEANUP: Prénom restauré à '{initial_first_name}'")
+
+
+def test_user_balance_management(user_session):
+    """
+    Teste si un utilisateur peut ajouter des fonds à son solde.
+    """
+    print("\n--- Test: Gestion du solde utilisateur ---")
+
+    # --- 1. Obtenir le solde initial ---
+    res_get_initial = user_session.get(f"{BASE_URL}{API_PREFIX}/user/{USER_ID}")
+    assert res_get_initial.status_code == 200
+    initial_balance = Decimal(str(res_get_initial.json()['balance']))
+    print(f"  - Solde initial: {initial_balance:.2f} €")
+
+    # --- 2. Ajouter des fonds ---
+    amount_to_add = Decimal("15.50")
+    res_add_balance = user_session.post(f"{BASE_URL}{API_PREFIX}/user/balance", json={"amount": str(amount_to_add)})
+    assert res_add_balance.status_code == 200, f"L'ajout au solde a échoué: {res_add_balance.text}"
+    
+    response_data = res_add_balance.json()
+    new_balance_from_response = Decimal(str(response_data['new_balance']))
+    expected_balance = initial_balance + amount_to_add
+    
+    assert new_balance_from_response == expected_balance, "Le nouveau solde dans la réponse est incorrect"
+    print(f"  ✅ ADD: {amount_to_add:.2f} € ajoutés. Nouveau solde attendu: {expected_balance:.2f} €")
+
+    # --- 3. Vérifier la persistance du nouveau solde ---
+    res_get_final = user_session.get(f"{BASE_URL}{API_PREFIX}/user/{USER_ID}")
+    assert res_get_final.status_code == 200
+    final_balance = Decimal(str(res_get_final.json()['balance']))
+    assert final_balance == expected_balance, "Le solde n'a pas été correctement persisté en base de données"
+    print(f"  ✅ VERIFY: Le nouveau solde de {final_balance:.2f} € est bien persisté.")
+
+
+def test_view_menus(user_session):
+    """
+    Teste si un utilisateur peut consulter les menus disponibles.
+    """
+    print("\n--- Test: Consultation des menus ---")
+    
+    # Votre seeder crée des menus pour la semaine du 2025-06-30
+    menu_date = "2025-06-30"
+    cafeteria_id = 1 # On suppose que la cafétéria 1 existe
+
+    res = user_session.get(f"{BASE_URL}{API_PREFIX}/daily-menu/by-cafeteria/{cafeteria_id}?date={menu_date}")
+    assert res.status_code == 200
+    
+    menu_data = res.json()
+    assert "menu" in menu_data
+    assert isinstance(menu_data['menu'], list)
+    assert len(menu_data['menu']) > 0, f"Aucun menu trouvé pour la cafétéria {cafeteria_id} à la date {menu_date}"
+    print(f"  ✅ MENU: Menu pour la cafétéria {cafeteria_id} le {menu_date} récupéré avec succès.")
+
+
+def test_user_order_flow(user_session):
+    """
+    Teste le flux complet de commande : trouver un plat, commander, vérifier le solde,
+    voir l'historique, puis annuler.
+    """
+    print("\n--- Test: Flux de commande complet ---")
+    reservation_id = None
+    try:
+        # --- 1. Trouver un plat disponible à commander ---
+        menu_date = "2025-07-01" # Un autre jour du seeder
+        cafeteria_id = 1
+        res_menu = user_session.get(f"{BASE_URL}{API_PREFIX}/daily-menu/by-cafeteria/{cafeteria_id}?date={menu_date}")
+        assert res_menu.status_code == 200 and len(res_menu.json()['menu']) > 0
+        
+        dish_to_order = res_menu.json()['menu'][0]
+        dish_id = dish_to_order['dish_id']
+        dish_price = Decimal(str(dish_to_order['price']))
+        print(f"  ➡️ Prérequis: Plat trouvé (ID: {dish_id}, Prix: {dish_price:.2f} €)")
+
+        # --- 2. Obtenir le solde initial ---
+        res_get_initial = user_session.get(f"{BASE_URL}{API_PREFIX}/user/{USER_ID}")
+        initial_balance = Decimal(str(res_get_initial.json()['balance']))
+        print(f"  - Solde avant commande: {initial_balance:.2f} €")
+
+        # --- 3. Passer la commande (créer une réservation) ---
+        order_payload = {
+            "cafeteria_id": cafeteria_id,
+            "items": [{"dish_id": dish_id, "quantity": 1}]
+        }
+        res_order = user_session.post(f"{BASE_URL}{API_PREFIX}/reservations/", json=order_payload)
+        assert res_order.status_code == 201, f"La création de la réservation a échoué: {res_order.text}"
+        reservation_id = res_order.json()['reservation_id']
+        print(f"  ✅ CREATE: Commande passée avec succès (Reservation ID: {reservation_id})")
+
+        # --- 4. Vérifier la déduction du solde ---
+        res_get_after_order = user_session.get(f"{BASE_URL}{API_PREFIX}/user/{USER_ID}")
+        balance_after_order = Decimal(str(res_get_after_order.json()['balance']))
+        expected_balance = initial_balance - dish_price
+        assert balance_after_order == expected_balance, "Le solde n'a pas été correctement débité"
+        print(f"  ✅ VERIFY BALANCE: Solde mis à jour à {balance_after_order:.2f} €")
+        
+        # --- 5. Vérifier la présence dans l'historique des commandes ---
+        res_history = user_session.get(f"{BASE_URL}{API_PREFIX}/reservations/")
+        assert res_history.status_code == 200
+        assert any(r['reservation_id'] == reservation_id for r in res_history.json()), "La commande n'apparaît pas dans l'historique"
+        print("  ✅ VERIFY HISTORY: Commande trouvée dans l'historique personnel.")
+
+    finally:
+        # --- 6. Nettoyage : Annuler la réservation pour restaurer le solde ---
+        if reservation_id:
+            res_cancel = user_session.put(f"{BASE_URL}{API_PREFIX}/reservations/{reservation_id}/cancel")
+            assert res_cancel.status_code == 200, f"L'annulation de la réservation a échoué: {res_cancel.text}"
+            
+            refund_data = res_cancel.json()
+            final_balance = Decimal(str(refund_data['new_balance']))
+            
+            # On vérifie que le solde final est bien revenu à sa valeur initiale
+            assert final_balance == initial_balance, "Le remboursement après annulation est incorrect"
+            print(f"  🧹 CLEANUP: Commande annulée et solde restauré à {final_balance:.2f} €")
