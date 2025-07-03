@@ -1,75 +1,96 @@
+# tests/test-python/controller/test_api_no_auth.py
+
 import pytest
-import requests
 
-BASE_URL = "http://localhost:8081/api/v1"
+# Le BASE_URL et l'import 'requests' ne sont plus nécessaires.
+# Nous utiliserons des chemins relatifs et le client de test Flask.
+API_PREFIX = "/api/v1"
 
+# La liste des endpoints est mise à jour avec des chemins relatifs.
 ENDPOINTS = [
     # user_controller
-    {"method": "GET", "url": f"{BASE_URL}/user/", "desc": "Liste users"},
-    {"method": "GET", "url": f"{BASE_URL}/user/1", "desc": "Get user 1"},
-    {"method": "POST", "url": f"{BASE_URL}/user/", "json": {"first_name": "x", "last_name": "x", "email": "a@b.c", "password": "1"}, "desc": "Création user"},
-    {"method": "PUT", "url": f"{BASE_URL}/user/1", "json": {"first_name": "Modif"}, "desc": "Update user"},
-    {"method": "DELETE", "url": f"{BASE_URL}/user/1", "desc": "Delete user"},
-    {"method": "POST", "url": f"{BASE_URL}/user/balance", "json": {"amount": "10"}, "desc": "Ajout balance"},
+    {"method": "GET", "url": f"{API_PREFIX}/user/", "desc": "Liste tous les utilisateurs"},
+    {"method": "GET", "url": f"{API_PREFIX}/user/1", "desc": "Récupérer un utilisateur par ID"},
+    {"method": "POST", "url": f"{API_PREFIX}/user/", "json": {"first_name": "x", "last_name": "x", "email": "a@b.c", "password": "1"}, "desc": "Créer un utilisateur"},
+    {"method": "PUT", "url": f"{API_PREFIX}/user/1", "json": {"first_name": "Modif"}, "desc": "Modifier un utilisateur"},
+    {"method": "DELETE", "url": f"{API_PREFIX}/user/1", "desc": "Supprimer un utilisateur"},
+    {"method": "POST", "url": f"{API_PREFIX}/user/balance", "json": {"amount": "10"}, "desc": "Ajouter de l'argent au solde"},
 
     # cafeteria_controller
-    {"method": "GET", "url": f"{BASE_URL}/cafeteria/", "desc": "Liste cafétérias"},
-    {"method": "GET", "url": f"{BASE_URL}/cafeteria/1", "desc": "Get cafétéria 1"},
-    {"method": "POST", "url": f"{BASE_URL}/cafeteria/", "json": {"name": "Café Sans Auth"}, "desc": "Création cafétéria"},
-    {"method": "PUT", "url": f"{BASE_URL}/cafeteria/1", "json": {"name": "Modif"}, "desc": "Update cafétéria"},
-    {"method": "DELETE", "url": f"{BASE_URL}/cafeteria/1", "desc": "Delete cafétéria"},
+    {"method": "GET", "url": f"{API_PREFIX}/cafeteria/", "desc": "Lister les cafétérias"},
+    {"method": "GET", "url": f"{API_PREFIX}/cafeteria/1", "desc": "Récupérer une cafétéria par ID"},
+    {"method": "POST", "url": f"{API_PREFIX}/cafeteria/", "json": {"name": "Café Sans Auth"}, "desc": "Créer une cafétéria"},
+    {"method": "PUT", "url": f"{API_PREFIX}/cafeteria/1", "json": {"name": "Modif"}, "desc": "Modifier une cafétéria"},
+    {"method": "DELETE", "url": f"{API_PREFIX}/cafeteria/1", "desc": "Supprimer une cafétéria"},
 
     # dish_controller
-    {"method": "GET", "url": f"{BASE_URL}/dish/", "desc": "Liste plats"},
-    {"method": "GET", "url": f"{BASE_URL}/dish/1", "desc": "Get plat 1"},
-    {"method": "POST", "url": f"{BASE_URL}/dish/", "json": {"name": "TestPlat", "description": "x", "dine_in_price": 1, "dish_type": "main_course"}, "desc": "Création plat"},
-    {"method": "PUT", "url": f"{BASE_URL}/dish/1", "json": {"name": "PlatModifié"}, "desc": "Update plat"},
-    {"method": "DELETE", "url": f"{BASE_URL}/dish/1", "desc": "Delete plat"},
+    {"method": "GET", "url": f"{API_PREFIX}/dish/", "desc": "Lister les plats"},
+    {"method": "GET", "url": f"{API_PREFIX}/dish/1", "desc": "Récupérer un plat par ID"},
+    {"method": "POST", "url": f"{API_PREFIX}/dish/", "json": {"name": "TestPlat", "description": "x", "dine_in_price": 1, "dish_type": "main_course"}, "desc": "Créer un plat"},
+    {"method": "PUT", "url": f"{API_PREFIX}/dish/1", "json": {"name": "PlatModifié"}, "desc": "Modifier un plat"},
+    {"method": "DELETE", "url": f"{API_PREFIX}/dish/1", "desc": "Supprimer un plat"},
 
     # daily_menu_controller
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu/", "desc": "Liste menus"},
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu/1", "desc": "Get menu 1"},
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu/by-cafeteria/1", "desc": "Menu par cafétéria (auth!)"},
-    {"method": "POST", "url": f"{BASE_URL}/daily-menu/", "json": {"cafeteria_id": 1, "menu_date": "2025-01-01"}, "desc": "Création menu"},
-    {"method": "PUT", "url": f"{BASE_URL}/daily-menu/1", "json": {"menu_date": "2025-01-02"}, "desc": "Update menu"},
-    {"method": "DELETE", "url": f"{BASE_URL}/daily-menu/1", "desc": "Delete menu"},
+    {"method": "GET", "url": f"{API_PREFIX}/daily-menu/", "desc": "Lister tous les menus"},
+    {"method": "GET", "url": f"{API_PREFIX}/daily-menu/1", "desc": "Récupérer un menu par ID"},
+    {"method": "GET", "url": f"{API_PREFIX}/daily-menu/by-cafeteria/1", "desc": "Récupérer un menu par cafétéria"},
+    {"method": "POST", "url": f"{API_PREFIX}/daily-menu/", "json": {"cafeteria_id": 1, "menu_date": "2025-01-01"}, "desc": "Créer un menu"},
+    {"method": "PUT", "url": f"{API_PREFIX}/daily-menu/1", "json": {"menu_date": "2025-01-02"}, "desc": "Modifier un menu"},
+    {"method": "DELETE", "url": f"{API_PREFIX}/daily-menu/1", "desc": "Supprimer un menu"},
 
     # daily_menu_item_controller
-    {"method": "GET", "url": f"{BASE_URL}/daily-menu-item/by-menu/1", "desc": "Liste items menu"},
-    {"method": "POST", "url": f"{BASE_URL}/daily-menu-item/", "json": {"menu_id": 1, "dish_id": 1, "dish_role": "main_course"}, "desc": "Ajout item menu"},
-    {"method": "PUT", "url": f"{BASE_URL}/daily-menu-item/1", "json": {"display_order": 2}, "desc": "Update item menu"},
-    {"method": "DELETE", "url": f"{BASE_URL}/daily-menu-item/1", "desc": "Delete item menu"},
+    {"method": "GET", "url": f"{API_PREFIX}/daily-menu-item/by-menu/1", "desc": "Lister les items d'un menu"},
+    {"method": "POST", "url": f"{API_PREFIX}/daily-menu-item/", "json": {"menu_id": 1, "dish_id": 1, "dish_role": "main_course"}, "desc": "Ajouter un item à un menu"},
+    {"method": "PUT", "url": f"{API_PREFIX}/daily-menu-item/1", "json": {"display_order": 2}, "desc": "Modifier un item de menu"},
+    {"method": "DELETE", "url": f"{API_PREFIX}/daily-menu-item/1", "desc": "Supprimer un item de menu"},
 
     # order_item_controller
-    {"method": "GET", "url": f"{BASE_URL}/order-item/", "desc": "Liste order_items"},
-    {"method": "GET", "url": f"{BASE_URL}/order-item/1", "desc": "Get order_item 1"},
-    {"method": "DELETE", "url": f"{BASE_URL}/order-item/1", "desc": "Delete order_item"},
+    {"method": "GET", "url": f"{API_PREFIX}/order-item/", "desc": "Lister les items de commande"},
+    {"method": "GET", "url": f"{API_PREFIX}/order-item/1", "desc": "Récupérer un item de commande par ID"},
+    {"method": "DELETE", "url": f"{API_PREFIX}/order-item/1", "desc": "Supprimer un item de commande"},
 
     # reservation_controller
-    {"method": "GET", "url": f"{BASE_URL}/reservations/", "desc": "Liste reservations"},
-    {"method": "POST", "url": f"{BASE_URL}/reservations/", "json": {"cafeteria_id": 1, "items": [{"dish_id": 1, "quantity": 1, "is_takeaway": False}]}, "desc": "Création réservation"},
-    {"method": "GET", "url": f"{BASE_URL}/reservations/1", "desc": "Get réservation 1"},
-    {"method": "PUT", "url": f"{BASE_URL}/reservations/1/cancel", "desc": "Cancel réservation"},
+    {"method": "GET", "url": f"{API_PREFIX}/reservations/", "desc": "Lister les réservations"},
+    {"method": "POST", "url": f"{API_PREFIX}/reservations/", "json": {"cafeteria_id": 1, "items": [{"dish_id": 1, "quantity": 1, "is_takeaway": False}]}, "desc": "Créer une réservation"},
+    {"method": "GET", "url": f"{API_PREFIX}/reservations/1", "desc": "Récupérer une réservation par ID"},
+    {"method": "PUT", "url": f"{API_PREFIX}/reservations/1/cancel", "desc": "Annuler une réservation"},
 ]
 
-EXPECTED_UNAUTH = {401, 403}
+# Les codes d'erreur attendus pour un utilisateur non authentifié sont 401 (Unauthorized) ou 403 (Forbidden)
+EXPECTED_UNAUTH_STATUS_CODES = {401, 403}
 
-@pytest.mark.parametrize("endpoint", ENDPOINTS, ids=[f"{ep['method']} {ep['url']} ({ep['desc']})" for ep in ENDPOINTS])
-def test_api_auth_protection(endpoint):
+@pytest.mark.parametrize(
+    "endpoint",
+    ENDPOINTS,
+    # Génère des noms de tests plus lisibles dans le rapport pytest
+    ids=[f"{ep['method']}_{ep['url'].replace(API_PREFIX, '').replace('/', '_')}_({ep['desc']})" for ep in ENDPOINTS]
+)
+def test_api_unauthenticated_access_is_denied(client, endpoint):
     """
-    Teste qu'une personne non authentifiée reçoit bien 401/403 sur les endpoints protégés.
-    (Considère qu'absolument tous les endpoints API sont protégés sauf mention contraire)
+    Vérifie qu'un client non authentifié est bien rejeté des endpoints protégés.
+    Le 'client' est la fixture du test_client de Flask venant de conftest.py.
     """
-    try:
-        resp = requests.request(
-            method=endpoint["method"],
-            url=endpoint["url"],
-            json=endpoint.get("json"),
-            timeout=5
-        )
-    except Exception as e:
-        pytest.fail(f"Erreur lors de la requête HTTP: {e}")
+    method = endpoint["method"].lower()
+    url = endpoint["url"]
+    
+    # Récupère dynamiquement la méthode du client (client.get, client.post, etc.)
+    client_method_to_call = getattr(client, method)
+    
+    # Prépare les arguments pour l'appel (json ou data)
+    kwargs = {}
+    if "json" in endpoint:
+        kwargs["json"] = endpoint.get("json")
 
-    # Debug pour aider si le test échoue
-    debug_info = f"URL: {endpoint['url']} | Code reçu: {resp.status_code}\nCorps: {resp.text[:150]}"
-    assert resp.status_code in EXPECTED_UNAUTH, f"Le endpoint n'est PAS protégé correctement pour les non-authentifiés.\n{debug_info}"
+    # Appelle la méthode du client de test
+    response = client_method_to_call(url, **kwargs)
+
+    # Informations de débogage en cas d'échec du test
+    debug_info = (
+        f"Endpoint: {endpoint['method']} {url}\n"
+        f"Description: {endpoint['desc']}\n"
+        f"Code de statut reçu: {response.status_code}\n"
+        f"Corps de la réponse: {response.data.decode(errors='ignore')[:200]}"
+    )
+
+    assert response.status_code in EXPECTED_UNAUTH_STATUS_CODES, \
+        f"L'accès non authentifié a été AUTORISÉ alors qu'il devrait être refusé.\n{debug_info}"
