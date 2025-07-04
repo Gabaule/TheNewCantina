@@ -7,3 +7,5 @@ pytest
 requests
 pytest-cov
 selenium
+robotframework-seleniumlibrary
+robotframework
