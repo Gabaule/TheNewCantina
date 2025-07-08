@@ -9,3 +9,4 @@ pytest-cov
 selenium
 robotframework-seleniumlibrary
 robotframework
+pytest-selenium
