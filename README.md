@@ -15,3 +15,7 @@ If you want to fully restart the project do ```docker compose -f docker/docker-c
 ## Usage
 All credentials are directly on the login page. 
 Go to your browser and use http://localhost:8081 to access the project. 
+
+```
+python report_generator.py ../tests_results.xml ../report.md
+```
