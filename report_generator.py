@@ -1,16 +1,8 @@
 #!/usr/bin/env python3
 """
-Standalone Python script to convert a pytest JUnit XML report into a
-clean, professional, and human-readable Markdown test case report.
-
-This script can operate in two modes:
-1. Standalone: Generates a complete Markdown report from an XML file.
-2. Template-based: Injects the generated report into a placeholder within
-   a specified Markdown template file, creating a final combined document.
-
-It provides comprehensive coverage by uniquely identifying each test case
-using its full module and class path, and organizes the final report into
-logical sections with appropriate header levels.
+Standalone Python script to convert a pytest JUnit XML report and an Excel-based
+manual test report into a clean, professional, and human-readable Markdown
+test case report with a main summary and detailed annexes.
 """
 
 import xml.etree.ElementTree as ET
@@ -20,9 +12,13 @@ from typing import List, Optional, Dict
 from datetime import datetime
 from collections import defaultdict
 import sys
+import re
+import openpyxl
+from openpyxl.utils.exceptions import InvalidFileException
+
 
 # ==============================================================================
-# 1. DATA MODELS (Streamlined for automation)
+# 1. DATA MODELS (Streamlined for automation and manual tests)
 # ==============================================================================
 
 @dataclass
@@ -36,7 +32,7 @@ class TestStep:
 
 @dataclass
 class TestCase:
-    """Represents a full, detailed test case, combining XML results and metadata."""
+    """Represents a full, detailed test case, combining test results and metadata."""
     name: str
     time: float
     status: str
@@ -50,8 +46,8 @@ class TestCase:
     test_data: List[str] = field(default_factory=list)
     test_scenario: str = ""
     test_steps: List[TestStep] = field(default_factory=list)
-    category: str = "Uncategorized" # NEW: To group tests in the report
-    has_metadata: bool = False # Flag to track if metadata was found
+    category: str = "Uncategorized"
+    has_metadata: bool = False
 
 # ==============================================================================
 # 2. METADATA REGISTRY & CATEGORY MAPPING
@@ -59,13 +55,13 @@ class TestCase:
 # This map defines the report sections based on test_id prefixes.
 # Format: { "prefix": ("Display Name", sort_order) }
 CATEGORY_MAP = {
-    "MODEL_": ("🧪 Model & Unit Tests", 1),
-    "API_":   ("📡 API Tests", 2),
-    "E2E_":   ("🖥️ End-to-End (E2E) Tests", 3),
-    "SCEN_":  ("🔄 Scenario & Integration Tests", 4),
+    "MODEL_": ("Model & Unit Tests", 1),
+    "API_":   ("API Tests", 2),
+    "E2E_":   ("End-to-End (E2E) Tests", 3),
+    "SCEN_":  ("Scenario & Integration Tests", 4),
 }
 
-# The single source of truth for all test case documentation.
+# The single source of truth for all automated test case documentation.
 METADATA_REGISTRY: Dict[str, Dict] = {
     # ==========================================================================
     # --- MODEL TESTS: app_user.py ---
@@ -320,10 +316,18 @@ METADATA_REGISTRY: Dict[str, Dict] = {
 }
 
 # ==============================================================================
-# 3. PARSING & DATA MERGING LOGIC
+# 3. UTILITY FUNCTIONS
 # ==============================================================================
 
-def parse_and_merge_data(xml_file: str) -> List[TestCase]:
+def create_anchor_id(test_id: str) -> str:
+    """Creates a URL-friendly anchor ID from a test case ID."""
+    return f"test-case-{re.sub(r'[^a-z0-9]+', '-', test_id.lower())}"
+
+# ==============================================================================
+# 4. PARSING LOGIC
+# ==============================================================================
+
+def parse_automated_tests_from_xml(xml_file: str) -> List[TestCase]:
     try:
         tree = ET.parse(xml_file)
         root = tree.getroot()
@@ -345,13 +349,14 @@ def parse_and_merge_data(xml_file: str) -> List[TestCase]:
             status = 'Failed'
             failure_details = case_element.find('failure').text
         elif case_element.find('error') is not None:
-            status = 'Error'
+            status = 'Failed' # Treat errors as failures for reporting
             failure_details = case_element.find('error').text
         elif case_element.find('skipped') is not None:
             status = 'Skipped'
 
         case = TestCase(name=name, time=time, status=status, failure_details=failure_details)
         
+        # Match parametrized tests like 'test_function[param]'
         clean_name = name.split('[')[0]
         registry_key = f"{classname}.{clean_name}"
 
@@ -371,43 +376,222 @@ def parse_and_merge_data(xml_file: str) -> List[TestCase]:
         
         if case.status in ('Failed', 'Error') and case.test_steps:
             last_step = case.test_steps[-1]
-            last_step.status = case.status
+            last_step.status = "Failed"
             last_step.actual = f"Execution failed. See details below."
 
         all_test_cases.append(case)
 
     return all_test_cases
 
+def parse_manual_tests_from_excel(excel_file: str) -> List[TestCase]:
+    """Parses manual test cases from the specified Excel file."""
+    if not excel_file:
+        return []
+    
+    try:
+        wb = openpyxl.load_workbook(excel_file, data_only=True)
+    except (FileNotFoundError, InvalidFileException) as e:
+        print(f"Warning: Could not open or parse Excel file '{excel_file}'. Manual tests will be skipped.\nDetails: {e}", file=sys.stderr)
+        return []
+
+    if "Test Summary" not in wb.sheetnames:
+        print("Warning: 'Test Summary' sheet not found in Excel file. Manual tests will be skipped.", file=sys.stderr)
+        return []
+
+    summary_ws = wb["Test Summary"]
+    manual_cases = []
+    
+    header = [cell.value for cell in summary_ws[1]]
+    try:
+        # Find column indices dynamically
+        id_col_idx = header.index("Test ID")
+        title_col_idx = header.index("Title")
+        status_col_idx = header.index("Status")
+        tester_col_idx = header.index("Assigned To")
+        date_col_idx = header.index("Date Tested")
+    except ValueError as e:
+        print(f"Warning: A required column ({e}) not found in 'Test Summary' sheet. Skipping manual tests.", file=sys.stderr)
+        return []
+
+    for row in summary_ws.iter_rows(min_row=2, values_only=True):
+        test_id = row[id_col_idx]
+        if not test_id or test_id not in wb.sheetnames:
+            continue
+
+        ws = wb[test_id]
+        
+        # Helper to safely get value from potentially merged cells
+        def get_cell_value(cell_coord):
+            cell = ws[cell_coord]
+            # If it's a merged cell, find the top-left master cell and get its value
+            if isinstance(cell, openpyxl.cell.cell.MergedCell):
+                for merged_range in ws.merged_cells.ranges:
+                    if cell.coordinate in merged_range:
+                        return ws.cell(row=merged_range.min_row, column=merged_range.min_col).value
+            return cell.value
+        
+        status_raw = str(row[status_col_idx] or 'Not Executed').title()
+        final_status = 'Passed' if status_raw == 'Pass' else status_raw
+        
+        case = TestCase(
+            name=get_cell_value('G1') or row[title_col_idx],
+            time=0.0,
+            test_id=test_id,
+            description=get_cell_value('C13') or "N/A", # Test Scenario
+            tester_name=row[tester_col_idx],
+            version=str(get_cell_value('J2') or "1.0"),
+            status=final_status,
+            failure_details=get_cell_value('B3'), # QA Tester's Log for notes
+            has_metadata=True,
+            category="Manual Tests"
+        )
+        
+        dt_val = row[date_col_idx]
+        if isinstance(dt_val, datetime):
+            case.date_tested = dt_val.strftime('%d.%m.%Y')
+        elif isinstance(dt_val, str):
+            case.date_tested = dt_val
+        elif dt_val:
+            case.date_tested = str(dt_val)
+
+        case.prerequisites = [get_cell_value(f'B{r}') for r in range(8, 12) if get_cell_value(f'B{r}')]
+
+        case.test_steps = []
+        for i in range(16, 26): # Check more rows for steps
+            step_num = get_cell_value(f'A{i}')
+            step_details = get_cell_value(f'B{i}')
+            if step_num and step_details:
+                case.test_steps.append(TestStep(
+                    step_num=step_num,
+                    details=step_details,
+                    expected=get_cell_value(f'E{i}'),
+                    actual=get_cell_value(f'G{i}'),
+                    status=str(get_cell_value(f'J{i}') or "").title()
+                ))
+        
+        manual_cases.append(case)
+
+    return manual_cases
+
+
 # ==============================================================================
-# 4. MARKDOWN GENERATION LOGIC
+# 5. MARKDOWN GENERATION LOGIC
 # ==============================================================================
 
-def generate_summary(test_cases: List[TestCase], header_level_offset: int = 0) -> str:
-    """Generates the summary table for the test report."""
-    total = len(test_cases)
-    passed = sum(1 for tc in test_cases if tc.status == 'Passed')
-    failed = sum(1 for tc in test_cases if tc.status in ('Failed', 'Error'))
-    skipped = sum(1 for tc in test_cases if tc.status == 'Skipped')
+def generate_global_summary(automated_cases: List[TestCase], manual_cases: List[TestCase]) -> str:
+    """Generates a high-level summary table of all test results."""
     
-    header_level = min(6, 2 + header_level_offset)
+    stats = defaultdict(lambda: defaultdict(int))
     
-    return f"""
-{'#' * header_level} 📊 Summary
-| Metric          | Value |
-|-----------------|-------|
-| **Total Tests** | {total} |
-| ✅ Passed       | {passed} |
-| ❌ Failed/Error   | {failed} |
-| ⏭️ Skipped       | {skipped} |
+    for case in automated_cases:
+        stats[case.category]['total'] += 1
+        stats[case.category][case.status.lower()] += 1
+        
+    for case in manual_cases:
+        stats[case.category]['total'] += 1
+        stats[case.category][case.status.lower()] += 1
+        
+    rows = []
+    total_stats = defaultdict(int)
+    
+    sorted_categories = sorted(
+        [cat for cat in stats.keys() if cat != "Manual Tests"],
+        key=lambda cat_name: next((c[1] for c in CATEGORY_MAP.values() if c[0] == cat_name), 99)
+    )
+    if "Manual Tests" in stats:
+        sorted_categories.append("Manual Tests")
 
----
+    for category in sorted_categories:
+        s = stats[category]
+        total = s['total']
+        passed = s.get('passed', 0)
+        failed = s.get('failed', 0) + s.get('error', 0) + s.get('fail', 0)
+        skipped = s.get('skipped', 0)
+        
+        total_stats['total'] += total
+        total_stats['passed'] += passed
+        total_stats['failed'] += failed
+        total_stats['skipped'] += skipped
+        
+        pass_rate = (passed / (total - skipped) * 100) if (total - skipped) > 0 else 0
+        
+        row = f"| {category} | {total} | {passed} | {failed} | {skipped} | {pass_rate:.1f}% |"
+        rows.append(row)
+
+    total_pass_rate = (total_stats['passed'] / (total_stats['total'] - total_stats['skipped']) * 100) if (total_stats['total'] - total_stats['skipped']) > 0 else 0
+    total_row = f"| **Total** | **{total_stats['total']}** | **{total_stats['passed']}** | **{total_stats['failed']}** | **{total_stats['skipped']}** | **{total_pass_rate:.1f}%** |"
+
+    header = "| Test Category | Total | Passed | Failed | Skipped | Pass Rate |\n| :--- | :---: | :---: | :---: | :---: | :---: |"
+    return f"{header}\n" + "\n".join(rows) + "\n|---|---|---|---|---|---|\n" + total_row
+
+def generate_failed_tests_summary(all_cases: List[TestCase]) -> str:
+    """Creates a summary of only the failed tests with links to the annex."""
+    failed_cases = [case for case in all_cases if case.status.lower() in ('failed', 'error', 'fail')]
+    
+    if not failed_cases:
+        return "All tests passed. No failures to report."
+
+    rows = []
+    for case in sorted(failed_cases, key=lambda c: c.test_id):
+        anchor = create_anchor_id(case.test_id)
+        row = f"| `{case.test_id}` | {case.name} | {case.category} | [See Details](#{anchor}) |"
+        rows.append(row)
+
+    header = "| Test ID | Description | Category | Details |\n| :--- | :--- | :--- | :---: |"
+    return f"{header}\n" + "\n".join(rows)
+
+def generate_annex_automated_report(all_cases: List[TestCase]) -> str:
+    """Generates the full, detailed report for automated tests for the annex."""
+    if not all_cases:
+        return "No automated test cases were found in the provided XML file."
+        
+    documented_cases = [case for case in all_cases if case.has_metadata]
+    undocumented_cases = [case for case in all_cases if not case.has_metadata]
+    categorized_cases = defaultdict(list)
+    for case in documented_cases:
+        categorized_cases[case.category].append(case)
+
+    report_parts = ["## Annex A: Automated Test Execution Details\n"]
+    
+    total = len(all_cases)
+    passed = sum(1 for tc in all_cases if tc.status == 'Passed')
+    failed = sum(1 for tc in all_cases if tc.status in ('Failed', 'Error'))
+    skipped = sum(1 for tc in all_cases if tc.status == 'Skipped')
+    summary_table = f"""
+| Metric | Value |
+|---|---|
+| **Total Automated Tests** | {total} |
+| Passed | {passed} |
+| Failed/Error | {failed} |
+| Skipped | {skipped} |
 """
+    report_parts.append(summary_table)
 
-def generate_detailed_case_markdown(case: TestCase, header_level_offset: int = 0) -> str:
-    """Generates the Markdown for a single, detailed test case."""
-    # Test case title should be one level deeper than category headers
-    header_level = min(6, 4 + header_level_offset)
-    header = f"""{'#' * header_level} {case.test_id}: {case.description}
+    sorted_category_names = sorted(
+        [cat for cat in categorized_cases.keys()],
+        key=lambda cat_name: next((c[1] for c in CATEGORY_MAP.values() if c[0] == cat_name), 99)
+    )
+
+    for category_name in sorted_category_names:
+        report_parts.append(f"\n### {category_name}\n")
+        cases_in_category = sorted(categorized_cases[category_name], key=lambda c: (c.status != 'Passed', c.test_id))
+        for case in cases_in_category:
+            report_parts.append(generate_detailed_automated_case_markdown(case))
+            
+    if undocumented_cases:
+        report_parts.append("\n### Undocumented Test Cases\n")
+        report_parts.append("The following test cases were executed but have no metadata in the registry. Consider documenting them.\n")
+        report_parts.append("\n| Test Function | Status | Time |\n|:---|:---|:---|")
+        for case in sorted(undocumented_cases, key=lambda c: c.name):
+            report_parts.append(f"| `{case.name}` | {case.status} | {case.time:.4f}s |")
+        
+    return "\n".join(report_parts)
+
+def generate_detailed_automated_case_markdown(case: TestCase) -> str:
+    """Generates the Markdown for a single, detailed automated test case."""
+    anchor_id = create_anchor_id(case.test_id)
+    header = f"""
+#### <a id="{anchor_id}"></a>{case.test_id}: {case.description}
 | Attribute | Value |
 | :--- | :--- |
 | **Test Case ID** | `{case.test_id}` |
@@ -431,7 +615,7 @@ def generate_detailed_case_markdown(case: TestCase, header_level_offset: int = 0
 
     steps_content = "*No detailed steps defined in metadata.*"
     if case.test_steps:
-        steps_header = "| Step # | Step Details | Expected Results | Actual Results | Status |\n|:---:|:---|:---|:---|:---:|\n"
+        steps_header = "\n| Step # | Step Details | Expected Results | Actual Results | Status |\n|:---:|:---|:---|:---|:---:|\n"
         steps_rows = "\n".join(
             [f"| {s.step_num} | {s.details} | {s.expected} | {s.actual} | **{s.status}** |" for s in case.test_steps]
         )
@@ -442,90 +626,105 @@ def generate_detailed_case_markdown(case: TestCase, header_level_offset: int = 0
         details = case.failure_details.strip()
         failure_block = f"\n**Failure Details:**\n```\n{details}\n```\n"
 
-    return f"{header}\n{details_section}\n**Test Steps:**\n{steps_content}\n{failure_block}\n---\n"
+    return f"{header}\n{details_section}\n**Test Steps:**\n{steps_content}\n{failure_block}\n---"
 
-def generate_report_body(all_cases: List[TestCase], header_level_offset: int = 0) -> str:
-    """Orchestrates the generation of the entire Markdown report body."""
-    if not all_cases:
-        return "No test cases were found in the provided XML file."
+def generate_annex_manual_report(manual_cases: List[TestCase]) -> str:
+    """Generates the detailed report for manual tests for the annex."""
+    if not manual_cases:
+        return "## Annex B: Manual Test Execution Details\n\nNo manual test cases were found or executed."
 
-    documented_cases = [case for case in all_cases if case.has_metadata]
-    undocumented_cases = [case for case in all_cases if not case.has_metadata]
-
-    categorized_cases = defaultdict(list)
-    for case in documented_cases:
-        categorized_cases[case.category].append(case)
-
-    # --- Main Report Assembly ---
-    report_parts = [generate_summary(all_cases, header_level_offset)]
+    report_parts = ["## Annex B: Manual Test Execution Details\n"]
+    sorted_cases = sorted(manual_cases, key=lambda c: c.test_id)
     
-    # Header for detailed section (one level deeper than summary)
-    detailed_header_level = min(6, 3 + header_level_offset)
-    report_parts.append(f"{'#' * detailed_header_level} 📄 Detailed Test Case Results")
-
-    if not documented_cases:
-        report_parts.append("\n*No documented test cases with metadata were found.*")
-    else:
-        sorted_category_names = [name for name, _ in sorted(CATEGORY_MAP.values(), key=lambda x: x[1])]
-        if "Uncategorized" in categorized_cases:
-            sorted_category_names.append("Uncategorized")
+    for case in sorted_cases:
+        report_parts.append(generate_single_manual_case_markdown(case))
         
-        for category_name in sorted_category_names:
-            if category_name in categorized_cases:
-                report_parts.append(f"\n{'#' * detailed_header_level} {category_name}\n")
-                
-                cases_in_category = sorted(
-                    categorized_cases[category_name], 
-                    key=lambda c: (c.status != 'Passed', c.test_id)
-                )
-                
-                for case in cases_in_category:
-                    report_parts.append(generate_detailed_case_markdown(case, header_level_offset))
-        
-    if undocumented_cases:
-        report_parts.append(f"\n{'#' * detailed_header_level} 📝 Undocumented Test Cases\n")
-        report_parts.append("The following test cases were executed but have no metadata in the registry. Consider documenting them.\n")
-        report_parts.append("| Test Function | Status | Time |\n|:---|:---|:---|")
-        for case in sorted(undocumented_cases, key=lambda c: c.name):
-            report_parts.append(f"| `{case.name}` | {case.status} | {case.time:.4f}s |")
-
     return "\n".join(report_parts)
+
+def generate_single_manual_case_markdown(case: TestCase) -> str:
+    """Generates the Markdown for a single manual test case from Excel data."""
+    anchor_id = create_anchor_id(case.test_id)
+    header = f"""
+#### <a id="{anchor_id}"></a>Manual Test Case: {case.test_id}
+
+| Attribute | Value |
+| :--- | :--- |
+| **Test Case ID** | `{case.test_id}` |
+| **Title** | {case.name} |
+| **Description** | {case.description} |
+| **Tester** | {case.tester_name} |
+| **Date Tested** | {case.date_tested} |
+"""
+    
+    prereqs = "\n".join([f"1.  {p}" for p in case.prerequisites]) or "None"
+    prereqs_section = f"""
+**Prerequisites:**
+{prereqs}
+"""
+
+    steps_header = "\n| Step # | Action | Expected Result | Actual Result | Status |\n| :--- | :--- | :--- | :--- | :--- |\n"
+    
+    # Ensure status is properly formatted or empty
+    def format_status(s):
+        if not s or s.lower() == 'none':
+            return ''
+        return s.title()
+        
+    steps_rows = "\n".join(
+        [f"| {s.step_num} | {s.details} | {s.expected} | {s.actual or ''} | {format_status(s.status)} |" for s in case.test_steps]
+    )
+    steps_content = steps_header + steps_rows
+
+    final_status = case.status
+    if not final_status or final_status.lower() == 'none':
+        final_status = 'NOT EXECUTED'
+        
+    final_result = f"**Final Result:** **{final_status.upper()}**\n"
+    notes = f"**Notes/Comments:**\n{case.failure_details}\n" if case.failure_details else ""
+
+    return f"{header}\n{prereqs_section}\n**Test Steps:**{steps_content}\n\n{final_result}\n{notes}\n---"
 
 
 # ==============================================================================
-# 5. MAIN EXECUTION
+# 6. MAIN EXECUTION
 # ==============================================================================
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Convert JUnit XML to a Markdown report, with optional template injection.",
+        description="Convert JUnit XML and an Excel manual test report to a clean Markdown report with a summary and annexes.",
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument("input_xml", help="Path to the input JUnit XML file.")
     parser.add_argument("output_file", help="Path for the final output Markdown file.")
-    parser.add_argument(
-        "--template",
-        help="Optional path to a Markdown template file.\nIf provided, the report will be inserted into the template."
-    )
+    parser.add_argument("--template", help="Optional path to a Markdown template file with placeholders.")
+    parser.add_argument("--manual-tests-excel", help="Optional path to an Excel file with manual test cases.")
     
     args = parser.parse_args()
     
-    # --- 1. Parse XML data ---
-    print(f"Parsing XML: {args.input_xml}...")
-    all_cases = parse_and_merge_data(args.input_xml)
-    print(f"Found {len(all_cases)} test cases.")
+    print(f"Parsing automated tests from XML: {args.input_xml}...")
+    automated_cases = parse_automated_tests_from_xml(args.input_xml)
+    print(f"Found {len(automated_cases)} automated test cases.")
 
-    # --- 2. Generate Report Content ---
+    manual_cases = []
+    if args.manual_tests_excel:
+        print(f"Parsing manual tests from Excel: {args.manual_tests_excel}...")
+        manual_cases = parse_manual_tests_from_excel(args.manual_tests_excel)
+        print(f"Found {len(manual_cases)} manual test cases.")
+    else:
+        print("No manual test Excel file provided, skipping.")
+
     print("Generating Markdown report content...")
-    # Adjust header levels if inserting into a template to maintain a logical document structure.
-    # We assume the placeholder is under an H3, so our top-level headers become H4.
-    header_offset = 2 if args.template else 0
-    report_body = generate_report_body(all_cases, header_level_offset=header_offset)
+    all_cases = automated_cases + manual_cases
     
-    # --- 3. Write Output ---
+    # Generate the main body content
+    summary_md = generate_global_summary(automated_cases, manual_cases)
+    failed_tests_md = generate_failed_tests_summary(all_cases)
+    
+    # Generate the annex content
+    annex_automated_md = generate_annex_automated_report(automated_cases)
+    annex_manual_md = generate_annex_manual_report(manual_cases)
+    
     if args.template:
-        # --- Template Injection Mode ---
-        placeholder = "%%AUTOMATED_TEST_RESULTS%%"
         print(f"Template mode enabled. Reading template: {args.template}")
         try:
             with open(args.template, "r", encoding="utf-8") as f:
@@ -534,24 +733,33 @@ if __name__ == "__main__":
             print(f"Error: Template file not found at '{args.template}'", file=sys.stderr)
             sys.exit(1)
 
-        if placeholder not in template_content:
-            print(f"Error: Placeholder '{placeholder}' not found in the template file.", file=sys.stderr)
-            sys.exit(1)
-            
-        final_content = template_content.replace(placeholder, report_body)
+        final_content = template_content
+        # Replace placeholders for the main body
+        final_content = final_content.replace("%%TEST_SUMMARY%%", summary_md)
+        final_content = final_content.replace("%%FAILED_TESTS_SUMMARY%%", failed_tests_md)
+        
+        # Replace placeholders for the annexes
+        annex_content = f"{annex_automated_md}\n\n{annex_manual_md}"
+        final_content = final_content.replace("%%TEST_ANNEX%%", annex_content)
         
         try:
             with open(args.output_file, "w", encoding="utf-8") as f:
                 f.write(final_content)
-            print(f"✅ Successfully inserted report into template and saved to: {args.output_file}")
+            print(f"✅ Successfully inserted report sections into template and saved to: {args.output_file}")
         except IOError as e:
             print(f"Error: Could not write to output file '{args.output_file}'.\n{e}", file=sys.stderr)
             sys.exit(1)
-
     else:
-        # --- Standalone Mode ---
-        report_title = "# Test Execution Report\n"
-        final_report = report_title + report_body
+        # Standalone mode (if no template is provided)
+        final_report = (
+            f"# Test Execution Report\n\n"
+            f"## Overall Test Statistics\n{summary_md}\n\n"
+            f"## Key Findings (Failures)\n{failed_tests_md}\n\n"
+            f"---\n\n"
+            f"# Annexes\n\n"
+            f"{annex_automated_md}\n\n"
+            f"{annex_manual_md}"
+        )
         try:
             with open(args.output_file, "w", encoding="utf-8") as f:
                 f.write(final_report)
@@ -560,6 +768,6 @@ if __name__ == "__main__":
             print(f"Error: Could not write to output file '{args.output_file}'.\n{e}", file=sys.stderr)
             sys.exit(1)
 
-    if any(not case.has_metadata for case in all_cases):
-        undocumented_count = sum(1 for case in all_cases if not case.has_metadata)
-        print(f"⚠️  Warning: {undocumented_count} test cases were found without metadata.")
+    if any(not case.has_metadata for case in automated_cases):
+        undocumented_count = sum(1 for case in automated_cases if not case.has_metadata)
+        print(f"⚠️  Warning: {undocumented_count} automated test cases were found without metadata.")

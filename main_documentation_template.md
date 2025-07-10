@@ -16,9 +16,12 @@
 2.  [Test Case Management Template](#2-test-case-management-template)
 3.  [Testing Methodology and Execution](#3-testing-methodology-and-execution)
     1.  [Testing Methods & Tools](#31-testing-methods--tools)
-    2.  [Automated Test Execution Results](#32-automated-test-execution-results)
-    3.  [Manual Test Execution](#33-manual-test-execution)
-4.  [Report and Conclusion](#4-report-and-conclusion)
+    2.  [Test Results Summary](#32-test-results-summary)
+4.  [Conclusion](#4-conclusion)
+5.  [Annexes](#5-annexes)
+    1.  [Annex A: Automated Test Execution Details](#annex-a-automated-test-execution-details)
+    2.  [Annex B: Manual Test Execution Details](#annex-b-manual-test-execution-details)
+
 
 ***
 
@@ -57,7 +60,91 @@ The entire application is built on a Flask framework with a PostgreSQL database 
 
 ## 2. Test Case Management Template
 
-[PLACEHOLDER: A detailed description of the team's internal template for test case management, task distribution, and progress tracking will be presented here. This section is being prepared separately and will include a specific example of how a test case is recorded and managed within our workflow.]
+To effectively manage the testing process, our team designed a comprehensive and flexible template using Microsoft Excel. This approach was chosen for its universal accessibility, ease of use, and powerful features for data organization and tracking, requiring no specialized software for team members.
+
+The system is built on a two-tiered structure:
+1.  A high-level **Test Summary Dashboard** for at-a-glance project management and task distribution.
+2.  Individual, detailed **Test Case Sheets** for every test, providing all necessary information for execution and recording.
+
+#### The Test Summary Dashboard
+
+The "Test Summary" sheet serves as the central hub for monitoring the entire testing effort. Its primary purpose is to provide a quick overview of test status, feature coverage, and team workload.
+
+The key columns and their functions are:
+
+*   **Test ID:** A unique identifier for each test case. A consistent naming convention (e.g., `MANUAL-TC-XXX`, `API-SEC-XXX`) is used to categorize tests by type and scope.
+*   **Title:** A concise, human-readable name for the test case.
+*   **Feature:** The application module or feature being tested (e.g., Account Management, Ordering, API Security). This allows for filtering to assess the test coverage of specific parts of the system.
+*   **Status:** The current state of the test case, which is color-coded for immediate visual feedback:
+    *   <span style="color:green;">**Passed:**</span> The test was executed successfully.
+    *   <span style="color:red;">**Failed:**</span> The test was executed, and a defect was found.
+    *   <span style="color:orange;">**In Progress:**</span> The test is currently being executed or debugged.
+    *   **Not Executed / Draft:** The test case has been designed but not yet run.
+*   **Assigned To:** The name of the team member responsible for the test case. This is crucial for distributing work and establishing clear ownership.
+*   **Date Tested:** The date of the last execution, providing a timeline of testing activity.
+
+This dashboard structure is essential for team coordination, allowing the project lead to quickly identify bottlenecks, track progress against features, and re-allocate tasks as needed.
+
+#### The Detailed Test Case Sheet
+
+Each test case listed in the summary dashboard has its own dedicated sheet, named after its Test ID (e.g., "MANUAL-TC-001"). This sheet provides a standardized and exhaustive template for a tester to follow, ensuring that tests are repeatable and results are recorded consistently.
+
+The detailed sheet is organized into the following logical sections:
+
+*   **Header & Metadata:** This top section captures the administrative details of the test case itself, including `Test Case ID`, `Description`, `Created By`, `Reviewed By`, and `Version`. This establishes a quality control process where tests can be drafted and peer-reviewed before execution. The `QA Tester's Log` provides space for notes on the test case's evolution.
+*   **Execution Details:** This block records the results of a specific run, with fields for `Tester's Name`, `Date Tested`, and the final `Test Case (Pass/Fail)` status.
+*   **Prerequisites & Test Data:** This section is critical for reproducibility. `Prerequisites` lists all conditions that must be met before starting the test (e.g., user must be logged in), while `Test Data` specifies any inputs or values needed (e.g., amount to add).
+*   **Test Scenario:** A clear, one-sentence goal for the test.
+*   **Test Steps:** The core of the test case, this table provides a script for the tester to follow with explicit columns for:
+    *   **Step #:** Sequential numbering.
+    *   **Step Details:** The action to be performed.
+    *   **Expected Results:** The specific outcome that should occur if the application is working correctly.
+    *   **Actual Results:** The observed outcome during the test.
+    *   **Pass / Fail / ...:** The status of the individual step.
+
+#### Specific Example: MANUAL-TC-001
+
+To illustrate how the template is used in practice, here is the record for `MANUAL-TC-001`.
+
+**1. View in the "Test Summary" Dashboard:**
+
+| Test ID | Title | Feature | Status | Assigned To | Date Tested |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| MANUAL-TC-001 | Verify Visual Feedback and State on Balance Top-Up | Account Management | <span style="color:green;">Passed</span> | Clément De Simon | 2025-07-08 |
+
+**2. View in the "MANUAL-TC-001" Detailed Sheet:**
+
+| Attribute | Value |
+| :--- | :--- |
+| **Test Case ID** | `MANUAL-TC-001` |
+| **Test Case Description**| Verify that when a user adds funds, the UI provides clear feedback and all balance indicators update correctly without a full page reload. |
+| **Created By** | Gabriel Aumasson-Leduc |
+| **Reviewed By** | Ishan Baichoo |
+| **Version**| 1.0 |
+| **QA Tester's Log** | Initial draft for manual testing phase. Covers HTMX out-of-band swaps. |
+| **Tester's Name** | Clément De Simon |
+| **Date Tested** | 2025-07-08 |
+| **Test Case (Pass/Fail/Not Executed)**| Pass |
+
+**Prerequisites:**
+1.  User is logged in as 'student1@example.com'.
+2.  Application is running in a modern web browser.
+
+**Test Data:**
+1.  Amount to add: 25.50
+
+**Test Scenario:**
+Verify that when a user adds funds, the UI provides clear feedback and all balance indicators update correctly without a full page reload.
+
+**Test Steps:**
+
+| Step # | Step Details | Expected Results | Actual Results | Status |
+|:---:|:---|:---|:---|:---:|
+| 1 | Navigate to the 'Top Up Balance' page. | The 'Account Balance' page is displayed. | As Expected | Pass |
+| 2 | Enter '25.50' into the amount field and click 'Add Money'. | A success message appears and the 'Current Balance' on the page updates. | As Expected | Pass |
+| 3 | Observe the header of the application. | The balance in the top-right corner updates instantly without a page refresh. | As Expected | Pass |
+| 4 | Navigate to the main 'Dashboard' page. | The balance in the header remains at the new, updated value. | As Expected | Pass |
+
 
 ***
 
@@ -81,54 +168,25 @@ The following tools were utilized to implement our testing strategy:
 | **Selenium IDE** | Used for the initial recording of complex user workflows in the browser. This provided a quick way to generate baseline scripts for key end-to-end scenarios. |
 | **pytest-selenium** | This `pytest` plugin was used to integrate and run the browser automation scripts (exported from Selenium IDE) within our primary testing framework, allowing for unified test execution and reporting. |
 | **Docker & Docker Compose** | The entire application stack (Python app, PostgreSQL database, pgAdmin) was containerized using Docker. Docker Compose was used to define and orchestrate the multi-container environment, ensuring a consistent and reproducible setup for both development and testing. |
-| **Custom Python Scripts** | A custom script (`report_converter.py`) was developed to parse the JUnit XML output from `pytest` and generate a professional, human-readable Markdown report, which is integrated directly into this document. |
+| **Custom Python Scripts** | A custom script (`report_converter.py`) was developed to parse the JUnit XML output from `pytest` and a manual test Excel file to generate a professional, human-readable Markdown report with a summary and detailed annexes. |
+| **Microsoft Excel** | Used as a centralized tool for designing, documenting, and tracking the execution of manual test cases. |
 
-### 3.2. Automated Test Execution Results
 
-All automated tests were executed via the `pytest` framework. The results were captured in a standard JUnit XML format. This XML file is then processed by our custom `report_converter.py` script to generate the detailed test case report below.
+### 3.2. Test Results Summary
 
-The report includes a high-level summary of the test run and detailed breakdowns for each executed test case, showing its status, execution time, and, where applicable, detailed test steps and failure logs.
+The following tables provide a high-level overview of the entire testing effort, combining results from both automated and manual test executions.
 
----
-%%AUTOMATED_TEST_RESULTS%%
----
+#### Overall Test Statistics
+%%TEST_SUMMARY%%
 
-### 3.3. Manual Test Execution
+#### Key Findings (Failures)
+This section highlights all tests that failed or resulted in an error during execution, providing a quick reference for developers to address critical issues. For complete details, including stack traces and test steps, please refer to the corresponding test case in the Annexes.
 
-Manual testing was conducted to validate the application's usability and visual presentation. The following is an example of a manual test case executed by our team.
-
-#### **Manual Test Case Example**
-
-| Attribute | Value |
-| :--- | :--- |
-| **Test Case ID** | `MANUAL-TC-001` |
-| **Title** | Verify Visual Feedback and State on Balance Top-Up |
-| **Description** | This test case verifies that when a user successfully adds funds to their account, the UI provides clear visual feedback, and all relevant balance indicators across the application are updated correctly without requiring a full page reload. |
-| **Tester** | Clément De Simon |
-| **Date Tested** | 08.07.2025 |
-
-**Prerequisites:**
-1.  The user is logged into the application as a standard user (e.g., `student1@example.com`).
-2.  The application is running and accessible in a modern web browser (e.g., Chrome, Firefox).
-
-**Test Steps:**
-
-| Step # | Action | Expected Result | Actual Result | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | Navigate to the "Top Up Balance" page from the sidebar menu. | The "Account Balance" page is displayed, showing the current balance and the form to add money. | As Expected | Pass |
-| 2 | Enter `25.50` into the "Amount to Add" input field. | The value `25.50` is correctly displayed in the input field. | As Expected | Pass |
-| 3 | Click the "Add Money to Account" button. | A success message (e.g., "25.50 € ajouté avec succès.") appears on the page. The "Current Balance" display on the page updates to reflect the new total. | As Expected | Pass |
-| 4 | Observe the header of the application layout. | The user balance displayed in the top-right corner of the header should instantly update to the new total without a full page refresh. | As Expected | Pass |
-| 5 | Navigate to the main "Dashboard" page. | The Dashboard loads. The balance in the header remains at the new, updated value. | As Expected | Pass |
-
-**Final Result:** **PASS**
-
-**Notes/Comments:**
-The HTMX out-of-band swap for `#header-balance` works correctly, providing a seamless user experience. The visual feedback is clear and immediate.
+%%FAILED_TESTS_SUMMARY%%
 
 ***
 
-## 4. Report and Conclusion
+## 4. Conclusion
 
 This document provides a high-level summary of the testing plan executed for "The New Cantina," a web application for university meal ordering. The primary objective was to validate the core functionality of the application, encompassing both the student-facing user interface and the administrative-level RESTful APIs. The goal was to ensure the system's stability, data integrity, and adherence to specified business rules before deployment.
 
@@ -137,3 +195,11 @@ The scope of testing was comprehensive, covering critical components of the appl
 A hybrid strategy combining automated and manual testing methodologies was employed to achieve broad and deep coverage. Critical API functionality, model-level data integrity, and repetitive UI workflows were automated to ensure consistent and repeatable verification. These automated scripts formed the core of our regression suite. Manual exploratory testing was used to supplement this, focusing on verifying visual layout, user experience edge cases, and scenarios not easily covered by automated scripts. This blended approach allowed for both efficient regression checking and flexible, human-driven validation.
 
 To execute this strategy, a specific set of tools was chosen. The `pytest` framework served as the foundation for all Python-based testing due to its powerful fixture system and extensibility. For backend API and model-level tests, `pytest` was used with an in-memory SQLite database to ensure fast and isolated execution. End-to-end browser automation was accomplished using `Selenium IDE` for initial workflow recording, with the exported scripts managed and run via `pytest-selenium`. The entire application and its dependencies were orchestrated using `Docker` and `docker-compose`, which provided a consistent and reproducible testing environment across all stages.
+
+***
+
+## 5. Annexes
+
+This section contains the detailed execution reports for all automated and manual test cases.
+
+%%TEST_ANNEX%%
