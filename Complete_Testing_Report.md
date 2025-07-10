@@ -25,20 +25,23 @@
 
 ***
 
-## 1. Introduction
+## Introduction
 
 The primary objective of this project was to design and implement a robust testing strategy to validate the application's functionality, stability, and data integrity.
 
 This report details the testing methodologies employed, the test cases executed (both automated and manual), and a summary of the overall test plan and results.
 
-### 1.1. Team Members
+### Team Members
 
 The following students contributed to this semester project:
+
 *   Ishan Baichoo
+
 *   Gabriel Aumasson-Leduc
+
 *   Clément De Simon
 
-### 1.2. Description of Tested Functionality
+### Description of Tested Functionality
 
 "The New Cantina" is a web-based meal ordering system designed for a university environment. The application serves two primary user roles, each with distinct functionalities:
 
@@ -58,12 +61,14 @@ The entire application is built on a Flask framework with a PostgreSQL database 
 
 ***
 
-## 2. Test Case Management Template
+## Test Case Management Template
 
 To effectively manage the testing process, our team designed a comprehensive and flexible template using Microsoft Excel. This approach was chosen for its universal accessibility, ease of use, and powerful features for data organization and tracking, requiring no specialized software for team members.
 
 The system is built on a two-tiered structure:
+
 1.  A high-level **Test Summary Dashboard** for at-a-glance project management and task distribution.
+
 2.  Individual, detailed **Test Case Sheets** for every test, providing all necessary information for execution and recording.
 
 #### The Test Summary Dashboard
@@ -146,11 +151,10 @@ Verify that when a user adds funds, the UI provides clear feedback and all balan
 | 4 | Navigate to the main 'Dashboard' page. | The balance in the header remains at the new, updated value. | As Expected | Pass |
 
 
-***
 
-## 3. Testing Methodology and Execution
+## Testing Methodology and Execution
 
-### 3.1. Testing Methods & Tools
+### Testing Methods & Tools
 
 A hybrid testing strategy was adopted to ensure comprehensive coverage, combining the efficiency of automation with the intuitiveness of manual testing.
 
@@ -172,7 +176,7 @@ The following tools were utilized to implement our testing strategy:
 | **Microsoft Excel** | Used as a centralized tool for designing, documenting, and tracking the execution of manual test cases. |
 
 
-### 3.2. Test Results Summary
+### Test Results Summary
 
 The following tables provide a high-level overview of the entire testing effort, combining results from both automated and manual test executions.
 
@@ -192,7 +196,7 @@ The following tables provide a high-level overview of the entire testing effort,
 This section highlights all tests that failed or resulted in an error during execution, providing a quick reference for developers to address critical issues. For complete details, including stack traces and test steps, please refer to the corresponding test case in the Annexes.
 
 | Test ID | Description | Category | Details |
-| :--- | :--- | :--- | :---: |
+| :--- | :--------------------------------- | :--- | :---: |
 | `API-SEC-001` | Verify that a standard user receives a 403 Forbidden error when attempting to access admin-only API routes. | Manual Tests | [See Details](#test-case-api-sec-001) |
 | `API_SEC_001` | test_user_api_permissions[endpoint_config13] | API Tests | [See Details](#test-case-api-sec-001) |
 | `API_SEC_001` | test_user_api_permissions[endpoint_config14] | API Tests | [See Details](#test-case-api-sec-001) |
@@ -203,9 +207,9 @@ This section highlights all tests that failed or resulted in an error during exe
 
 ***
 
-## 4. Conclusion
+## Conclusion
 
-This document provides a high-level summary of the testing plan executed for "The New Cantina," a web application for university meal ordering. The primary objective was to validate the core functionality of the application, encompassing both the student-facing user interface and the administrative-level RESTful APIs. The goal was to ensure the system's stability, data integrity, and adherence to specified business rules before deployment.
+The primary objective was to validate the core functionality of the application, encompassing both the student-facing user interface and the administrative-level RESTful APIs. The goal was to ensure the system's stability, data integrity, and adherence to specified business rules before deployment.
 
 The scope of testing was comprehensive, covering critical components of the application. For the backend, this included full Create, Read, Update, and Delete (CRUD) lifecycle testing for the User, Dish, Cafeteria, and Daily Menu API endpoints. Authentication and authorization were rigorously checked to ensure standard users could not access admin-protected resources. On the frontend, testing focused on key user journeys: the complete student workflow from login to browsing menus, adding items to a cart, and placing an order, as well as the administrator's ability to log in and manage menus. Additionally, model-level tests were conducted to verify database constraints, such as the uniqueness of menus. Intentionally out of scope for this phase were performance and load testing, formal security vulnerability scanning, and usability testing with a formal user group.
 
@@ -215,7 +219,7 @@ To execute this strategy, a specific set of tools was chosen. The `pytest` frame
 
 ***
 
-## 5. Annexes
+## Annexes
 
 This section contains the detailed execution reports for all automated and manual test cases.
 
@@ -254,7 +258,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call Cafeteria.create_cafeteria(). | A new cafeteria is created and persisted to the database. | As Expected | **Pass** |
 
 ---
@@ -280,7 +284,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_cafeteria() with a new name. | The cafeteria's name is successfully updated in the database. | As Expected | **Pass** |
 
 ---
@@ -306,7 +310,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create multiple cafeterias and call get_all_dicts(). | A list containing all created cafeteria dictionaries is returned. | As Expected | **Pass** |
 
 ---
@@ -332,7 +336,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call delete_cafeteria() on an instance. | The cafeteria is removed from the database. | As Expected | **Pass** |
 
 ---
@@ -358,7 +362,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_cafeteria() with no parameters. | The method must return False. | As Expected | **Pass** |
 
 ---
@@ -384,7 +388,7 @@ The database should prevent the creation of two users with the same email addres
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create and commit User A with a specific email. | User A is created successfully. | As Expected | **Pass** |
 | 2 | Create User B with the same email. | User B instance is created in the session. | As Expected | **Pass** |
 | 3 | Attempt to commit the session with User B. | The commit must fail and raise an IntegrityError. | As Expected | **Pass** |
@@ -412,7 +416,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create two users. Attempt to update the second user's email to match the first user's email. | The update_user() method must return False due to the unique constraint violation. | As Expected | **Pass** |
 
 ---
@@ -438,7 +442,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create a dish and add it to a menu. | The setup is successful. | As Expected | **Pass** |
 | 2 | Attempt to delete the dish. | The delete_dish() method must return False. | As Expected | **Pass** |
 
@@ -465,7 +469,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create a dish and include it in a reservation. | The setup is successful. | As Expected | **Pass** |
 | 2 | Attempt to delete the dish. | The delete_dish() method must return False. | As Expected | **Pass** |
 
@@ -492,7 +496,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call Dish.create_dish(). | A new dish is created. | As Expected | **Pass** |
 
 ---
@@ -518,7 +522,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_from_dict() with new data. | The dish's attributes are updated. | As Expected | **Pass** |
 
 ---
@@ -544,7 +548,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create a dish and call get_by_id() with its ID. | The correct dish instance is returned. | As Expected | **Pass** |
 
 ---
@@ -570,7 +574,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call delete_dish() on an instance. | The dish is removed. | As Expected | **Pass** |
 
 ---
@@ -596,7 +600,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create multiple dishes and call get_all_dicts(). | A list of all created dish dictionaries is returned. | As Expected | **Pass** |
 
 ---
@@ -622,7 +626,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call DailyMenuItem.create_menu_item(). | A new menu item is created. | As Expected | **Pass** |
 
 ---
@@ -648,7 +652,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_menu_item() with new data. | The item's attributes are updated. | As Expected | **Pass** |
 
 ---
@@ -674,7 +678,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call delete_menu_item() on an instance. | The item is removed. | As Expected | **Pass** |
 
 ---
@@ -700,7 +704,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call DailyMenu.create_menu(). | A new menu is created and persisted. | As Expected | **Pass** |
 
 ---
@@ -726,7 +730,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_menu() with a new date. | The menu's date is updated. | As Expected | **Pass** |
 
 ---
@@ -752,7 +756,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call delete_menu() on a menu instance. | The menu is removed from the database. | As Expected | **Pass** |
 
 ---
@@ -778,7 +782,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_menu() with no parameters. | The method must return False. | As Expected | **Pass** |
 
 ---
@@ -804,7 +808,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create multiple menus and call get_all_dicts(). | A list containing all created menu dictionaries is returned. | As Expected | **Pass** |
 
 ---
@@ -830,7 +834,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call OrderItem.create_order_item(). | A new order item is created. | As Expected | **Pass** |
 
 ---
@@ -856,7 +860,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_order_item() with new data. | The item's attributes are updated. | As Expected | **Pass** |
 
 ---
@@ -882,7 +886,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call delete_order_item() on an instance. | The item is removed. | As Expected | **Pass** |
 
 ---
@@ -908,7 +912,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_order_item() with no parameters. | The method must return False. | As Expected | **Pass** |
 
 ---
@@ -934,7 +938,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create items and call get_all_dicts(). | A list of all created item dictionaries is returned. | As Expected | **Pass** |
 
 ---
@@ -960,7 +964,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call Reservation.create_reservation(). | A new reservation is created. | As Expected | **Pass** |
 
 ---
@@ -986,7 +990,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_reservation() with new data. | The reservation's attributes are updated. | As Expected | **Pass** |
 
 ---
@@ -1012,7 +1016,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call delete_reservation() on an instance. | The reservation is removed. | As Expected | **Pass** |
 
 ---
@@ -1038,7 +1042,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_reservation() with no parameters. | The method must return False. | As Expected | **Pass** |
 
 ---
@@ -1064,7 +1068,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create reservations and call get_all_dicts(). | A list of all created reservation dictionaries is returned. | As Expected | **Pass** |
 
 ---
@@ -1090,7 +1094,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call AppUser.create_user with valid details. | An AppUser instance is returned. | As Expected | **Pass** |
 | 2 | Commit the session. | The user is saved to the database with a user_id. | As Expected | **Pass** |
 | 3 | Verify the user's password. | The verify_password method returns True for the correct password and False for an incorrect one. | As Expected | **Pass** |
@@ -1118,7 +1122,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create a user, then call update_user() with new data (e.g., last_name, balance). | The user's attributes are updated in the database and the changes are persisted. | As Expected | **Pass** |
 
 ---
@@ -1144,7 +1148,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create a user, retrieve their ID, then call delete_user(). | The user is removed from the database and can no longer be retrieved by their ID. | As Expected | **Pass** |
 
 ---
@@ -1170,7 +1174,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | On a user instance, call update_user() with no parameters. | The method must return False, indicating no update was performed. | As Expected | **Pass** |
 
 ---
@@ -1196,7 +1200,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_user() with a new password and role. | Method returns True, role is updated, and the new password can be verified while the old one cannot. | As Expected | **Pass** |
 
 ---
@@ -1222,7 +1226,7 @@ The system should prevent a menu from being updated to a date/cafeteria combinat
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create Menu A for Cafeteria 1 on Date X. | Menu is created. | As Expected | **Pass** |
 | 2 | Create Menu B for Cafeteria 2 on Date Y. | Menu is created. | As Expected | **Pass** |
 | 3 | Attempt to update Menu B to use Cafeteria 1 and Date X. | The update operation must fail and return False due to the unique constraint violation. | Execution failed. See details below. | **Failed** |
@@ -1277,7 +1281,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call update_menu_item() with no parameters. | The method must return False. | Execution failed. See details below. | **Failed** |
 
 **Failure Details:**
@@ -1522,7 +1526,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create multiple items and call get_all_dicts(). | A list containing all created item dictionaries is returned. | Execution failed. See details below. | **Failed** |
 
 **Failure Details:**
@@ -1771,7 +1775,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Perform Create, Read, Update, Delete operations on the Cafeteria API. | All operations succeed with correct HTTP status codes. | As Expected | **Pass** |
 
 ---
@@ -1797,7 +1801,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Perform Create, Read, Update, Delete operations on the Dish API. | All operations succeed with correct HTTP status codes. | As Expected | **Pass** |
 
 ---
@@ -1824,7 +1828,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create a DailyMenu via POST request. | Receives HTTP 201 and menu data. | As Expected | **Pass** |
 | 2 | Create a DailyMenuItem via POST, linking the menu and a dish. | Receives HTTP 201 and menu item data. | As Expected | **Pass** |
 | 3 | Delete the parent DailyMenu. | The operation succeeds, and the child DailyMenuItem should be deleted by cascade. | As Expected | **Pass** |
@@ -1852,7 +1856,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -1880,7 +1884,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -1908,7 +1912,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -1936,7 +1940,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -1964,7 +1968,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -1992,7 +1996,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -2020,7 +2024,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -2048,7 +2052,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -2076,7 +2080,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -2104,7 +2108,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -2132,7 +2136,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -2160,7 +2164,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -2188,7 +2192,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -2216,7 +2220,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2242,7 +2246,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2268,7 +2272,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2294,7 +2298,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2320,7 +2324,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2346,7 +2350,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2372,7 +2376,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2398,7 +2402,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2424,7 +2428,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2450,7 +2454,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2476,7 +2480,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2502,7 +2506,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2528,7 +2532,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2554,7 +2558,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2580,7 +2584,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2606,7 +2610,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2632,7 +2636,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2658,7 +2662,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2684,7 +2688,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2710,7 +2714,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2736,7 +2740,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2762,7 +2766,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2788,7 +2792,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2814,7 +2818,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2840,7 +2844,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2866,7 +2870,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2892,7 +2896,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2918,7 +2922,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2944,7 +2948,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2970,7 +2974,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -2996,7 +3000,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -3022,7 +3026,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -3048,7 +3052,7 @@ An API client without a valid session cookie must be rejected with an HTTP 401 o
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send a request (GET, POST, PUT, DELETE) to a protected API endpoint without authentication. | The server must respond with an HTTP 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -3074,7 +3078,7 @@ An authenticated admin must be able to fully manage users through the API.
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Send POST to `/api/v1/user/` to create a new user. | Receives HTTP 201 and user data. | As Expected | **Pass** |
 | 2 | Send GET to `/api/v1/user/` to list all users. | Receives HTTP 200 and the new user is in the list. | As Expected | **Pass** |
 | 3 | Send PUT to `/api/v1/user/{id}` to update the user. | Receives HTTP 200 and updated data. | As Expected | **Pass** |
@@ -3103,7 +3107,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -3192,7 +3196,7 @@ A standard user should be able to access their own data but be denied access to 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Attempt to access admin-only endpoints (e.g., list all users, create a dish). | Access is denied with HTTP 401/403. | As Expected | **Pass** |
 | 2 | Attempt to access own user data (e.g., GET /api/v1/user/{own_id}). | Access is allowed with HTTP 200. | As Expected | **Pass** |
 | 3 | Attempt to access another user's data (e.g., GET /api/v1/reservations/{other_user_reservation_id}). | Access is denied with HTTP 401/403/404. | Execution failed. See details below. | **Failed** |
@@ -3285,7 +3289,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Navigate to login page. | Page loads successfully. | As Expected | **Pass** |
 | 2 | Enter admin credentials and submit. | Redirected to the admin dashboard. | As Expected | **Pass** |
 | 3 | Click the 'Logout' link. | Redirected back to the login page. | As Expected | **Pass** |
@@ -3315,7 +3319,7 @@ A student logs in, navigates to a cafeteria, selects a date, adds a dish to thei
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Navigate to login page and log in as a student. | Redirected to user dashboard. | As Expected | **Pass** |
 | 2 | Navigate between different cafeteria links. | The main content updates to show the selected cafeteria's menu page. | As Expected | **Pass** |
 | 3 | Open the date picker and select a date. | The menu table updates to show dishes for the selected date. | As Expected | **Pass** |
@@ -3473,7 +3477,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Execute create, update, and delete functions on the Cafeteria model. | All model methods execute without error and reflect correct state changes in the database. | As Expected | **Pass** |
 
 ---
@@ -3499,7 +3503,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Test AppUser email uniqueness constraint. | The database prevents duplicate emails. | As Expected | **Pass** |
 | 2 | Test that a Dish in use by a menu cannot be deleted. | The deletion operation fails as expected. | As Expected | **Pass** |
 | 3 | Perform cleanup in the correct order to respect foreign key constraints. | All entities are deleted successfully without integrity errors. | As Expected | **Pass** |
@@ -3527,7 +3531,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Phase 1: System Setup (create users, cafeterias, dishes). | All base data is created via model methods. | As Expected | **Pass** |
 | 2 | Phase 2: Menu Management (create menus and items). | Menus are created successfully. | As Expected | **Pass** |
 | 3 | Phase 3 & 4: Order Processing and Management. | Orders are created and updated successfully. | As Expected | **Pass** |
@@ -3558,7 +3562,7 @@ Create all related entities (Cafeteria, Dish, Menu, MenuItem), then verify that 
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Create a Cafeteria, Dish, DailyMenu, and DailyMenuItem. | All entities are created successfully. | As Expected | **Pass** |
 | 2 | Attempt to delete the Dish while it is linked to the DailyMenuItem. | The deletion must fail, returning False. | As Expected | **Pass** |
 | 3 | Delete the DailyMenuItem first, then delete the Dish. | Both deletions must now succeed. | As Expected | **Pass** |
@@ -3586,7 +3590,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Execute model functions for creating users, dishes, menus, reservations, and order items in sequence. | All model methods execute without error, simulating a full order process. | As Expected | **Pass** |
 
 ---
@@ -3612,7 +3616,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Call a subset of protected API endpoints without a login session. | All calls must be rejected with a 401 or 403 status code. | As Expected | **Pass** |
 
 ---
@@ -3638,7 +3642,7 @@ N/A
 **Test Steps:**
 
 | Step # | Step Details | Expected Results | Actual Results | Status |
-|:---:|:---|:---|:---|:---:|
+|:---:|:----------------------|:----------------------|:----------------------|:---:|
 | 1 | Execute create, update, and delete functions on the AppUser model, including constraint checks. | All model methods execute without error and reflect correct state changes in the database. | As Expected | **Pass** |
 
 ---
@@ -3649,7 +3653,7 @@ The following test cases were executed but have no metadata in the registry. Con
 
 
 | Test Function | Status | Time |
-|:---|:---|:---|
+|:---------------------------------|:---|:---|
 | `test_api_unauthenticated_access_is_denied[DELETE__cafeteria_1_(Supprimer une caf\xe9t\xe9ria)]` | Passed | 0.2950s |
 | `test_api_unauthenticated_access_is_denied[DELETE__daily-menu-item_1_(Supprimer un item de menu)]` | Passed | 0.2970s |
 | `test_api_unauthenticated_access_is_denied[DELETE__daily-menu_1_(Supprimer un menu)]` | Passed | 0.2980s |
@@ -3730,7 +3734,7 @@ The following test cases were executed but have no metadata in the registry. Con
 
 **Test Steps:**
 | Step # | Action | Expected Result | Actual Result | Status |
-| :--- | :--- | :--- | :--- | :--- |
+| :--- | :---------------------- | :---------------------- | :---------------------- | :--- |
 | 1 | Authenticate as 'student1@example.com'. | Authentication successful. | As Expected | Pass |
 | 2 | Send GET request to /api/v1/user/ | Server returns HTTP 403 Forbidden. | Server returned HTTP 404 Not Found. | Fail |
 
@@ -3758,7 +3762,7 @@ QA Tester's Log
 
 **Test Steps:**
 | Step # | Action | Expected Result | Actual Result | Status |
-| :--- | :--- | :--- | :--- | :--- |
+| :--- | :---------------------- | :---------------------- | :---------------------- | :--- |
 | 1 | Login as student. | Redirect to dashboard. |  |  |
 | 2 | Add an item to the cart. | Cart updates correctly. |  |  |
 | 3 | Click 'Place Order'. | Order success message appears. |  |  |
@@ -3787,7 +3791,7 @@ QA Tester's Log
 
 **Test Steps:**
 | Step # | Action | Expected Result | Actual Result | Status |
-| :--- | :--- | :--- | :--- | :--- |
+| :--- | :---------------------- | :---------------------- | :---------------------- | :--- |
 | 1 | Navigate to the 'Top Up Balance' page. | The 'Account Balance' page is displayed. | As Expected | Pass |
 | 2 | Enter '25.50' into the amount field and click 'Add Money'. | A success message appears and the 'Current Balance' on the page updates. | As Expected | Pass |
 | 3 | Observe the header of the application. | The balance in the top-right corner updates instantly without a page refresh. | As Expected | Pass |
