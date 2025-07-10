@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Case Management Dashboard - The New Cantina</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Anti-flicker dark mode script
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    </script>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 antialiased">
+
+<div class="p-4 sm:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Header -->
+        <header class="mb-8 pb-4 border-b border-slate-200 dark:border-slate-700">
+            <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Test Case Management Dashboard</h1>
+            <p class="mt-2 text-lg text-slate-600 dark:text-slate-400">Project: The New Cantina</p>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
+                <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Tests</h3>
+                <p class="mt-1 text-3xl font-semibold text-slate-900 dark:text-slate-100">5</p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
+                <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400">Passed</h3>
+                <p class="mt-1 text-3xl font-semibold text-green-600 dark:text-green-400">1</p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
+                <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400">Failed</h3>
+                <p class="mt-1 text-3xl font-semibold text-red-600 dark:text-red-400">1</p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
+                <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400">In Progress</h3>
+                <p class="mt-1 text-3xl font-semibold text-blue-600 dark:text-blue-400">1</p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
+                <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400">Pending / Draft</h3>
+                <p class="mt-1 text-3xl font-semibold text-slate-500 dark:text-slate-400">2</p>
+            </div>
+        </div>
+
+        <!-- Filters & Actions -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+            <div class="flex items-center gap-4 w-full sm:w-auto">
+                <input type="search" placeholder="Search tests..." class="w-full sm:w-64 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select class="w-full sm:w-auto px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option>All Statuses</option>
+                    <option>Passed</option>
+                    <option>Failed</option>
+                    <option>In Progress</option>
+                </select>
+            </div>
+            <button class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition">New Test Case</button>
+        </div>
+
+        <!-- Test Cases Table -->
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-50 dark:bg-slate-700 text-xs text-slate-500 dark:text-slate-400 uppercase">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">ID</th>
+                            <th scope="col" class="px-6 py-3">Title</th>
+                            <th scope="col" class="px-6 py-3">Feature</th>
+                            <th scope="col" class="px-6 py-3">Priority</th>
+                            <th scope="col" class="px-6 py-3">Status</th>
+                            <th scope="col" class="px-6 py-3">Assigned To</th>
+                            <th scope="col" class="px-6 py-3 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                        
+                        <!-- Sample Test 1: Passed -->
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                            <td class="px-6 py-4 font-mono text-slate-500 dark:text-slate-400">AUTH-001</td>
+                            <td class="px-6 py-4 font-medium">Successful Student Login</td>
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">Authentication</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center"><span class="h-2 w-2 rounded-full bg-red-500 mr-2"></span>Critical</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center"><span class="h-2 w-2 rounded-full bg-green-500 mr-2"></span>Passed</div>
+                            </td>
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">Gabriel Aumasson-Leduc</td>
+                            <td class="px-6 py-4 text-center">
+                                <a href="#" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">View</a>
+                            </td>
+                        </tr>
+
+                        <!-- Sample Test 2: Failed -->
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                            <td class="px-6 py-4 font-mono text-slate-500 dark:text-slate-400">ADM-USR-003</td>
+                            <td class="px-6 py-4 font-medium">Admin - Attempt to create user with duplicate email</td>
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">Admin - User Mgmt</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center"><span class="h-2 w-2 rounded-full bg-orange-500 mr-2"></span>High</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center"><span class="h-2 w-2 rounded-full bg-red-500 mr-2"></span>Failed</div>
+                            </td>
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">Ishan Baichoo</td>
+                            <td class="px-6 py-4 text-center">
+                                <a href="#" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">View</a>
+                            </td>
+                        </tr>
+
+                        <!-- Sample Test 3: In Progress -->
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                            <td class="px-6 py-4 font-mono text-slate-500 dark:text-slate-400">E2E-ORDER-001</td>
+                            <td class="px-6 py-4 font-medium">Student - Complete E2E Order Workflow</td>
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">Ordering</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center"><span class="h-2 w-2 rounded-full bg-red-500 mr-2"></span>Critical</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center"><span class="h-2 w-2 rounded-full bg-blue-500 mr-2"></span>In Progress</div>
+                            </td>
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">Clément De Simon</td>
+                            <td class="px-6 py-4 text-center">
+                                <a href="#" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">View</a>
+                            </td>
+                        </tr>
+
+                        <!-- Sample Test 4: Ready for Test (Manual) -->
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                            <td class="px-6 py-4 font-mono text-slate-500 dark:text-slate-400">MAN-UI-002</td>
+                            <td class="px-6 py-4 font-medium">Manual - Verify UI responsiveness on mobile devices</td>
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">UI/UX</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center"><span class="h-2 w-2 rounded-full bg-amber-500 mr-2"></span>Medium</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center"><span class="h-2 w-2 rounded-full bg-cyan-500 mr-2"></span>Ready for Test</div>
+                            </td>
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">Gabriel Aumasson-Leduc</td>
+                            <td class="px-6 py-4 text-center">
+                                <a href="#" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">View</a>
+                            </td>
+                        </tr>
+
+                        <!-- Sample Test 5: Draft -->
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                            <td class="px-6 py-4 font-mono text-slate-500 dark:text-slate-400">API-LOAD-001</td>
+                            <td class="px-6 py-4 font-medium">API - Load testing for menu endpoint</td>
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">API - Performance</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center"><span class="h-2 w-2 rounded-full bg-slate-400 mr-2"></span>Low</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center"><span class="h-2 w-2 rounded-full bg-slate-400 mr-2"></span>Draft</div>
+                            </td>
+                            <td class="px-6 py-4 text-slate-500 dark:text-slate-400">Unassigned</td>
+                            <td class="px-6 py-4 text-center">
+                                <a href="#" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">View</a>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
