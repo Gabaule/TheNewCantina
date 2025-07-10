@@ -72,11 +72,7 @@ The project includes a script that runs tests and generates a comprehensive repo
     ```
 
 2.  **Run tests and generate reports:**
-    -   To run tests inside Docker (recommended):
-        ```sh
-        python report_generator.py --docker
-        ```
-    -   To run tests in your local environment (requires local setup):
+    -   To run tests :
         ```sh
         python report_generator.py
         ```

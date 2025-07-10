@@ -282,7 +282,7 @@ This section contains the detailed execution reports for all automated and manua
 | **Test Case ID** | `MODEL_USER_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.4330s` |
+| **Execution Time** | `0.4440s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_user` |
@@ -298,7 +298,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `MODEL_DB_004` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2960s` |
+| **Execution Time** | `0.3040s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_dish_delete_fails_if_in_use_by_menu_item` |
@@ -311,7 +311,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `MODEL_MENUITEM_005` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2890s` |
+| **Execution Time** | `0.2990s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_get_all_menu_items_as_dicts` |
@@ -324,7 +324,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `MODEL_DB_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2950s` |
+| **Execution Time** | `0.2980s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_menu_uniqueness_constraint_on_update` |
@@ -337,7 +337,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `MODEL_MENUITEM_004` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2910s` |
+| **Execution Time** | `0.3150s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_update_menu_item_with_no_data` |
@@ -353,7 +353,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `API_SEC_002` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `9.8740s` |
+| **Execution Time** | `9.7650s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_api_unauthenticated_access_is_denied (x33 params)` |
@@ -369,7 +369,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `E2E_ADMIN_CAFE_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `3.9310s` |
+| **Execution Time** | `4.0780s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_admin_full_cafeteria_lifecycle` |
@@ -382,7 +382,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `E2E_ADMIN_MENU_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `12.4710s` |
+| **Execution Time** | `15.9940s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_admin_full_menu_lifecycle` |
@@ -395,7 +395,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `E2E_ADMIN_USER_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `4.1300s` |
+| **Execution Time** | `4.4010s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_admin_full_user_lifecycle` |
@@ -408,7 +408,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `E2E_AUTH_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `2.6210s` |
+| **Execution Time** | `2.6510s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_loginAdminLogOut` |
@@ -421,7 +421,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `E2E_ORDER_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `2.1960s` |
+| **Execution Time** | `2.0320s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_orderfoodinthepast` |
@@ -434,7 +434,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `E2E_HISTORY_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `2.6130s` |
+| **Execution Time** | `2.1990s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_student_filter_order_history` |
@@ -450,7 +450,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `SCEN_INT_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.7800s` |
+| **Execution Time** | `0.7970s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_full_system_integration` |
@@ -466,7 +466,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_ADMIN_CAN_GET_EXISTING_RESERVATION_AND_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3480s` |
+| **Execution Time** | `0.3490s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_admin_can_get_existing_reservation_and_item` |
@@ -479,7 +479,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_API_ADMIN_ACCESS_IS_GRANTED` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `6.6300s` |
+| **Execution Time** | `6.8340s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_api_admin_access_is_granted (x19 params)` |
@@ -492,7 +492,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_API_UNAUTHENTICATED_ACCESS_IS_DENIED` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `9.6760s` |
+| **Execution Time** | `9.7430s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_api_unauthenticated_access_is_denied (x33 params)` |
@@ -505,7 +505,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_API_USER_ACCESS_IS_FORBIDDEN` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `3.4880s` |
+| **Execution Time** | `3.4910s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_api_user_access_is_forbidden (x10 params)` |
@@ -518,7 +518,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_API_USER_ACCESS_IS_GRANTED` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `2.0820s` |
+| **Execution Time** | `2.1010s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_api_user_access_is_granted (x6 params)` |
@@ -531,7 +531,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_APP_USER_GET_ALL_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.7840s` |
+| **Execution Time** | `0.7660s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_app_user_get_all_dicts (x2 params)` |
@@ -544,7 +544,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_APP_USER_UPDATE_NOTHING_RETURNS_FALSE` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3380s` |
+| **Execution Time** | `0.3400s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_app_user_update_nothing_returns_false` |
@@ -557,7 +557,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_APP_USER_UPDATE_PASSWORD_AND_ROLE` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.4680s` |
+| **Execution Time** | `0.4710s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_app_user_update_password_and_role` |
@@ -570,7 +570,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_APP_USER_UPDATE_TO_EXISTING_EMAIL_FAILS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3780s` |
+| **Execution Time** | `0.3800s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_app_user_update_to_existing_email_fails` |
@@ -583,7 +583,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_CAFETERIA_GET_ALL_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2910s` |
+| **Execution Time** | `0.3010s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_cafeteria_get_all_dicts` |
@@ -596,7 +596,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_COMPLETE_CAFETERIA_LIFECYCLE` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2940s` |
+| **Execution Time** | `0.2950s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_complete_cafeteria_lifecycle` |
@@ -609,7 +609,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_COMPLETE_MENU_CREATION_WORKFLOW` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2920s` |
+| **Execution Time** | `0.2980s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_complete_menu_creation_workflow` |
@@ -622,7 +622,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_COMPLETE_ORDER_WORKFLOW` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6870s` |
+| **Execution Time** | `0.6920s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_complete_order_workflow` |
@@ -635,7 +635,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_COMPLETE_USER_LIFECYCLE` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6720s` |
+| **Execution Time** | `0.6870s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_complete_user_lifecycle` |
@@ -648,7 +648,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_CREATE_CAFETERIA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5820s` |
+| **Execution Time** | `0.5950s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_cafeteria (x2 params)` |
@@ -661,7 +661,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_CREATE_DISH` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5780s` |
+| **Execution Time** | `0.5960s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_dish (x2 params)` |
@@ -674,7 +674,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_CREATE_MENU` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5820s` |
+| **Execution Time** | `0.5850s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_menu (x2 params)` |
@@ -687,7 +687,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_CREATE_MENU_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5850s` |
+| **Execution Time** | `0.5880s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_menu_item (x2 params)` |
@@ -700,7 +700,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_CREATE_ORDER_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6730s` |
+| **Execution Time** | `0.6900s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_order_item (x2 params)` |
@@ -713,7 +713,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_CREATE_RESERVATION` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6720s` |
+| **Execution Time** | `0.7030s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_reservation (x2 params)` |
@@ -726,7 +726,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_CREATE_USER` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.4670s` |
+| **Execution Time** | `0.4750s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_user` |
@@ -739,7 +739,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_DELETE_CAFETERIA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5800s` |
+| **Execution Time** | `0.6000s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_cafeteria (x2 params)` |
@@ -752,7 +752,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_DELETE_DISH` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5800s` |
+| **Execution Time** | `0.5970s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_dish (x2 params)` |
@@ -765,7 +765,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_DELETE_MENU` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5810s` |
+| **Execution Time** | `0.5870s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_menu (x2 params)` |
@@ -778,7 +778,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_DELETE_MENU_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5830s` |
+| **Execution Time** | `0.5940s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_menu_item (x2 params)` |
@@ -791,7 +791,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_DELETE_ORDER_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6820s` |
+| **Execution Time** | `0.6930s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_order_item (x2 params)` |
@@ -804,7 +804,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_DELETE_RESERVATION` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6680s` |
+| **Execution Time** | `0.6890s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_reservation (x2 params)` |
@@ -817,7 +817,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_DELETE_USER` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6800s` |
+| **Execution Time** | `0.6950s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_user (x2 params)` |
@@ -830,7 +830,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_DISH_DELETE_FAILS_IF_IN_USE_BY_MENU_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2950s` |
+| **Execution Time** | `0.2930s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_dish_delete_fails_if_in_use_by_menu_item` |
@@ -843,7 +843,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_DISH_DELETE_FAILS_IF_IN_USE_BY_ORDER_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3950s` |
+| **Execution Time** | `0.4020s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_dish_delete_fails_if_in_use_by_order_item` |
@@ -856,7 +856,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_GET_ALL_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2890s` |
+| **Execution Time** | `0.2920s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_all_dicts` |
@@ -869,7 +869,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_GET_ALL_DISHES_AS_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5830s` |
+| **Execution Time** | `0.6030s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_all_dishes_as_dicts (x2 params)` |
@@ -882,7 +882,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_GET_ALL_MENUS_AS_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2890s` |
+| **Execution Time** | `0.3000s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_all_menus_as_dicts` |
@@ -895,7 +895,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_GET_ALL_ORDER_ITEMS_AS_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3360s` |
+| **Execution Time** | `0.3450s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_all_order_items_as_dicts` |
@@ -908,7 +908,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_GET_ALL_RESERVATIONS_AS_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3360s` |
+| **Execution Time** | `0.3390s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_all_reservations_as_dicts` |
@@ -921,7 +921,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_GET_BY_ID` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2880s` |
+| **Execution Time** | `0.3040s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_by_id` |
@@ -934,7 +934,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_REFERENTIAL_INTEGRITY_WORKFLOW` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5540s` |
+| **Execution Time** | `0.5770s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_referential_integrity_workflow` |
@@ -947,7 +947,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_STUDENT_BALANCE_TOP_UP` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `3.1100s` |
+| **Execution Time** | `3.2760s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_student_balance_top_up` |
@@ -960,7 +960,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UNAUTHENTICATED_ACCESS_SECURITY` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2900s` |
+| **Execution Time** | `0.2940s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_unauthenticated_access_security[endpoint_subset0]` |
@@ -973,7 +973,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UNIQUE_EMAIL_CONSTRAINT` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.7780s` |
+| **Execution Time** | `0.7960s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_unique_email_constraint (x2 params)` |
@@ -986,7 +986,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UPDATE_CAFETERIA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5900s` |
+| **Execution Time** | `0.5890s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_cafeteria (x2 params)` |
@@ -999,7 +999,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UPDATE_CAFETERIA_WITH_NO_DATA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2890s` |
+| **Execution Time** | `0.2910s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_cafeteria_with_no_data` |
@@ -1012,7 +1012,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UPDATE_FROM_DICT` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5880s` |
+| **Execution Time** | `0.6020s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_from_dict (x2 params)` |
@@ -1025,7 +1025,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UPDATE_MENU` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5940s` |
+| **Execution Time** | `0.5890s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_menu (x2 params)` |
@@ -1038,7 +1038,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UPDATE_MENU_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5840s` |
+| **Execution Time** | `0.5890s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_menu_item (x2 params)` |
@@ -1051,7 +1051,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UPDATE_MENU_WITH_NO_DATA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2880s` |
+| **Execution Time** | `0.2930s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_menu_with_no_data` |
@@ -1064,7 +1064,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UPDATE_ORDER_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6720s` |
+| **Execution Time** | `0.6860s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_order_item (x2 params)` |
@@ -1077,7 +1077,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UPDATE_ORDER_ITEM_WITH_NO_DATA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3350s` |
+| **Execution Time** | `0.3470s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_order_item_with_no_data` |
@@ -1090,7 +1090,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UPDATE_RESERVATION` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6900s` |
+| **Execution Time** | `0.6850s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_reservation (x2 params)` |
@@ -1103,7 +1103,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UPDATE_RESERVATION_WITH_NO_DATA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3320s` |
+| **Execution Time** | `0.3430s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_reservation_with_no_data` |
@@ -1116,7 +1116,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_UPDATE_USER` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6960s` |
+| **Execution Time** | `0.6880s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_user (x2 params)` |
@@ -1129,7 +1129,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `TEST_USER_CAN_CREATE_AND_VIEW_OWN_RESERVATION` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3430s` |
+| **Execution Time** | `0.3470s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_user_can_create_and_view_own_reservation` |

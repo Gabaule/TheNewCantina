@@ -103,7 +103,7 @@ def run_tests_locally(xml_output_path: str) -> bool:
     if not shutil.which("pytest"):
         print("Error: 'pytest' not found. Please install it (`pip install pytest`).", file=sys.stderr)
         return False
-    command = ["pytest", "-v", f"--junitxml={xml_output_path}"]
+    command = ["pytest", "-v", f"--junitxml={xml_output_path}", "tests/"] # Added "tests/" here
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8', bufsize=1)
         return_code = _stream_process_output(process)
