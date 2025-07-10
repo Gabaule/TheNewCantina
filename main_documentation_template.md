@@ -25,20 +25,23 @@
 
 ***
 
-## 1. Introduction
+## Introduction
 
 The primary objective of this project was to design and implement a robust testing strategy to validate the application's functionality, stability, and data integrity.
 
 This report details the testing methodologies employed, the test cases executed (both automated and manual), and a summary of the overall test plan and results.
 
-### 1.1. Team Members
+### Team Members
 
 The following students contributed to this semester project:
+
 *   Ishan Baichoo
+
 *   Gabriel Aumasson-Leduc
+
 *   Clément De Simon
 
-### 1.2. Description of Tested Functionality
+### Description of Tested Functionality
 
 "The New Cantina" is a web-based meal ordering system designed for a university environment. The application serves two primary user roles, each with distinct functionalities:
 
@@ -58,12 +61,14 @@ The entire application is built on a Flask framework with a PostgreSQL database 
 
 ***
 
-## 2. Test Case Management Template
+## Test Case Management Template
 
 To effectively manage the testing process, our team designed a comprehensive and flexible template using Microsoft Excel. This approach was chosen for its universal accessibility, ease of use, and powerful features for data organization and tracking, requiring no specialized software for team members.
 
 The system is built on a two-tiered structure:
+
 1.  A high-level **Test Summary Dashboard** for at-a-glance project management and task distribution.
+
 2.  Individual, detailed **Test Case Sheets** for every test, providing all necessary information for execution and recording.
 
 #### The Test Summary Dashboard
@@ -146,11 +151,10 @@ Verify that when a user adds funds, the UI provides clear feedback and all balan
 | 4 | Navigate to the main 'Dashboard' page. | The balance in the header remains at the new, updated value. | As Expected | Pass |
 
 
-***
 
-## 3. Testing Methodology and Execution
+## Testing Methodology and Execution
 
-### 3.1. Testing Methods & Tools
+### Testing Methods & Tools
 
 A hybrid testing strategy was adopted to ensure comprehensive coverage, combining the efficiency of automation with the intuitiveness of manual testing.
 
@@ -172,7 +176,7 @@ The following tools were utilized to implement our testing strategy:
 | **Microsoft Excel** | Used as a centralized tool for designing, documenting, and tracking the execution of manual test cases. |
 
 
-### 3.2. Test Results Summary
+### Test Results Summary
 
 The following tables provide a high-level overview of the entire testing effort, combining results from both automated and manual test executions.
 
@@ -186,9 +190,9 @@ This section highlights all tests that failed or resulted in an error during exe
 
 ***
 
-## 4. Conclusion
+## Conclusion
 
-This document provides a high-level summary of the testing plan executed for "The New Cantina," a web application for university meal ordering. The primary objective was to validate the core functionality of the application, encompassing both the student-facing user interface and the administrative-level RESTful APIs. The goal was to ensure the system's stability, data integrity, and adherence to specified business rules before deployment.
+The primary objective was to validate the core functionality of the application, encompassing both the student-facing user interface and the administrative-level RESTful APIs. The goal was to ensure the system's stability, data integrity, and adherence to specified business rules before deployment.
 
 The scope of testing was comprehensive, covering critical components of the application. For the backend, this included full Create, Read, Update, and Delete (CRUD) lifecycle testing for the User, Dish, Cafeteria, and Daily Menu API endpoints. Authentication and authorization were rigorously checked to ensure standard users could not access admin-protected resources. On the frontend, testing focused on key user journeys: the complete student workflow from login to browsing menus, adding items to a cart, and placing an order, as well as the administrator's ability to log in and manage menus. Additionally, model-level tests were conducted to verify database constraints, such as the uniqueness of menus. Intentionally out of scope for this phase were performance and load testing, formal security vulnerability scanning, and usability testing with a formal user group.
 
@@ -198,7 +202,7 @@ To execute this strategy, a specific set of tools was chosen. The `pytest` frame
 
 ***
 
-## 5. Annexes
+## Annexes
 
 This section contains the detailed execution reports for all automated and manual test cases.
 

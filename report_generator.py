@@ -3,6 +3,8 @@
 Standalone Python script to convert a pytest JUnit XML report and an Excel-based
 manual test report into a clean, professional, and human-readable Markdown
 test case report with a main summary and detailed annexes.
+
+This script can also export the final report to PDF using Pandoc.
 """
 
 import xml.etree.ElementTree as ET
@@ -15,6 +17,8 @@ import sys
 import re
 import openpyxl
 from openpyxl.utils.exceptions import InvalidFileException
+import subprocess
+import shutil
 
 
 # ==============================================================================
@@ -323,6 +327,61 @@ def create_anchor_id(test_id: str) -> str:
     """Creates a URL-friendly anchor ID from a test case ID."""
     return f"test-case-{re.sub(r'[^a-z0-9]+', '-', test_id.lower())}"
 
+def export_to_pdf(md_input_path: str, pdf_output_path: str) -> bool:
+    """
+    Exports a Markdown file to PDF using Pandoc.
+
+    This function requires Pandoc and a LaTeX distribution (like MiKTeX,
+    TeX Live, or MacTeX) to be installed and available in the system's PATH.
+    """
+    if not shutil.which("pandoc"):
+        print("Error: 'pandoc' command not found.", file=sys.stderr)
+        print("Please install Pandoc from https://pandoc.org/installing.html to use PDF export.", file=sys.stderr)
+        return False
+
+    if not shutil.which("pdflatex"):
+        print("Warning: 'pdflatex' command not found. PDF generation may fail.", file=sys.stderr)
+        print("Please install a LaTeX distribution (e.g., MiKTeX, TeX Live) for robust PDF support.", file=sys.stderr)
+
+    pandoc_command = [
+        "pandoc",
+        md_input_path,
+        "-o",
+        pdf_output_path,
+        "--from=markdown",
+        "--pdf-engine=pdflatex",
+        "--toc",  # Add a table of contents
+        "--number-sections",  # Number the sections
+        "--number-offset=-1", # Start numbering at level 2 headers (##)
+        "-V", "geometry:a4paper,margin=1in",  # Set paper size and margins
+        "-V", "colorlinks",  # Make links colored instead of boxed
+    ]
+
+    try:
+        print(f"Running command: {' '.join(pandoc_command)}")
+        subprocess.run(
+            pandoc_command,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding='utf-8'
+        )
+        return True
+    except FileNotFoundError:
+        # This is a fallback, shutil.which should have caught it.
+        print("Error: 'pandoc' command not found. Could not execute the process.", file=sys.stderr)
+        return False
+    except subprocess.CalledProcessError as e:
+        print(f"Error: Pandoc failed to convert the file to PDF.", file=sys.stderr)
+        print(f"Pandoc Exit Code: {e.returncode}", file=sys.stderr)
+        print("\n--- Pandoc STDOUT ---", file=sys.stderr)
+        print(e.stdout, file=sys.stderr)
+        print("\n--- Pandoc STDERR ---", file=sys.stderr)
+        print(e.stderr, file=sys.stderr)
+        print("\nEnsure a full LaTeX distribution is installed and configured correctly.", file=sys.stderr)
+        return False
+
+
 # ==============================================================================
 # 4. PARSING LOGIC
 # ==============================================================================
@@ -537,7 +596,8 @@ def generate_failed_tests_summary(all_cases: List[TestCase]) -> str:
         row = f"| `{case.test_id}` | {case.name} | {case.category} | [See Details](#{anchor}) |"
         rows.append(row)
 
-    header = "| Test ID | Description | Category | Details |\n| :--- | :--- | :--- | :---: |"
+    # Give the 'Description' column much more relative width to encourage text wrapping
+    header = "| Test ID | Description | Category | Details |\n| :--- | :--------------------------------- | :--- | :---: |"
     return f"{header}\n" + "\n".join(rows)
 
 def generate_annex_automated_report(all_cases: List[TestCase]) -> str:
@@ -581,7 +641,8 @@ def generate_annex_automated_report(all_cases: List[TestCase]) -> str:
     if undocumented_cases:
         report_parts.append("\n### Undocumented Test Cases\n")
         report_parts.append("The following test cases were executed but have no metadata in the registry. Consider documenting them.\n")
-        report_parts.append("\n| Test Function | Status | Time |\n|:---|:---|:---|")
+        # Give 'Test Function' column more width
+        report_parts.append("\n| Test Function | Status | Time |\n|:---------------------------------|:---|:---|")
         for case in sorted(undocumented_cases, key=lambda c: c.name):
             report_parts.append(f"| `{case.name}` | {case.status} | {case.time:.4f}s |")
         
@@ -615,7 +676,8 @@ def generate_detailed_automated_case_markdown(case: TestCase) -> str:
 
     steps_content = "*No detailed steps defined in metadata.*"
     if case.test_steps:
-        steps_header = "\n| Step # | Step Details | Expected Results | Actual Results | Status |\n|:---:|:---|:---|:---|:---:|\n"
+        # Give relevant columns more width for wrapping
+        steps_header = "\n| Step # | Step Details | Expected Results | Actual Results | Status |\n|:---:|:----------------------|:----------------------|:----------------------|:---:|\n"
         steps_rows = "\n".join(
             [f"| {s.step_num} | {s.details} | {s.expected} | {s.actual} | **{s.status}** |" for s in case.test_steps]
         )
@@ -661,8 +723,9 @@ def generate_single_manual_case_markdown(case: TestCase) -> str:
 **Prerequisites:**
 {prereqs}
 """
-
-    steps_header = "\n| Step # | Action | Expected Result | Actual Result | Status |\n| :--- | :--- | :--- | :--- | :--- |\n"
+    
+    # Give relevant columns more width for wrapping
+    steps_header = "\n| Step # | Action | Expected Result | Actual Result | Status |\n| :--- | :---------------------- | :---------------------- | :---------------------- | :--- |\n"
     
     # Ensure status is properly formatted or empty
     def format_status(s):
@@ -698,6 +761,7 @@ if __name__ == "__main__":
     parser.add_argument("output_file", help="Path for the final output Markdown file.")
     parser.add_argument("--template", help="Optional path to a Markdown template file with placeholders.")
     parser.add_argument("--manual-tests-excel", help="Optional path to an Excel file with manual test cases.")
+    parser.add_argument("--pdf-output", help="Optional path to export the final report as a PDF using Pandoc.\nRequires Pandoc and a LaTeX distribution to be installed.")
     
     args = parser.parse_args()
     
@@ -724,6 +788,8 @@ if __name__ == "__main__":
     annex_automated_md = generate_annex_automated_report(automated_cases)
     annex_manual_md = generate_annex_manual_report(manual_cases)
     
+    final_content = ""
+    
     if args.template:
         print(f"Template mode enabled. Reading template: {args.template}")
         try:
@@ -742,16 +808,9 @@ if __name__ == "__main__":
         annex_content = f"{annex_automated_md}\n\n{annex_manual_md}"
         final_content = final_content.replace("%%TEST_ANNEX%%", annex_content)
         
-        try:
-            with open(args.output_file, "w", encoding="utf-8") as f:
-                f.write(final_content)
-            print(f"✅ Successfully inserted report sections into template and saved to: {args.output_file}")
-        except IOError as e:
-            print(f"Error: Could not write to output file '{args.output_file}'.\n{e}", file=sys.stderr)
-            sys.exit(1)
     else:
         # Standalone mode (if no template is provided)
-        final_report = (
+        final_content = (
             f"# Test Execution Report\n\n"
             f"## Overall Test Statistics\n{summary_md}\n\n"
             f"## Key Findings (Failures)\n{failed_tests_md}\n\n"
@@ -760,14 +819,23 @@ if __name__ == "__main__":
             f"{annex_automated_md}\n\n"
             f"{annex_manual_md}"
         )
-        try:
-            with open(args.output_file, "w", encoding="utf-8") as f:
-                f.write(final_report)
-            print(f"✅ Successfully generated standalone report at: {args.output_file}")
-        except IOError as e:
-            print(f"Error: Could not write to output file '{args.output_file}'.\n{e}", file=sys.stderr)
-            sys.exit(1)
+
+    try:
+        with open(args.output_file, "w", encoding="utf-8") as f:
+            f.write(final_content)
+        print(f"✅ Successfully generated Markdown report at: {args.output_file}")
+    except IOError as e:
+        print(f"Error: Could not write to output file '{args.output_file}'.\n{e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Optional: Export to PDF using Pandoc
+    if args.pdf_output:
+        print(f"\nAttempting to export Markdown to PDF: {args.pdf_output}...")
+        if export_to_pdf(args.output_file, args.pdf_output):
+            print(f"✅ Successfully exported PDF report to: {args.pdf_output}")
+        else:
+            print(f"❌ Failed to export PDF. Please check the errors above.", file=sys.stderr)
 
     if any(not case.has_metadata for case in automated_cases):
         undocumented_count = sum(1 for case in automated_cases if not case.has_metadata)
-        print(f"⚠️  Warning: {undocumented_count} automated test cases were found without metadata.")
+        print(f"\n⚠️  Warning: {undocumented_count} automated test cases were found without metadata.")
