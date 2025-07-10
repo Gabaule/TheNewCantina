@@ -15,3 +15,4 @@ notes.txt
 coverage/
 .coverage
 .coverage
+create_test_template.py
