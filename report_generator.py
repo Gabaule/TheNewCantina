@@ -351,19 +351,21 @@ def generate_single_automated_case_md(case: TestCase) -> str:
     """Formats a single automated TestCase, omitting empty sections."""
     anchor_id = create_anchor_id(case.test_id)
     header = f"\n#### <a id=\"{anchor_id}\"></a>{case.test_id}: {case.description}\n| Attribute | Value |\n| :--- | :--- |\n| **Test Case ID** | `{case.test_id}` |\n| **Version** | `1.0` |\n| **Tester** | `{case.tester_name}` |\n| **Execution Time** | `{case.time:.4f}s` |\n| **Date Tested** | `{case.date_tested}` |\n| **Final Status** | **{case.status}** |\n| **Test Function**| `{case.name}` |"
+    
     # Conditional sections
     prereqs_section = f"\n\n**Prerequisites:**\n" + "\n".join([f"1. {p}" for p in case.prerequisites]) if case.prerequisites else ""
     scenario_section = f"\n\n**Test Scenario:**\n{case.test_scenario}" if case.test_scenario else ""
 
-    # MODIFIED: Conditionally generate the entire steps section
     steps_section = ""
     if case.test_steps:
         steps_table = ("| Step # | Action | Expected Result | Actual Result | Status |\n|:---:|:---:|:---:|:---:|:---:|\n" +
                        "\n".join([f"| {s.step_num} | {s.details} | {s.expected} | {s.actual} | {s.status} |" for s in case.test_steps]))
         steps_section = f"\n\n**Test Steps:**\n{steps_table}"
 
-    failure_block = f"\n\n**Failure Details:**\n```\n{case.failure_details.strip()}\n```" if case.failure_details else ""
-    return f"{header}{prereqs_section}{scenario_section}{steps_section}{failure_block}\n\n---"
+    # MODIFICATION: The failure_block is no longer generated. The report will not include error messages.
+    # The original line was:
+    # failure_block = f"\n\n**Failure Details:**\n```\n{case.failure_details.strip()}\n```" if case.failure_details else ""
+    return f"{header}{prereqs_section}{scenario_section}{steps_section}\n\n---"
 # ==============================================================================
 # 5. MAIN EXECUTION
 # ==============================================================================

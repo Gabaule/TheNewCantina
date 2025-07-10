@@ -282,7 +282,7 @@ This section contains the detailed execution reports for all automated and manua
 | **Test Case ID** | `MODEL_USER_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.4140s` |
+| **Execution Time** | `0.4330s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_user` |
@@ -298,7 +298,7 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `MODEL_DB_004` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3030s` |
+| **Execution Time** | `0.2960s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_dish_delete_fails_if_in_use_by_menu_item` |
@@ -311,236 +311,10 @@ The create_user class method should correctly instantiate a user, hash their pas
 | **Test Case ID** | `MODEL_MENUITEM_005` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2880s` |
+| **Execution Time** | `0.2890s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_get_all_menu_items_as_dicts` |
-
-**Failure Details:**
-```
-self = <sqlalchemy.engine.base.Connection object at 0x11855fa10>
-dialect = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x11851b390>
-context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x1190d8a10>
-statement = <sqlalchemy.dialects.sqlite.base.SQLiteCompiler object at 0x11851a850>
-parameters = [(None, '2025-07-10', '2025-07-10 19:51:35.698319')]
-
-    def _exec_single_context(
-        self,
-        dialect: Dialect,
-        context: ExecutionContext,
-        statement: Union[str, Compiled],
-        parameters: Optional[_AnyMultiExecuteParams],
-    ) -> CursorResult[Any]:
-        """continue the _execute_context() method for a single DBAPI
-        cursor.execute() or cursor.executemany() call.
-    
-        """
-        if dialect.bind_typing is BindTyping.SETINPUTSIZES:
-            generic_setinputsizes = context._prepare_set_input_sizes()
-    
-            if generic_setinputsizes:
-                try:
-                    dialect.do_set_input_sizes(
-                        context.cursor, generic_setinputsizes, context
-                    )
-                except BaseException as e:
-                    self._handle_dbapi_exception(
-                        e, str(statement), parameters, None, context
-                    )
-    
-        cursor, str_statement, parameters = (
-            context.cursor,
-            context.statement,
-            context.parameters,
-        )
-    
-        effective_parameters: Optional[_AnyExecuteParams]
-    
-        if not context.executemany:
-            effective_parameters = parameters[0]
-        else:
-            effective_parameters = parameters
-    
-        if self._has_events or self.engine._has_events:
-            for fn in self.dispatch.before_cursor_execute:
-                str_statement, effective_parameters = fn(
-                    self,
-                    cursor,
-                    str_statement,
-                    effective_parameters,
-                    context,
-                    context.executemany,
-                )
-    
-        if self._echo:
-            self._log_info(str_statement)
-    
-            stats = context._get_cache_stats()
-    
-            if not self.engine.hide_parameters:
-                self._log_info(
-                    "[%s] %r",
-                    stats,
-                    sql_util._repr_params(
-                        effective_parameters,
-                        batches=10,
-                        ismulti=context.executemany,
-                    ),
-                )
-            else:
-                self._log_info(
-                    "[%s] [SQL parameters hidden due to hide_parameters=True]",
-                    stats,
-                )
-    
-        evt_handled: bool = False
-        try:
-            if context.execute_style is ExecuteStyle.EXECUTEMANY:
-                effective_parameters = cast(
-                    "_CoreMultiExecuteParams", effective_parameters
-                )
-                if self.dialect._has_events:
-                    for fn in self.dialect.dispatch.do_executemany:
-                        if fn(
-                            cursor,
-                            str_statement,
-                            effective_parameters,
-                            context,
-                        ):
-                            evt_handled = True
-                            break
-                if not evt_handled:
-                    self.dialect.do_executemany(
-                        cursor,
-                        str_statement,
-                        effective_parameters,
-                        context,
-                    )
-            elif not effective_parameters and context.no_parameters:
-                if self.dialect._has_events:
-                    for fn in self.dialect.dispatch.do_execute_no_params:
-                        if fn(cursor, str_statement, context):
-                            evt_handled = True
-                            break
-                if not evt_handled:
-                    self.dialect.do_execute_no_params(
-                        cursor, str_statement, context
-                    )
-            else:
-                effective_parameters = cast(
-                    "_CoreSingleExecuteParams", effective_parameters
-                )
-                if self.dialect._has_events:
-                    for fn in self.dialect.dispatch.do_execute:
-                        if fn(
-                            cursor,
-                            str_statement,
-                            effective_parameters,
-                            context,
-                        ):
-                            evt_handled = True
-                            break
-                if not evt_handled:
->                   self.dialect.do_execute(
-                        cursor, str_statement, effective_parameters, context
-                    )
-
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1963: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x11851b390>
-cursor = <sqlite3.Cursor object at 0x118ac09c0>
-statement = 'INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)'
-parameters = (None, '2025-07-10', '2025-07-10 19:51:35.698319')
-context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x1190d8a10>
-
-    def do_execute(self, cursor, statement, parameters, context=None):
->       cursor.execute(statement, parameters)
-E       sqlite3.IntegrityError: NOT NULL constraint failed: daily_menu.cafeteria_id
-
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/default.py:943: IntegrityError
-
-The above exception was the direct cause of the following exception:
-
-app = <Flask 'app.controller.controller'>
-
-    def test_get_all_menu_items_as_dicts(app):
-        with app.app_context():
-            db.session.query(DailyMenuItem).delete()
-            caf = Cafeteria.create_cafeteria("DMI5")
-            dish = Dish.create_dish("D5", "", 1, "main_course")
-            menu = DailyMenu.create_menu(caf.cafeteria_id, date.today())
->           db.session.commit()
-
-tests/test-python/models/test_daily_menu_item.py:63: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/scoping.py:599: in commit
-    return self._proxied.commit()
-           ^^^^^^^^^^^^^^^^^^^^^^
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:2032: in commit
-    trans.commit(_to_root=True)
-<string>:2: in commit
-    ???
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py:139: in _go
-    ret_value = fn(self, *arg, **kw)
-                ^^^^^^^^^^^^^^^^^^^^
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:1313: in commit
-    self._prepare_impl()
-<string>:2: in _prepare_impl
-    ???
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py:139: in _go
-    ret_value = fn(self, *arg, **kw)
-                ^^^^^^^^^^^^^^^^^^^^
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:1288: in _prepare_impl
-    self.session.flush()
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4345: in flush
-    self._flush(objects)
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4480: in _flush
-    with util.safe_reraise():
-         ^^^^^^^^^^^^^^^^^^^
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
-    raise exc_value.with_traceback(exc_tb)
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4441: in _flush
-    flush_context.execute()
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute
-    rec.execute(self)
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute
-    util.preloaded.orm_persistence.save_obj(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj
-    _emit_insert_statements(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py:1233: in _emit_insert_statements
-    result = connection.execute(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1415: in execute
-    return meth(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/sql/elements.py:523: in _execute_on_connection
-    return connection._execute_clauseelement(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1637: in _execute_clauseelement
-    ret = self._execute_context(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1842: in _execute_context
-    return self._exec_single_context(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1982: in _exec_single_context
-    self._handle_dbapi_exception(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:2351: in _handle_dbapi_exception
-    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1963: in _exec_single_context
-    self.dialect.do_execute(
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x11851b390>
-cursor = <sqlite3.Cursor object at 0x118ac09c0>
-statement = 'INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)'
-parameters = (None, '2025-07-10', '2025-07-10 19:51:35.698319')
-context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x1190d8a10>
-
-    def do_execute(self, cursor, statement, parameters, context=None):
->       cursor.execute(statement, parameters)
-E       sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: daily_menu.cafeteria_id
-E       [SQL: INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)]
-E       [parameters: (None, '2025-07-10', '2025-07-10 19:51:35.698319')]
-E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
-
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/default.py:943: IntegrityError
-```
 
 ---
 
@@ -550,37 +324,10 @@ E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
 | **Test Case ID** | `MODEL_DB_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2920s` |
+| **Execution Time** | `0.2950s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_menu_uniqueness_constraint_on_update` |
-
-**Failure Details:**
-```
-app = <Flask 'app.controller.controller'>
-
-    def test_menu_uniqueness_constraint_on_update(app):
-        """Vérifie la contrainte d'unicité (cafeteria_id, menu_date) lors d'une mise à jour."""
-        with app.app_context():
-            caf1 = Cafeteria.create_cafeteria("Caf 1")
-            caf2 = Cafeteria.create_cafeteria("Caf 2")
-            db.session.commit()
-    
-            # Menu existant pour caf1 à une date donnée
-            DailyMenu.create_menu(cafeteria_id=caf1.cafeteria_id, menu_date=date(2030, 1, 1))
-    
-            # Autre menu pour caf2 qu'on va essayer de déplacer
-            menu_to_update = DailyMenu.create_menu(cafeteria_id=caf2.cafeteria_id, menu_date=date(2030, 1, 2))
-            db.session.commit()
-    
-            # Tenter de déplacer le menu vers une date/cafeteria déjà prise
-            ok = menu_to_update.update_menu(cafeteria_id=caf1.cafeteria_id, menu_date=date(2030, 1, 1))
->           assert ok is False # La méthode doit retourner False en cas d'échec d'intégrité
-            ^^^^^^^^^^^^^^^^^^
-E           assert True is False
-
-tests/test-python/models/test_daily_menu.py:61: AssertionError
-```
 
 ---
 
@@ -590,235 +337,10 @@ tests/test-python/models/test_daily_menu.py:61: AssertionError
 | **Test Case ID** | `MODEL_MENUITEM_004` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2890s` |
+| **Execution Time** | `0.2910s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_update_menu_item_with_no_data` |
-
-**Failure Details:**
-```
-self = <sqlalchemy.engine.base.Connection object at 0x11836ea50>
-dialect = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x118519810>
-context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x11855ea50>
-statement = <sqlalchemy.dialects.sqlite.base.SQLiteCompiler object at 0x11821cb90>
-parameters = [(None, '2025-07-10', '2025-07-10 19:51:35.273834')]
-
-    def _exec_single_context(
-        self,
-        dialect: Dialect,
-        context: ExecutionContext,
-        statement: Union[str, Compiled],
-        parameters: Optional[_AnyMultiExecuteParams],
-    ) -> CursorResult[Any]:
-        """continue the _execute_context() method for a single DBAPI
-        cursor.execute() or cursor.executemany() call.
-    
-        """
-        if dialect.bind_typing is BindTyping.SETINPUTSIZES:
-            generic_setinputsizes = context._prepare_set_input_sizes()
-    
-            if generic_setinputsizes:
-                try:
-                    dialect.do_set_input_sizes(
-                        context.cursor, generic_setinputsizes, context
-                    )
-                except BaseException as e:
-                    self._handle_dbapi_exception(
-                        e, str(statement), parameters, None, context
-                    )
-    
-        cursor, str_statement, parameters = (
-            context.cursor,
-            context.statement,
-            context.parameters,
-        )
-    
-        effective_parameters: Optional[_AnyExecuteParams]
-    
-        if not context.executemany:
-            effective_parameters = parameters[0]
-        else:
-            effective_parameters = parameters
-    
-        if self._has_events or self.engine._has_events:
-            for fn in self.dispatch.before_cursor_execute:
-                str_statement, effective_parameters = fn(
-                    self,
-                    cursor,
-                    str_statement,
-                    effective_parameters,
-                    context,
-                    context.executemany,
-                )
-    
-        if self._echo:
-            self._log_info(str_statement)
-    
-            stats = context._get_cache_stats()
-    
-            if not self.engine.hide_parameters:
-                self._log_info(
-                    "[%s] %r",
-                    stats,
-                    sql_util._repr_params(
-                        effective_parameters,
-                        batches=10,
-                        ismulti=context.executemany,
-                    ),
-                )
-            else:
-                self._log_info(
-                    "[%s] [SQL parameters hidden due to hide_parameters=True]",
-                    stats,
-                )
-    
-        evt_handled: bool = False
-        try:
-            if context.execute_style is ExecuteStyle.EXECUTEMANY:
-                effective_parameters = cast(
-                    "_CoreMultiExecuteParams", effective_parameters
-                )
-                if self.dialect._has_events:
-                    for fn in self.dialect.dispatch.do_executemany:
-                        if fn(
-                            cursor,
-                            str_statement,
-                            effective_parameters,
-                            context,
-                        ):
-                            evt_handled = True
-                            break
-                if not evt_handled:
-                    self.dialect.do_executemany(
-                        cursor,
-                        str_statement,
-                        effective_parameters,
-                        context,
-                    )
-            elif not effective_parameters and context.no_parameters:
-                if self.dialect._has_events:
-                    for fn in self.dialect.dispatch.do_execute_no_params:
-                        if fn(cursor, str_statement, context):
-                            evt_handled = True
-                            break
-                if not evt_handled:
-                    self.dialect.do_execute_no_params(
-                        cursor, str_statement, context
-                    )
-            else:
-                effective_parameters = cast(
-                    "_CoreSingleExecuteParams", effective_parameters
-                )
-                if self.dialect._has_events:
-                    for fn in self.dialect.dispatch.do_execute:
-                        if fn(
-                            cursor,
-                            str_statement,
-                            effective_parameters,
-                            context,
-                        ):
-                            evt_handled = True
-                            break
-                if not evt_handled:
->                   self.dialect.do_execute(
-                        cursor, str_statement, effective_parameters, context
-                    )
-
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1963: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x118519810>
-cursor = <sqlite3.Cursor object at 0x1184705c0>
-statement = 'INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)'
-parameters = (None, '2025-07-10', '2025-07-10 19:51:35.273834')
-context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x11855ea50>
-
-    def do_execute(self, cursor, statement, parameters, context=None):
->       cursor.execute(statement, parameters)
-E       sqlite3.IntegrityError: NOT NULL constraint failed: daily_menu.cafeteria_id
-
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/default.py:943: IntegrityError
-
-The above exception was the direct cause of the following exception:
-
-app = <Flask 'app.controller.controller'>
-
-    def test_update_menu_item_with_no_data(app):
-        with app.app_context():
-            caf = Cafeteria.create_cafeteria("DMI4")
-            dish = Dish.create_dish("D4", "", 1, "main_course")
-            menu = DailyMenu.create_menu(caf.cafeteria_id, date.today())
->           db.session.commit()
-
-tests/test-python/models/test_daily_menu_item.py:52: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/scoping.py:599: in commit
-    return self._proxied.commit()
-           ^^^^^^^^^^^^^^^^^^^^^^
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:2032: in commit
-    trans.commit(_to_root=True)
-<string>:2: in commit
-    ???
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py:139: in _go
-    ret_value = fn(self, *arg, **kw)
-                ^^^^^^^^^^^^^^^^^^^^
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:1313: in commit
-    self._prepare_impl()
-<string>:2: in _prepare_impl
-    ???
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py:139: in _go
-    ret_value = fn(self, *arg, **kw)
-                ^^^^^^^^^^^^^^^^^^^^
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:1288: in _prepare_impl
-    self.session.flush()
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4345: in flush
-    self._flush(objects)
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4480: in _flush
-    with util.safe_reraise():
-         ^^^^^^^^^^^^^^^^^^^
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
-    raise exc_value.with_traceback(exc_tb)
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4441: in _flush
-    flush_context.execute()
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute
-    rec.execute(self)
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute
-    util.preloaded.orm_persistence.save_obj(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj
-    _emit_insert_statements(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py:1233: in _emit_insert_statements
-    result = connection.execute(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1415: in execute
-    return meth(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/sql/elements.py:523: in _execute_on_connection
-    return connection._execute_clauseelement(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1637: in _execute_clauseelement
-    ret = self._execute_context(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1842: in _execute_context
-    return self._exec_single_context(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1982: in _exec_single_context
-    self._handle_dbapi_exception(
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:2351: in _handle_dbapi_exception
-    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1963: in _exec_single_context
-    self.dialect.do_execute(
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x118519810>
-cursor = <sqlite3.Cursor object at 0x1184705c0>
-statement = 'INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)'
-parameters = (None, '2025-07-10', '2025-07-10 19:51:35.273834')
-context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x11855ea50>
-
-    def do_execute(self, cursor, statement, parameters, context=None):
->       cursor.execute(statement, parameters)
-E       sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: daily_menu.cafeteria_id
-E       [SQL: INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)]
-E       [parameters: (None, '2025-07-10', '2025-07-10 19:51:35.273834')]
-E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
-
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/default.py:943: IntegrityError
-```
 
 ---
 
@@ -831,7 +353,7 @@ E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
 | **Test Case ID** | `API_SEC_002` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `9.6200s` |
+| **Execution Time** | `9.8740s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_api_unauthenticated_access_is_denied (x33 params)` |
@@ -847,7 +369,7 @@ E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
 | **Test Case ID** | `E2E_ADMIN_CAFE_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `3.6280s` |
+| **Execution Time** | `3.9310s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_admin_full_cafeteria_lifecycle` |
@@ -860,107 +382,10 @@ E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
 | **Test Case ID** | `E2E_ADMIN_MENU_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `15.6060s` |
+| **Execution Time** | `12.4710s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_admin_full_menu_lifecycle` |
-
-**Failure Details:**
-```
-self = <test_admin_menu_management.TestAdminMenuManagement object at 0x109b7e710>
-
-    def test_admin_full_menu_lifecycle(self):
-      driver = self.driver
-    
-      driver.get("http://localhost:8081/login")
-      driver.find_element(By.ID, "username").send_keys("admin@example.com")
-      driver.find_element(By.ID, "password").send_keys("password")
-      driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-    
-      WebDriverWait(driver, 10).until(EC.url_contains("/admin/dashboard"))
-    
-      future_date = date.today() + timedelta(days=30)
-      future_date_str = future_date.strftime("%Y-%m-%d")
-      driver.get(f"http://localhost:8081/admin/dashboard?date={future_date_str}")
-    
-      WebDriverWait(driver, 10).until(
-          EC.presence_of_element_located((By.XPATH, "//button[contains(., 'Save Menu')]"))
-      )
-    
-      combobox = driver.find_element(By.CSS_SELECTOR, "input[x-model='comboboxSearch']")
-      combobox.send_keys("Pizza Prosciutto")
->     pizza_option = WebDriverWait(driver, 10).until(
-          EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'cursor-pointer') and text()='Pizza Prosciutto']"))
-      )
-
-tests/test-python/selenium-e2e/test_admin_menu_management.py:39: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <selenium.webdriver.support.wait.WebDriverWait (session="b28594d3-e494-4468-a2b1-ba6342f976fe")>
-method = <function element_to_be_clickable.<locals>._predicate at 0x10f403600>
-message = ''
-
-    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -> T:
-        """Wait until the method returns a value that is not False.
-    
-        Calls the method provided with the driver as an argument until the
-        return value does not evaluate to ``False``.
-    
-        Parameters:
-        -----------
-        method: callable(WebDriver)
-            - A callable object that takes a WebDriver instance as an argument.
-    
-        message: str
-            - Optional message for :exc:`TimeoutException`
-    
-        Return:
-        -------
-        object: T
-            - The result of the last call to `method`
-    
-        Raises:
-        -------
-        TimeoutException
-            - If 'method' does not return a truthy value within the WebDriverWait
-            object's timeout
-    
-        Example:
-        --------
-        >>> from selenium.webdriver.common.by import By
-        >>> from selenium.webdriver.support.ui import WebDriverWait
-        >>> from selenium.webdriver.support import expected_conditions as EC
-    
-        # Wait until an element is visible on the page
-        >>> wait = WebDriverWait(driver, 10)
-        >>> element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
-        >>> print(element.text)
-        """
-        screen = None
-        stacktrace = None
-    
-        end_time = time.monotonic() + self._timeout
-        while True:
-            try:
-                value = method(self._driver)
-                if value:
-                    return value
-            except self._ignored_exceptions as exc:
-                screen = getattr(exc, "screen", None)
-                stacktrace = getattr(exc, "stacktrace", None)
-            if time.monotonic() > end_time:
-                break
-            time.sleep(self._poll)
->       raise TimeoutException(message, screen, stacktrace)
-E       selenium.common.exceptions.TimeoutException: Message: 
-E       Stacktrace:
-E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
-E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:199:5
-E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:552:5
-E       dom.find/</<@chrome://remote/content/shared/DOM.sys.mjs:136:16
-
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/selenium/webdriver/support/wait.py:138: TimeoutException
-```
 
 ---
 
@@ -970,7 +395,7 @@ E       dom.find/</<@chrome://remote/content/shared/DOM.sys.mjs:136:16
 | **Test Case ID** | `E2E_ADMIN_USER_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `5.3600s` |
+| **Execution Time** | `4.1300s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_admin_full_user_lifecycle` |
@@ -983,7 +408,7 @@ E       dom.find/</<@chrome://remote/content/shared/DOM.sys.mjs:136:16
 | **Test Case ID** | `E2E_AUTH_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `2.7900s` |
+| **Execution Time** | `2.6210s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_loginAdminLogOut` |
@@ -996,134 +421,10 @@ E       dom.find/</<@chrome://remote/content/shared/DOM.sys.mjs:136:16
 | **Test Case ID** | `E2E_ORDER_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `2.6140s` |
+| **Execution Time** | `2.1960s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_orderfoodinthepast` |
-
-**Failure Details:**
-```
-self = <test_orderfoodinthepast.TestOrderfoodinthepast object at 0x109b7fb10>
-
-    def test_orderfoodinthepast(self):
-      self.driver.get("http://localhost:8081/login")
-      self.driver.set_window_size(1512, 888)
-      self.driver.find_element(By.ID, "username").click()
-      self.driver.find_element(By.ID, "username").send_keys("student1@example.com")
-      self.driver.find_element(By.ID, "password").send_keys("pass123")
-      self.driver.find_element(By.ID, "password").send_keys(Keys.ENTER)
->     self.driver.find_element(By.LINK_TEXT, "Kafeteria").click()
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-tests/test-python/selenium-e2e/test_orderfoodinthepast.py:28: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/selenium/webdriver/remote/webdriver.py:922: in find_element
-    return self.execute(Command.FIND_ELEMENT, {"using": by, "value": value})["value"]
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/selenium/webdriver/remote/webdriver.py:454: in execute
-    self.error_handler.check_response(response)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <selenium.webdriver.remote.errorhandler.ErrorHandler object at 0x10cd16c40>
-response = {'status': 404, 'value': '{"value":{"error":"no such element","message":"Unable to locate element: Kafeteria","stacktr.../content/shared/webdriver/Errors.sys.mjs:552:5\\ndom.find/</<@chrome://remote/content/shared/DOM.sys.mjs:136:16\\n"}}'}
-
-    def check_response(self, response: dict[str, Any]) -> None:
-        """Checks that a JSON response from the WebDriver does not have an
-        error.
-    
-        :Args:
-         - response - The JSON response from the WebDriver server as a dictionary
-           object.
-    
-        :Raises: If the response contains an error message.
-        """
-        status = response.get("status", None)
-        if not status or status == ErrorCode.SUCCESS:
-            return
-        value = None
-        message = response.get("message", "")
-        screen: str = response.get("screen", "")
-        stacktrace = None
-        if isinstance(status, int):
-            value_json = response.get("value", None)
-            if value_json and isinstance(value_json, str):
-                try:
-                    value = json.loads(value_json)
-                    if isinstance(value, dict):
-                        if len(value) == 1:
-                            value = value["value"]
-                        status = value.get("error", None)
-                        if not status:
-                            status = value.get("status", ErrorCode.UNKNOWN_ERROR)
-                            message = value.get("value") or value.get("message")
-                            if not isinstance(message, str):
-                                value = message
-                                message = message.get("message")
-                        else:
-                            message = value.get("message", None)
-                except ValueError:
-                    pass
-    
-        exception_class: type[WebDriverException]
-        e = ErrorCode()
-        error_codes = [item for item in dir(e) if not item.startswith("__")]
-        for error_code in error_codes:
-            error_info = getattr(ErrorCode, error_code)
-            if isinstance(error_info, list) and status in error_info:
-                exception_class = getattr(ExceptionMapping, error_code, WebDriverException)
-                break
-        else:
-            exception_class = WebDriverException
-    
-        if not value:
-            value = response["value"]
-        if isinstance(value, str):
-            raise exception_class(value)
-        if message == "" and "message" in value:
-            message = value["message"]
-    
-        screen = None  # type: ignore[assignment]
-        if "screen" in value:
-            screen = value["screen"]
-    
-        stacktrace = None
-        st_value = value.get("stackTrace") or value.get("stacktrace")
-        if st_value:
-            if isinstance(st_value, str):
-                stacktrace = st_value.split("\n")
-            else:
-                stacktrace = []
-                try:
-                    for frame in st_value:
-                        line = frame.get("lineNumber", "")
-                        file = frame.get("fileName", "<anonymous>")
-                        if line:
-                            file = f"{file}:{line}"
-                        meth = frame.get("methodName", "<anonymous>")
-                        if "className" in frame:
-                            meth = f"{frame['className']}.{meth}"
-                        msg = "    at %s (%s)"
-                        msg = msg % (meth, file)
-                        stacktrace.append(msg)
-                except TypeError:
-                    pass
-        if exception_class == UnexpectedAlertPresentException:
-            alert_text = None
-            if "data" in value:
-                alert_text = value["data"].get("text")
-            elif "alert" in value:
-                alert_text = value["alert"].get("text")
-            raise exception_class(message, screen, stacktrace, alert_text)  # type: ignore[call-arg]  # mypy is not smart enough here
->       raise exception_class(message, screen, stacktrace)
-E       selenium.common.exceptions.NoSuchElementException: Message: Unable to locate element: Kafeteria; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
-E       Stacktrace:
-E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
-E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:199:5
-E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:552:5
-E       dom.find/</<@chrome://remote/content/shared/DOM.sys.mjs:136:16
-
-../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/selenium/webdriver/remote/errorhandler.py:232: NoSuchElementException
-```
 
 ---
 
@@ -1133,35 +434,10 @@ E       dom.find/</<@chrome://remote/content/shared/DOM.sys.mjs:136:16
 | **Test Case ID** | `E2E_HISTORY_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `3.5680s` |
+| **Execution Time** | `2.6130s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_student_filter_order_history` |
-
-**Failure Details:**
-```
-self = <test_student_order_history.TestStudentOrderHistory object at 0x109b7f890>
-
-    def test_student_filter_order_history(self):
-      driver = self.driver
-    
-      driver.get("http://localhost:8081/login")
-      driver.find_element(By.ID, "username").send_keys("jakub.novak@example.com")
-      driver.find_element(By.ID, "password").send_keys("pass123")
-      driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-    
-      WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.LINK_TEXT, "Order History")))
-    
-      driver.find_element(By.LINK_TEXT, "Order History").click()
-      WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "orders-list-content")))
-    
-      initial_orders = driver.find_elements(By.XPATH, "//*[@id='orders-list-content']//h3[contains(text(), 'Order #')]")
->     assert len(initial_orders) > 0
-E     assert 0 > 0
-E      +  where 0 = len([])
-
-tests/test-python/selenium-e2e/test_student_order_history.py:31: AssertionError
-```
 
 ---
 
@@ -1174,7 +450,7 @@ tests/test-python/selenium-e2e/test_student_order_history.py:31: AssertionError
 | **Test Case ID** | `SCEN_INT_001` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.7780s` |
+| **Execution Time** | `0.7800s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_full_system_integration` |
@@ -1190,7 +466,7 @@ tests/test-python/selenium-e2e/test_student_order_history.py:31: AssertionError
 | **Test Case ID** | `TEST_ADMIN_CAN_GET_EXISTING_RESERVATION_AND_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3460s` |
+| **Execution Time** | `0.3480s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_admin_can_get_existing_reservation_and_item` |
@@ -1203,7 +479,7 @@ tests/test-python/selenium-e2e/test_student_order_history.py:31: AssertionError
 | **Test Case ID** | `TEST_API_ADMIN_ACCESS_IS_GRANTED` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `6.6390s` |
+| **Execution Time** | `6.6300s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_api_admin_access_is_granted (x19 params)` |
@@ -1216,7 +492,7 @@ tests/test-python/selenium-e2e/test_student_order_history.py:31: AssertionError
 | **Test Case ID** | `TEST_API_UNAUTHENTICATED_ACCESS_IS_DENIED` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `9.6510s` |
+| **Execution Time** | `9.6760s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_api_unauthenticated_access_is_denied (x33 params)` |
@@ -1229,253 +505,10 @@ tests/test-python/selenium-e2e/test_student_order_history.py:31: AssertionError
 | **Test Case ID** | `TEST_API_USER_ACCESS_IS_FORBIDDEN` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `3.4270s` |
+| **Execution Time** | `3.4880s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_api_user_access_is_forbidden (x10 params)` |
-
-**Failure Details:**
-```
---- FAILED PARAMETER: `test_api_user_access_is_forbidden[Lister tous les utilisateurs]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_forbidden[Voir le profil d'un autre utilisateur]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_forbidden[Cr\xe9er un nouvel utilisateur]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_forbidden[Supprimer son propre compte via l'API admin]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_forbidden[Cr\xe9er une caf\xe9t\xe9ria]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_forbidden[Supprimer une caf\xe9t\xe9ria]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_forbidden[Cr\xe9er un plat]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_forbidden[Lister tous les menus (route admin)]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_forbidden[Ajouter un item \xe0 un menu]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_forbidden[Lister tous les items de commande (route admin)]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-```
 
 ---
 
@@ -1485,157 +518,10 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_API_USER_ACCESS_IS_GRANTED` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `2.0840s` |
+| **Execution Time** | `2.0820s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_api_user_access_is_granted (x6 params)` |
-
-**Failure Details:**
-```
---- FAILED PARAMETER: `test_api_user_access_is_granted[Voir son propre profil]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_granted[Modifier son propre profil]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_granted[Ajouter de l'argent \xe0 son solde]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_granted[Lister les caf\xe9t\xe9rias]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_granted[Lister les plats]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-
---- FAILED PARAMETER: `test_api_user_access_is_granted[Voir le menu d'une caf\xe9t\xe9ria]` ---
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-```
 
 ---
 
@@ -1645,7 +531,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_APP_USER_GET_ALL_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.7550s` |
+| **Execution Time** | `0.7840s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_app_user_get_all_dicts (x2 params)` |
@@ -1658,7 +544,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_APP_USER_UPDATE_NOTHING_RETURNS_FALSE` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3320s` |
+| **Execution Time** | `0.3380s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_app_user_update_nothing_returns_false` |
@@ -1671,7 +557,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_APP_USER_UPDATE_PASSWORD_AND_ROLE` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.4640s` |
+| **Execution Time** | `0.4680s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_app_user_update_password_and_role` |
@@ -1684,7 +570,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_APP_USER_UPDATE_TO_EXISTING_EMAIL_FAILS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3760s` |
+| **Execution Time** | `0.3780s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_app_user_update_to_existing_email_fails` |
@@ -1697,7 +583,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_CAFETERIA_GET_ALL_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2890s` |
+| **Execution Time** | `0.2910s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_cafeteria_get_all_dicts` |
@@ -1710,7 +596,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_COMPLETE_CAFETERIA_LIFECYCLE` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2930s` |
+| **Execution Time** | `0.2940s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_complete_cafeteria_lifecycle` |
@@ -1736,7 +622,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_COMPLETE_ORDER_WORKFLOW` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6890s` |
+| **Execution Time** | `0.6870s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_complete_order_workflow` |
@@ -1762,7 +648,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_CREATE_CAFETERIA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5810s` |
+| **Execution Time** | `0.5820s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_cafeteria (x2 params)` |
@@ -1775,7 +661,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_CREATE_DISH` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5750s` |
+| **Execution Time** | `0.5780s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_dish (x2 params)` |
@@ -1788,7 +674,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_CREATE_MENU` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5770s` |
+| **Execution Time** | `0.5820s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_menu (x2 params)` |
@@ -1801,7 +687,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_CREATE_MENU_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5810s` |
+| **Execution Time** | `0.5850s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_menu_item (x2 params)` |
@@ -1814,7 +700,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_CREATE_ORDER_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6660s` |
+| **Execution Time** | `0.6730s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_order_item (x2 params)` |
@@ -1840,7 +726,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_CREATE_USER` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.4620s` |
+| **Execution Time** | `0.4670s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_create_user` |
@@ -1853,7 +739,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_DELETE_CAFETERIA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5810s` |
+| **Execution Time** | `0.5800s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_cafeteria (x2 params)` |
@@ -1866,7 +752,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_DELETE_DISH` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5780s` |
+| **Execution Time** | `0.5800s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_dish (x2 params)` |
@@ -1879,7 +765,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_DELETE_MENU` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5790s` |
+| **Execution Time** | `0.5810s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_menu (x2 params)` |
@@ -1892,7 +778,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_DELETE_MENU_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5840s` |
+| **Execution Time** | `0.5830s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_menu_item (x2 params)` |
@@ -1905,7 +791,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_DELETE_ORDER_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6710s` |
+| **Execution Time** | `0.6820s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_order_item (x2 params)` |
@@ -1918,7 +804,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_DELETE_RESERVATION` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6730s` |
+| **Execution Time** | `0.6680s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_delete_reservation (x2 params)` |
@@ -1944,7 +830,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_DISH_DELETE_FAILS_IF_IN_USE_BY_MENU_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3010s` |
+| **Execution Time** | `0.2950s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_dish_delete_fails_if_in_use_by_menu_item` |
@@ -1957,7 +843,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_DISH_DELETE_FAILS_IF_IN_USE_BY_ORDER_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3930s` |
+| **Execution Time** | `0.3950s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_dish_delete_fails_if_in_use_by_order_item` |
@@ -1970,7 +856,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_GET_ALL_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2880s` |
+| **Execution Time** | `0.2890s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_all_dicts` |
@@ -1983,7 +869,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_GET_ALL_DISHES_AS_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5770s` |
+| **Execution Time** | `0.5830s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_all_dishes_as_dicts (x2 params)` |
@@ -1996,7 +882,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_GET_ALL_MENUS_AS_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2960s` |
+| **Execution Time** | `0.2890s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_all_menus_as_dicts` |
@@ -2009,7 +895,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_GET_ALL_ORDER_ITEMS_AS_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3310s` |
+| **Execution Time** | `0.3360s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_all_order_items_as_dicts` |
@@ -2022,7 +908,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_GET_ALL_RESERVATIONS_AS_DICTS` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3320s` |
+| **Execution Time** | `0.3360s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_all_reservations_as_dicts` |
@@ -2035,7 +921,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_GET_BY_ID` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2910s` |
+| **Execution Time** | `0.2880s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_get_by_id` |
@@ -2048,7 +934,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_REFERENTIAL_INTEGRITY_WORKFLOW` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5530s` |
+| **Execution Time** | `0.5540s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_referential_integrity_workflow` |
@@ -2061,7 +947,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_STUDENT_BALANCE_TOP_UP` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `3.6600s` |
+| **Execution Time** | `3.1100s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_student_balance_top_up` |
@@ -2074,7 +960,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UNAUTHENTICATED_ACCESS_SECURITY` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2970s` |
+| **Execution Time** | `0.2900s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_unauthenticated_access_security[endpoint_subset0]` |
@@ -2087,7 +973,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UNIQUE_EMAIL_CONSTRAINT` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.7690s` |
+| **Execution Time** | `0.7780s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_unique_email_constraint (x2 params)` |
@@ -2100,7 +986,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UPDATE_CAFETERIA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5820s` |
+| **Execution Time** | `0.5900s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_cafeteria (x2 params)` |
@@ -2113,7 +999,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UPDATE_CAFETERIA_WITH_NO_DATA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.2910s` |
+| **Execution Time** | `0.2890s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_cafeteria_with_no_data` |
@@ -2126,7 +1012,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UPDATE_FROM_DICT` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5870s` |
+| **Execution Time** | `0.5880s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_from_dict (x2 params)` |
@@ -2139,7 +1025,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UPDATE_MENU` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5820s` |
+| **Execution Time** | `0.5940s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_menu (x2 params)` |
@@ -2152,7 +1038,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UPDATE_MENU_ITEM` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.5770s` |
+| **Execution Time** | `0.5840s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_menu_item (x2 params)` |
@@ -2165,7 +1051,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UPDATE_MENU_WITH_NO_DATA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3050s` |
+| **Execution Time** | `0.2880s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_menu_with_no_data` |
@@ -2191,7 +1077,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UPDATE_ORDER_ITEM_WITH_NO_DATA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3310s` |
+| **Execution Time** | `0.3350s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_order_item_with_no_data` |
@@ -2204,7 +1090,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UPDATE_RESERVATION` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6680s` |
+| **Execution Time** | `0.6900s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_reservation (x2 params)` |
@@ -2217,7 +1103,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UPDATE_RESERVATION_WITH_NO_DATA` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3360s` |
+| **Execution Time** | `0.3320s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_reservation_with_no_data` |
@@ -2230,7 +1116,7 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_UPDATE_USER` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.6770s` |
+| **Execution Time** | `0.6960s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Passed** |
 | **Test Function**| `test_update_user (x2 params)` |
@@ -2243,36 +1129,10 @@ tests/test-python/controller/test_api_auth.py:27: AssertionError
 | **Test Case ID** | `TEST_USER_CAN_CREATE_AND_VIEW_OWN_RESERVATION` |
 | **Version** | `1.0` |
 | **Tester** | `Automation` |
-| **Execution Time** | `0.3450s` |
+| **Execution Time** | `0.3430s` |
 | **Date Tested** | `10-Jul-2025` |
 | **Final Status** | **Failed** |
 | **Test Function**| `test_user_can_create_and_view_own_reservation` |
-
-**Failure Details:**
-```
-client = <FlaskClient <Flask 'app.controller.controller'>>
-
-    @pytest.fixture
-    def user_client(client):
-        """
-        Fixture PyTest qui retourne un client de test authentifié en tant qu'utilisateur standard.
-        """
-        user_credentials = {
-            "username": "student1@example.com",
-            "password": "pass123"
-        }
-        response = client.post("/login", data=user_credentials, follow_redirects=True)
-    
-        assert response.status_code == 200, "La connexion de l'utilisateur standard a échoué."
-        # Un utilisateur standard doit atterrir sur le dashboard utilisateur
->       assert b"Mon Tableau de Bord" in response.data or b"Mon Panier" in response.data, "La page après login ne semble pas être le dashboard utilisateur."
-E       AssertionError: La page après login ne semble pas être le dashboard utilisateur.
-E       assert (b'Mon Tableau de Bord' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' or b'Mon Panier' in b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n')
-E        +  where b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-E        +  and   b'\n\n\n<!DOCTYPE html>\n<html lang="en">\n\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AR - University Meal Ordering</title>\n    <link rel="icon" href="data:;base64,iVBORw0KGgo=">\n    \n    <!--\n      1. This anti-flicker script runs immediately to set the \'dark\' class on the <html> element\n         based on localStorage before the page content renders.\n    -->\n    <script>\n      if (localStorage.theme === \'dark\' || (!(\'theme\' in localStorage) && window.matchMedia(\'(prefers-color-scheme: dark)\').matches)) {\n        document.documentElement.classList.add(\'dark\')\n      } else {\n        document.documentElement.classList.remove(\'dark\')\n      }\n    </script>\n\n    <!--\n      2. Load Tailwind CSS from CDN\n    -->\n    <script src="https://cdn.tailwindcss.com"></script>\n    \n    <!--\n      3. Configure Tailwind AFTER it loads\n    -->\n    <script>\n      tailwind.config = {\n        darkMode: \'class\'\n      }\n    </script>\n\n    <script src="https://unpkg.com/htmx.org@2.0.0"></script>\n    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></s...\n                return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;\n            },\n\n            changeMonth(amount) {\n                this.month += amount;\n                if (this.month < 0) {\n                    this.month = 11;\n                    this.year--;\n                } else if (this.month > 11) {\n                    this.month = 0;\n                    this.year++;\n                }\n                this.getDaysInMonth();\n            }\n        }\n    }\n\n    function themeSwitcher() {\n        return {\n            // The initial state is based on the class set by the anti-flicker script.\n            darkMode: document.documentElement.classList.contains(\'dark\'),\n            toggle() {\n                this.darkMode = !this.darkMode;\n                localStorage.setItem(\'theme\', this.darkMode ? \'dark\' : \'light\');\n                if (this.darkMode) {\n                    document.documentElement.classList.add(\'dark\');\n                } else {\n                    document.documentElement.classList.remove(\'dark\');\n                }\n            }\n        }\n    }\n    </script>\n\n    \n</body>\n\n</html>\n' = <WrapperTestResponse 18632 bytes [200 OK]>.data
-
-tests/test-python/controller/test_api_auth.py:27: AssertionError
-```
 
 ---
 

@@ -15,4 +15,4 @@ notes.txt
 coverage/
 .coverage
 .coverage
-create_test_template.py
+create_test_template.pygit add .gitignore
