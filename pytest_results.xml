@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="161" time="61.661" timestamp="2025-07-10T11:16:35.756312+02:00" hostname="Ishans-MacBook-Pro.local"><testcase classname="tests.test-python.controller.test_api_admin_auth" name="test_user_crud" time="0.426" /><testcase classname="tests.test-python.controller.test_api_admin_auth" name="test_cafeteria_crud" time="0.361" /><testcase classname="tests.test-python.controller.test_api_admin_auth" name="test_dish_crud" time="0.386" /><testcase classname="tests.test-python.controller.test_api_admin_auth" name="test_menu_and_item_crud" time="0.377" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config0]" time="0.367" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config1]" time="0.373" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config2]" time="0.360" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config3]" time="0.368" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config4]" time="0.353" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config5]" time="0.351" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config6]" time="0.351" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config7]" time="0.348" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config8]" time="0.372" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config9]" time="0.389" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config10]" time="0.381" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config11]" time="0.371" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config12]" time="0.386" /><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config13]" time="0.361"><failure message="AssertionError: Accès AUTORISÉ à un endpoint qui devait être refusé.&#10;  Endpoint: GET /api/v1/reservations/1&#10;  Description: Voir la réservation d'un autre&#10;  Attendu: Refusé (401/403)&#10;  Reçu: 404&#10;  Réponse: {&quot;error&quot;:&quot;Reservation not found.&quot;}&#10;  &#10;assert 404 in {401, 403}&#10; +  where 404 = &lt;WrapperTestResponse 35 bytes [404 NOT FOUND]&gt;.status_code">authenticated_client = &lt;FlaskClient &lt;Flask 'app.controller.controller'&gt;&gt;
+endpoint_config = {'allowed': False, 'desc': "Voir la réservation d'un autre", 'method': 'GET', 'url': '/api/v1/reservations/{other_user_reservation_id}'}
+
+    @pytest.mark.parametrize("endpoint_config", ENDPOINTS_PERMISSIONS)
+    def test_user_api_permissions(authenticated_client, endpoint_config):
+        """
+        Teste systématiquement les permissions d'un utilisateur standard connecté.
+        """
+        client = authenticated_client
+    
+        with client.application.app_context():
+            # Récupère les objets depuis la BDD (créés par le seeder)
+            current_user = AppUser.get_by_email("jakub.novak@example.com")
+            other_user = AppUser.get_by_email("john.smith@example.com")
+    
+            # Crée une réservation pour 'l'autre utilisateur' si nécessaire pour le test
+            other_reservation = Reservation(user_id=other_user.user_id, cafeteria_id=1, total=1.0)
+            db.session.add(other_reservation)
+            db.session.flush() # Utilise flush pour obtenir l'ID sans commit
+    
+            # Prépare l'URL finale en injectant les IDs
+            url = endpoint_config["url"].format(
+                current_user_id=current_user.user_id,
+                other_user_id=other_user.user_id,
+                other_user_reservation_id=other_reservation.reservation_id
+            )
+    
+        # Exécute la requête de test
+        method = endpoint_config["method"].lower()
+        kwargs = {"json": endpoint_config.get("json")} if "json" in endpoint_config else {}
+        response = getattr(client, method)(url, **kwargs)
+    
+        # Vérifie le code de statut
+        allowed = endpoint_config["allowed"]
+        debug_info = (
+            f"Endpoint: {endpoint_config['method']} {url}\n"
+            f"Description: {endpoint_config['desc']}\n"
+            f"Attendu: {'Autorisé (2xx)' if allowed else 'Refusé (401/403)'}\n"
+            f"Reçu: {response.status_code}\n"
+            f"Réponse: {response.data.decode(errors='ignore')[:200]}"
+        )
+    
+        if allowed:
+            assert 200 &lt;= response.status_code &lt; 300, f"Accès REFUSÉ à un endpoint qui devait être autorisé.\n{debug_info}"
+        else:
+&gt;           assert response.status_code in {401, 403}, f"Accès AUTORISÉ à un endpoint qui devait être refusé.\n{debug_info}"
+E           AssertionError: Accès AUTORISÉ à un endpoint qui devait être refusé.
+E             Endpoint: GET /api/v1/reservations/1
+E             Description: Voir la réservation d'un autre
+E             Attendu: Refusé (401/403)
+E             Reçu: 404
+E             Réponse: {"error":"Reservation not found."}
+E             
+E           assert 404 in {401, 403}
+E            +  where 404 = &lt;WrapperTestResponse 35 bytes [404 NOT FOUND]&gt;.status_code
+
+tests/test-python/controller/test_api_auth.py:93: AssertionError</failure></testcase><testcase classname="tests.test-python.controller.test_api_auth" name="test_user_api_permissions[endpoint_config14]" time="0.374"><failure message="AssertionError: Accès AUTORISÉ à un endpoint qui devait être refusé.&#10;  Endpoint: PUT /api/v1/reservations/1/cancel&#10;  Description: Annuler la réservation d'un autre&#10;  Attendu: Refusé (401/403)&#10;  Reçu: 404&#10;  Réponse: {&quot;error&quot;:&quot;Reservation not found.&quot;}&#10;  &#10;assert 404 in {401, 403}&#10; +  where 404 = &lt;WrapperTestResponse 35 bytes [404 NOT FOUND]&gt;.status_code">authenticated_client = &lt;FlaskClient &lt;Flask 'app.controller.controller'&gt;&gt;
+endpoint_config = {'allowed': False, 'desc': "Annuler la réservation d'un autre", 'method': 'PUT', 'url': '/api/v1/reservations/{other_user_reservation_id}/cancel'}
+
+    @pytest.mark.parametrize("endpoint_config", ENDPOINTS_PERMISSIONS)
+    def test_user_api_permissions(authenticated_client, endpoint_config):
+        """
+        Teste systématiquement les permissions d'un utilisateur standard connecté.
+        """
+        client = authenticated_client
+    
+        with client.application.app_context():
+            # Récupère les objets depuis la BDD (créés par le seeder)
+            current_user = AppUser.get_by_email("jakub.novak@example.com")
+            other_user = AppUser.get_by_email("john.smith@example.com")
+    
+            # Crée une réservation pour 'l'autre utilisateur' si nécessaire pour le test
+            other_reservation = Reservation(user_id=other_user.user_id, cafeteria_id=1, total=1.0)
+            db.session.add(other_reservation)
+            db.session.flush() # Utilise flush pour obtenir l'ID sans commit
+    
+            # Prépare l'URL finale en injectant les IDs
+            url = endpoint_config["url"].format(
+                current_user_id=current_user.user_id,
+                other_user_id=other_user.user_id,
+                other_user_reservation_id=other_reservation.reservation_id
+            )
+    
+        # Exécute la requête de test
+        method = endpoint_config["method"].lower()
+        kwargs = {"json": endpoint_config.get("json")} if "json" in endpoint_config else {}
+        response = getattr(client, method)(url, **kwargs)
+    
+        # Vérifie le code de statut
+        allowed = endpoint_config["allowed"]
+        debug_info = (
+            f"Endpoint: {endpoint_config['method']} {url}\n"
+            f"Description: {endpoint_config['desc']}\n"
+            f"Attendu: {'Autorisé (2xx)' if allowed else 'Refusé (401/403)'}\n"
+            f"Reçu: {response.status_code}\n"
+            f"Réponse: {response.data.decode(errors='ignore')[:200]}"
+        )
+    
+        if allowed:
+            assert 200 &lt;= response.status_code &lt; 300, f"Accès REFUSÉ à un endpoint qui devait être autorisé.\n{debug_info}"
+        else:
+&gt;           assert response.status_code in {401, 403}, f"Accès AUTORISÉ à un endpoint qui devait être refusé.\n{debug_info}"
+E           AssertionError: Accès AUTORISÉ à un endpoint qui devait être refusé.
+E             Endpoint: PUT /api/v1/reservations/1/cancel
+E             Description: Annuler la réservation d'un autre
+E             Attendu: Refusé (401/403)
+E             Reçu: 404
+E             Réponse: {"error":"Reservation not found."}
+E             
+E           assert 404 in {401, 403}
+E            +  where 404 = &lt;WrapperTestResponse 35 bytes [404 NOT FOUND]&gt;.status_code
+
+tests/test-python/controller/test_api_auth.py:93: AssertionError</failure></testcase><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__user__(Liste tous les utilisateurs)]" time="0.312" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__user_1_(R\xe9cup\xe9rer un utilisateur par ID)]" time="0.300" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[POST__user__(Cr\xe9er un utilisateur)]" time="0.298" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[PUT__user_1_(Modifier un utilisateur)]" time="0.297" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[DELETE__user_1_(Supprimer un utilisateur)]" time="0.298" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[POST__user_balance_(Ajouter de l'argent au solde)]" time="0.306" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__cafeteria__(Lister les caf\xe9t\xe9rias)]" time="0.298" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__cafeteria_1_(R\xe9cup\xe9rer une caf\xe9t\xe9ria par ID)]" time="0.296" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[POST__cafeteria__(Cr\xe9er une caf\xe9t\xe9ria)]" time="0.297" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[PUT__cafeteria_1_(Modifier une caf\xe9t\xe9ria)]" time="0.299" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[DELETE__cafeteria_1_(Supprimer une caf\xe9t\xe9ria)]" time="0.304" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__dish__(Lister les plats)]" time="0.302" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__dish_1_(R\xe9cup\xe9rer un plat par ID)]" time="0.298" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[POST__dish__(Cr\xe9er un plat)]" time="0.297" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[PUT__dish_1_(Modifier un plat)]" time="0.312" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[DELETE__dish_1_(Supprimer un plat)]" time="0.308" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__daily-menu__(Lister tous les menus)]" time="0.298" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__daily-menu_1_(R\xe9cup\xe9rer un menu par ID)]" time="0.297" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__daily-menu_by-cafeteria_1_(R\xe9cup\xe9rer un menu par caf\xe9t\xe9ria)]" time="0.295" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[POST__daily-menu__(Cr\xe9er un menu)]" time="0.298" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[PUT__daily-menu_1_(Modifier un menu)]" time="0.296" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[DELETE__daily-menu_1_(Supprimer un menu)]" time="0.298" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__daily-menu-item_by-menu_1_(Lister les items d'un menu)]" time="0.296" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[POST__daily-menu-item__(Ajouter un item \xe0 un menu)]" time="0.309" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[PUT__daily-menu-item_1_(Modifier un item de menu)]" time="0.326" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[DELETE__daily-menu-item_1_(Supprimer un item de menu)]" time="0.299" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__order-item__(Lister les items de commande)]" time="0.300" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__order-item_1_(R\xe9cup\xe9rer un item de commande par ID)]" time="0.301" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[DELETE__order-item_1_(Supprimer un item de commande)]" time="0.300" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__reservations__(Lister les r\xe9servations)]" time="0.299" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[POST__reservations__(Cr\xe9er une r\xe9servation)]" time="0.305" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[GET__reservations_1_(R\xe9cup\xe9rer une r\xe9servation par ID)]" time="0.299" /><testcase classname="tests.test-python.controller.test_api_no_auth" name="test_api_unauthenticated_access_is_denied[PUT__reservations_1_cancel_(Annuler une r\xe9servation)]" time="0.310" /><testcase classname="tests.test-python.models.test_app_user" name="test_create_user" time="0.471" /><testcase classname="tests.test-python.models.test_app_user" name="test_update_user" time="0.369" /><testcase classname="tests.test-python.models.test_app_user" name="test_unique_email_constraint" time="0.413" /><testcase classname="tests.test-python.models.test_app_user" name="test_delete_user" time="0.360" /><testcase classname="tests.test-python.models.test_app_user" name="test_app_user_update_nothing_returns_false" time="0.352" /><testcase classname="tests.test-python.models.test_app_user" name="test_app_user_update_password_and_role" time="0.473" /><testcase classname="tests.test-python.models.test_app_user" name="test_app_user_update_to_existing_email_fails" time="0.386" /><testcase classname="tests.test-python.models.test_app_user" name="test_app_user_get_all_dicts" time="0.391" /><testcase classname="tests.test-python.models.test_cafeteria" name="test_create_cafeteria" time="0.300" /><testcase classname="tests.test-python.models.test_cafeteria" name="test_update_cafeteria" time="0.301" /><testcase classname="tests.test-python.models.test_cafeteria" name="test_get_all_dicts" time="0.348" /><testcase classname="tests.test-python.models.test_cafeteria" name="test_delete_cafeteria" time="0.299" /><testcase classname="tests.test-python.models.test_cafeteria" name="test_update_cafeteria_with_no_data" time="0.298" /><testcase classname="tests.test-python.models.test_daily_menu" name="test_create_menu" time="0.304" /><testcase classname="tests.test-python.models.test_daily_menu" name="test_update_menu" time="0.299" /><testcase classname="tests.test-python.models.test_daily_menu" name="test_delete_menu" time="0.300" /><testcase classname="tests.test-python.models.test_daily_menu" name="test_update_menu_with_no_data" time="0.297" /><testcase classname="tests.test-python.models.test_daily_menu" name="test_menu_uniqueness_constraint_on_update" time="0.296"><failure message="assert True is False">app = &lt;Flask 'app.controller.controller'&gt;
+
+    def test_menu_uniqueness_constraint_on_update(app):
+        """Vérifie la contrainte d'unicité (cafeteria_id, menu_date) lors d'une mise à jour."""
+        with app.app_context():
+            caf1 = Cafeteria.create_cafeteria("Caf 1")
+            caf2 = Cafeteria.create_cafeteria("Caf 2")
+            db.session.commit()
+    
+            # Menu existant pour caf1 à une date donnée
+            DailyMenu.create_menu(cafeteria_id=caf1.cafeteria_id, menu_date=date(2030, 1, 1))
+    
+            # Autre menu pour caf2 qu'on va essayer de déplacer
+            menu_to_update = DailyMenu.create_menu(cafeteria_id=caf2.cafeteria_id, menu_date=date(2030, 1, 2))
+            db.session.commit()
+    
+            # Tenter de déplacer le menu vers une date/cafeteria déjà prise
+            ok = menu_to_update.update_menu(cafeteria_id=caf1.cafeteria_id, menu_date=date(2030, 1, 1))
+&gt;           assert ok is False # La méthode doit retourner False en cas d'échec d'intégrité
+            ^^^^^^^^^^^^^^^^^^
+E           assert True is False
+
+tests/test-python/models/test_daily_menu.py:61: AssertionError</failure></testcase><testcase classname="tests.test-python.models.test_daily_menu" name="test_get_all_menus_as_dicts" time="0.299" /><testcase classname="tests.test-python.models.test_daily_menu_item" name="test_create_menu_item" time="0.305" /><testcase classname="tests.test-python.models.test_daily_menu_item" name="test_update_menu_item" time="0.298" /><testcase classname="tests.test-python.models.test_daily_menu_item" name="test_delete_menu_item" time="0.306" /><testcase classname="tests.test-python.models.test_daily_menu_item" name="test_update_menu_item_with_no_data" time="0.299"><failure message="sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: daily_menu.cafeteria_id&#10;[SQL: INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)]&#10;[parameters: (None, '2025-07-10', '2025-07-10 09:17:00.775998')]&#10;(Background on this error at: https://sqlalche.me/e/20/gkpj)">self = &lt;sqlalchemy.engine.base.Connection object at 0x119cd0f50&gt;, dialect = &lt;sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x1093c60d0&gt;
+context = &lt;sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x119d44f50&gt;, statement = &lt;sqlalchemy.dialects.sqlite.base.SQLiteCompiler object at 0x1093c6850&gt;
+parameters = [(None, '2025-07-10', '2025-07-10 09:17:00.775998')]
+
+    def _exec_single_context(
+        self,
+        dialect: Dialect,
+        context: ExecutionContext,
+        statement: Union[str, Compiled],
+        parameters: Optional[_AnyMultiExecuteParams],
+    ) -&gt; CursorResult[Any]:
+        """continue the _execute_context() method for a single DBAPI
+        cursor.execute() or cursor.executemany() call.
+    
+        """
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:
+            generic_setinputsizes = context._prepare_set_input_sizes()
+    
+            if generic_setinputsizes:
+                try:
+                    dialect.do_set_input_sizes(
+                        context.cursor, generic_setinputsizes, context
+                    )
+                except BaseException as e:
+                    self._handle_dbapi_exception(
+                        e, str(statement), parameters, None, context
+                    )
+    
+        cursor, str_statement, parameters = (
+            context.cursor,
+            context.statement,
+            context.parameters,
+        )
+    
+        effective_parameters: Optional[_AnyExecuteParams]
+    
+        if not context.executemany:
+            effective_parameters = parameters[0]
+        else:
+            effective_parameters = parameters
+    
+        if self._has_events or self.engine._has_events:
+            for fn in self.dispatch.before_cursor_execute:
+                str_statement, effective_parameters = fn(
+                    self,
+                    cursor,
+                    str_statement,
+                    effective_parameters,
+                    context,
+                    context.executemany,
+                )
+    
+        if self._echo:
+            self._log_info(str_statement)
+    
+            stats = context._get_cache_stats()
+    
+            if not self.engine.hide_parameters:
+                self._log_info(
+                    "[%s] %r",
+                    stats,
+                    sql_util._repr_params(
+                        effective_parameters,
+                        batches=10,
+                        ismulti=context.executemany,
+                    ),
+                )
+            else:
+                self._log_info(
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",
+                    stats,
+                )
+    
+        evt_handled: bool = False
+        try:
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:
+                effective_parameters = cast(
+                    "_CoreMultiExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_executemany:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_executemany(
+                        cursor,
+                        str_statement,
+                        effective_parameters,
+                        context,
+                    )
+            elif not effective_parameters and context.no_parameters:
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute_no_params:
+                        if fn(cursor, str_statement, context):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_execute_no_params(
+                        cursor, str_statement, context
+                    )
+            else:
+                effective_parameters = cast(
+                    "_CoreSingleExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+&gt;                   self.dialect.do_execute(
+                        cursor, str_statement, effective_parameters, context
+                    )
+
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1963: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x1093c60d0&gt;, cursor = &lt;sqlite3.Cursor object at 0x1198fac40&gt;
+statement = 'INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)', parameters = (None, '2025-07-10', '2025-07-10 09:17:00.775998')
+context = &lt;sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x119d44f50&gt;
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+&gt;       cursor.execute(statement, parameters)
+E       sqlite3.IntegrityError: NOT NULL constraint failed: daily_menu.cafeteria_id
+
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/default.py:943: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+app = &lt;Flask 'app.controller.controller'&gt;
+
+    def test_update_menu_item_with_no_data(app):
+        with app.app_context():
+            caf = Cafeteria.create_cafeteria("DMI4")
+            dish = Dish.create_dish("D4", "", 1, "main_course")
+            menu = DailyMenu.create_menu(caf.cafeteria_id, date.today())
+&gt;           db.session.commit()
+
+tests/test-python/models/test_daily_menu_item.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/scoping.py:599: in commit
+    return self._proxied.commit()
+           ^^^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:2032: in commit
+    trans.commit(_to_root=True)
+&lt;string&gt;:2: in commit
+    ???
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py:139: in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:1313: in commit
+    self._prepare_impl()
+&lt;string&gt;:2: in _prepare_impl
+    ???
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py:139: in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:1288: in _prepare_impl
+    self.session.flush()
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4345: in flush
+    self._flush(objects)
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4480: in _flush
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4441: in _flush
+    flush_context.execute()
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute
+    rec.execute(self)
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute
+    util.preloaded.orm_persistence.save_obj(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj
+    _emit_insert_statements(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py:1233: in _emit_insert_statements
+    result = connection.execute(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1415: in execute
+    return meth(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/sql/elements.py:523: in _execute_on_connection
+    return connection._execute_clauseelement(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1637: in _execute_clauseelement
+    ret = self._execute_context(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1842: in _execute_context
+    return self._exec_single_context(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1982: in _exec_single_context
+    self._handle_dbapi_exception(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:2351: in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1963: in _exec_single_context
+    self.dialect.do_execute(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x1093c60d0&gt;, cursor = &lt;sqlite3.Cursor object at 0x1198fac40&gt;
+statement = 'INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)', parameters = (None, '2025-07-10', '2025-07-10 09:17:00.775998')
+context = &lt;sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x119d44f50&gt;
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+&gt;       cursor.execute(statement, parameters)
+E       sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: daily_menu.cafeteria_id
+E       [SQL: INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)]
+E       [parameters: (None, '2025-07-10', '2025-07-10 09:17:00.775998')]
+E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/default.py:943: IntegrityError</failure></testcase><testcase classname="tests.test-python.models.test_daily_menu_item" name="test_get_all_menu_items_as_dicts" time="0.301"><failure message="sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: daily_menu.cafeteria_id&#10;[SQL: INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)]&#10;[parameters: (None, '2025-07-10', '2025-07-10 09:17:01.226599')]&#10;(Background on this error at: https://sqlalche.me/e/20/gkpj)">self = &lt;sqlalchemy.engine.base.Connection object at 0x119d46210&gt;, dialect = &lt;sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x1090c34d0&gt;
+context = &lt;sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x119d471d0&gt;, statement = &lt;sqlalchemy.dialects.sqlite.base.SQLiteCompiler object at 0x1090c3250&gt;
+parameters = [(None, '2025-07-10', '2025-07-10 09:17:01.226599')]
+
+    def _exec_single_context(
+        self,
+        dialect: Dialect,
+        context: ExecutionContext,
+        statement: Union[str, Compiled],
+        parameters: Optional[_AnyMultiExecuteParams],
+    ) -&gt; CursorResult[Any]:
+        """continue the _execute_context() method for a single DBAPI
+        cursor.execute() or cursor.executemany() call.
+    
+        """
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:
+            generic_setinputsizes = context._prepare_set_input_sizes()
+    
+            if generic_setinputsizes:
+                try:
+                    dialect.do_set_input_sizes(
+                        context.cursor, generic_setinputsizes, context
+                    )
+                except BaseException as e:
+                    self._handle_dbapi_exception(
+                        e, str(statement), parameters, None, context
+                    )
+    
+        cursor, str_statement, parameters = (
+            context.cursor,
+            context.statement,
+            context.parameters,
+        )
+    
+        effective_parameters: Optional[_AnyExecuteParams]
+    
+        if not context.executemany:
+            effective_parameters = parameters[0]
+        else:
+            effective_parameters = parameters
+    
+        if self._has_events or self.engine._has_events:
+            for fn in self.dispatch.before_cursor_execute:
+                str_statement, effective_parameters = fn(
+                    self,
+                    cursor,
+                    str_statement,
+                    effective_parameters,
+                    context,
+                    context.executemany,
+                )
+    
+        if self._echo:
+            self._log_info(str_statement)
+    
+            stats = context._get_cache_stats()
+    
+            if not self.engine.hide_parameters:
+                self._log_info(
+                    "[%s] %r",
+                    stats,
+                    sql_util._repr_params(
+                        effective_parameters,
+                        batches=10,
+                        ismulti=context.executemany,
+                    ),
+                )
+            else:
+                self._log_info(
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",
+                    stats,
+                )
+    
+        evt_handled: bool = False
+        try:
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:
+                effective_parameters = cast(
+                    "_CoreMultiExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_executemany:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_executemany(
+                        cursor,
+                        str_statement,
+                        effective_parameters,
+                        context,
+                    )
+            elif not effective_parameters and context.no_parameters:
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute_no_params:
+                        if fn(cursor, str_statement, context):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_execute_no_params(
+                        cursor, str_statement, context
+                    )
+            else:
+                effective_parameters = cast(
+                    "_CoreSingleExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+&gt;                   self.dialect.do_execute(
+                        cursor, str_statement, effective_parameters, context
+                    )
+
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1963: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x1090c34d0&gt;, cursor = &lt;sqlite3.Cursor object at 0x10c7427c0&gt;
+statement = 'INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)', parameters = (None, '2025-07-10', '2025-07-10 09:17:01.226599')
+context = &lt;sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x119d471d0&gt;
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+&gt;       cursor.execute(statement, parameters)
+E       sqlite3.IntegrityError: NOT NULL constraint failed: daily_menu.cafeteria_id
+
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/default.py:943: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+app = &lt;Flask 'app.controller.controller'&gt;
+
+    def test_get_all_menu_items_as_dicts(app):
+        with app.app_context():
+            db.session.query(DailyMenuItem).delete()
+            caf = Cafeteria.create_cafeteria("DMI5")
+            dish = Dish.create_dish("D5", "", 1, "main_course")
+            menu = DailyMenu.create_menu(caf.cafeteria_id, date.today())
+&gt;           db.session.commit()
+
+tests/test-python/models/test_daily_menu_item.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/scoping.py:599: in commit
+    return self._proxied.commit()
+           ^^^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:2032: in commit
+    trans.commit(_to_root=True)
+&lt;string&gt;:2: in commit
+    ???
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py:139: in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:1313: in commit
+    self._prepare_impl()
+&lt;string&gt;:2: in _prepare_impl
+    ???
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py:139: in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:1288: in _prepare_impl
+    self.session.flush()
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4345: in flush
+    self._flush(objects)
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4480: in _flush
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4441: in _flush
+    flush_context.execute()
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute
+    rec.execute(self)
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute
+    util.preloaded.orm_persistence.save_obj(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj
+    _emit_insert_statements(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py:1233: in _emit_insert_statements
+    result = connection.execute(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1415: in execute
+    return meth(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/sql/elements.py:523: in _execute_on_connection
+    return connection._execute_clauseelement(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1637: in _execute_clauseelement
+    ret = self._execute_context(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1842: in _execute_context
+    return self._exec_single_context(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1982: in _exec_single_context
+    self._handle_dbapi_exception(
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:2351: in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1963: in _exec_single_context
+    self.dialect.do_execute(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x1090c34d0&gt;, cursor = &lt;sqlite3.Cursor object at 0x10c7427c0&gt;
+statement = 'INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)', parameters = (None, '2025-07-10', '2025-07-10 09:17:01.226599')
+context = &lt;sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x119d471d0&gt;
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+&gt;       cursor.execute(statement, parameters)
+E       sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: daily_menu.cafeteria_id
+E       [SQL: INSERT INTO daily_menu (cafeteria_id, menu_date, created_at) VALUES (?, ?, ?)]
+E       [parameters: (None, '2025-07-10', '2025-07-10 09:17:01.226599')]
+E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/sqlalchemy/engine/default.py:943: IntegrityError</failure></testcase><testcase classname="tests.test-python.models.test_dish" name="test_create_dish" time="0.305" /><testcase classname="tests.test-python.models.test_dish" name="test_update_from_dict" time="0.303" /><testcase classname="tests.test-python.models.test_dish" name="test_get_by_id" time="0.300" /><testcase classname="tests.test-python.models.test_dish" name="test_delete_dish" time="0.306" /><testcase classname="tests.test-python.models.test_dish" name="test_get_all_dishes_as_dicts" time="0.299" /><testcase classname="tests.test-python.models.test_dish" name="test_dish_delete_fails_if_in_use_by_menu_item" time="0.302" /><testcase classname="tests.test-python.models.test_dish" name="test_dish_delete_fails_if_in_use_by_order_item" time="0.346" /><testcase classname="tests.test-python.models.test_order_item" name="test_create_order_item" time="0.347" /><testcase classname="tests.test-python.models.test_order_item" name="test_update_order_item" time="0.350" /><testcase classname="tests.test-python.models.test_order_item" name="test_delete_order_item" time="0.349" /><testcase classname="tests.test-python.models.test_order_item" name="test_update_order_item_with_no_data" time="0.344" /><testcase classname="tests.test-python.models.test_order_item" name="test_get_all_order_items_as_dicts" time="0.348" /><testcase classname="tests.test-python.models.test_reservation" name="test_create_reservation" time="0.345" /><testcase classname="tests.test-python.models.test_reservation" name="test_update_reservation" time="0.355" /><testcase classname="tests.test-python.models.test_reservation" name="test_delete_reservation" time="0.349" /><testcase classname="tests.test-python.models.test_reservation" name="test_update_reservation_with_no_data" time="0.357" /><testcase classname="tests.test-python.models.test_reservation" name="test_get_all_reservations_as_dicts" time="0.347" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_create_user" time="0.440" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_update_user" time="0.342" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_delete_user" time="0.347" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_unique_email_constraint" time="0.388" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_app_user_get_all_dicts" time="0.397" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_create_cafeteria" time="0.298" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_update_cafeteria" time="0.300" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_delete_cafeteria" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_cafeteria_get_all_dicts" time="0.300" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_create_dish" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_update_from_dict" time="0.296" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_delete_dish" time="0.304" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_get_all_dishes_as_dicts" time="0.304" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_dish_delete_fails_if_in_use_by_menu_item" time="0.362" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_create_menu" time="0.300" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_update_menu" time="0.301" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_delete_menu" time="0.301" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_create_menu_item" time="0.303" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_update_menu_item" time="0.303" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_delete_menu_item" time="0.301" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_create_reservation" time="0.344" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_update_reservation" time="0.348" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_delete_reservation" time="0.349" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_create_order_item" time="0.349" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_update_order_item" time="0.347" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_delete_order_item" time="0.349" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__user__(Liste tous les utilisateurs)]" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__user_1_(R\xe9cup\xe9rer un utilisateur par ID)]" time="0.300" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[POST__user__(Cr\xe9er un utilisateur)]" time="0.306" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[PUT__user_1_(Modifier un utilisateur)]" time="0.301" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[DELETE__user_1_(Supprimer un utilisateur)]" time="0.300" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[POST__user_balance_(Ajouter de l'argent au solde)]" time="0.302" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__cafeteria__(Lister les caf\xe9t\xe9rias)]" time="0.303" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__cafeteria_1_(R\xe9cup\xe9rer une caf\xe9t\xe9ria par ID)]" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[POST__cafeteria__(Cr\xe9er une caf\xe9t\xe9ria)]" time="0.298" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[PUT__cafeteria_1_(Modifier une caf\xe9t\xe9ria)]" time="0.304" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[DELETE__cafeteria_1_(Supprimer une caf\xe9t\xe9ria)]" time="0.298" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__dish__(Lister les plats)]" time="0.296" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__dish_1_(R\xe9cup\xe9rer un plat par ID)]" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[POST__dish__(Cr\xe9er un plat)]" time="0.296" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[PUT__dish_1_(Modifier un plat)]" time="0.300" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[DELETE__dish_1_(Supprimer un plat)]" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__daily-menu__(Lister tous les menus)]" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__daily-menu_1_(R\xe9cup\xe9rer un menu par ID)]" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__daily-menu_by-cafeteria_1_(R\xe9cup\xe9rer un menu par caf\xe9t\xe9ria)]" time="0.300" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[POST__daily-menu__(Cr\xe9er un menu)]" time="0.315" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[PUT__daily-menu_1_(Modifier un menu)]" time="0.303" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[DELETE__daily-menu_1_(Supprimer un menu)]" time="0.300" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__daily-menu-item_by-menu_1_(Lister les items d'un menu)]" time="0.309" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[POST__daily-menu-item__(Ajouter un item \xe0 un menu)]" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[PUT__daily-menu-item_1_(Modifier un item de menu)]" time="0.302" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[DELETE__daily-menu-item_1_(Supprimer un item de menu)]" time="0.302" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__order-item__(Lister les items de commande)]" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__order-item_1_(R\xe9cup\xe9rer un item de commande par ID)]" time="0.301" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[DELETE__order-item_1_(Supprimer un item de commande)]" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__reservations__(Lister les r\xe9servations)]" time="0.299" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[POST__reservations__(Cr\xe9er une r\xe9servation)]" time="0.301" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[GET__reservations_1_(R\xe9cup\xe9rer une r\xe9servation par ID)]" time="0.302" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios" name="test_api_unauthenticated_access_is_denied[PUT__reservations_1_cancel_(Annuler une r\xe9servation)]" time="0.301" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios.TestUserManagementScenario" name="test_complete_user_lifecycle" time="0.704" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios.TestCafeteriaManagementScenario" name="test_complete_cafeteria_lifecycle" time="0.303" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios.TestMenuManagementScenario" name="test_complete_menu_creation_workflow" time="0.306" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios.TestOrderWorkflowScenario" name="test_complete_order_workflow" time="0.711" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios.TestSecurityAndAuthScenario" name="test_unauthenticated_access_security[endpoint_subset0]" time="0.297" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios.TestDataIntegrityScenario" name="test_referential_integrity_workflow" time="0.576" /><testcase classname="tests.test-python.selenium-e2e.test_combined_scenarios.TestSystemIntegrationScenario" name="test_full_system_integration" time="0.882" /><testcase classname="tests.test-python.selenium-e2e.test_loginAdminLogOut.TestLoginAdminLogOut" name="test_loginAdminLogOut" time="5.174" /><testcase classname="tests.test-python.selenium-e2e.test_orderfoodinthepast.TestOrderfoodinthepast" name="test_orderfoodinthepast" time="2.866"><failure message="selenium.common.exceptions.NoSuchElementException: Message: Unable to locate element: Kafeteria; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception&#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:199:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:552:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_orderfoodinthepast.TestOrderfoodinthepast object at 0x107b82d50&gt;
+
+    def test_orderfoodinthepast(self):
+      self.driver.get("http://localhost:8081/login")
+      self.driver.set_window_size(1512, 888)
+      self.driver.find_element(By.ID, "username").click()
+      self.driver.find_element(By.ID, "username").send_keys("student1@example.com")
+      self.driver.find_element(By.ID, "password").send_keys("pass123")
+      self.driver.find_element(By.ID, "password").send_keys(Keys.ENTER)
+&gt;     self.driver.find_element(By.LINK_TEXT, "Kafeteria").click()
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test-python/selenium-e2e/test_orderfoodinthepast.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/selenium/webdriver/remote/webdriver.py:922: in find_element
+    return self.execute(Command.FIND_ELEMENT, {"using": by, "value": value})["value"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/selenium/webdriver/remote/webdriver.py:454: in execute
+    self.error_handler.check_response(response)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.remote.errorhandler.ErrorHandler object at 0x11a324550&gt;
+response = {'status': 404, 'value': '{"value":{"error":"no such element","message":"Unable to locate element: Kafeteria","stacktr.../content/shared/webdriver/Errors.sys.mjs:552:5\\ndom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16\\n"}}'}
+
+    def check_response(self, response: dict[str, Any]) -&gt; None:
+        """Checks that a JSON response from the WebDriver does not have an
+        error.
+    
+        :Args:
+         - response - The JSON response from the WebDriver server as a dictionary
+           object.
+    
+        :Raises: If the response contains an error message.
+        """
+        status = response.get("status", None)
+        if not status or status == ErrorCode.SUCCESS:
+            return
+        value = None
+        message = response.get("message", "")
+        screen: str = response.get("screen", "")
+        stacktrace = None
+        if isinstance(status, int):
+            value_json = response.get("value", None)
+            if value_json and isinstance(value_json, str):
+                try:
+                    value = json.loads(value_json)
+                    if isinstance(value, dict):
+                        if len(value) == 1:
+                            value = value["value"]
+                        status = value.get("error", None)
+                        if not status:
+                            status = value.get("status", ErrorCode.UNKNOWN_ERROR)
+                            message = value.get("value") or value.get("message")
+                            if not isinstance(message, str):
+                                value = message
+                                message = message.get("message")
+                        else:
+                            message = value.get("message", None)
+                except ValueError:
+                    pass
+    
+        exception_class: type[WebDriverException]
+        e = ErrorCode()
+        error_codes = [item for item in dir(e) if not item.startswith("__")]
+        for error_code in error_codes:
+            error_info = getattr(ErrorCode, error_code)
+            if isinstance(error_info, list) and status in error_info:
+                exception_class = getattr(ExceptionMapping, error_code, WebDriverException)
+                break
+        else:
+            exception_class = WebDriverException
+    
+        if not value:
+            value = response["value"]
+        if isinstance(value, str):
+            raise exception_class(value)
+        if message == "" and "message" in value:
+            message = value["message"]
+    
+        screen = None  # type: ignore[assignment]
+        if "screen" in value:
+            screen = value["screen"]
+    
+        stacktrace = None
+        st_value = value.get("stackTrace") or value.get("stacktrace")
+        if st_value:
+            if isinstance(st_value, str):
+                stacktrace = st_value.split("\n")
+            else:
+                stacktrace = []
+                try:
+                    for frame in st_value:
+                        line = frame.get("lineNumber", "")
+                        file = frame.get("fileName", "&lt;anonymous&gt;")
+                        if line:
+                            file = f"{file}:{line}"
+                        meth = frame.get("methodName", "&lt;anonymous&gt;")
+                        if "className" in frame:
+                            meth = f"{frame['className']}.{meth}"
+                        msg = "    at %s (%s)"
+                        msg = msg % (meth, file)
+                        stacktrace.append(msg)
+                except TypeError:
+                    pass
+        if exception_class == UnexpectedAlertPresentException:
+            alert_text = None
+            if "data" in value:
+                alert_text = value["data"].get("text")
+            elif "alert" in value:
+                alert_text = value["alert"].get("text")
+            raise exception_class(message, screen, stacktrace, alert_text)  # type: ignore[call-arg]  # mypy is not smart enough here
+&gt;       raise exception_class(message, screen, stacktrace)
+E       selenium.common.exceptions.NoSuchElementException: Message: Unable to locate element: Kafeteria; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:199:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:552:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+../../../.pyenv/versions/3.13.3/envs/devenvone/lib/python3.13/site-packages/selenium/webdriver/remote/errorhandler.py:232: NoSuchElementException</failure></testcase></testsuite></testsuites>
