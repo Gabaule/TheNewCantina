@@ -16,7 +16,8 @@
 2.  [Test Case Management Template](#2-test-case-management-template)
 3.  [Testing Methodology and Execution](#3-testing-methodology-and-execution)
     1.  [Testing Methods & Tools](#31-testing-methods--tools)
-    2.  [Test Results Summary](#32-test-results-summary)
+    2.  [Multi-Layered Testing Strategy](#32-multi-layered-testing-strategy)
+    3.  [Test Results Summary](#33-test-results-summary)
 4.  [Conclusion](#4-conclusion)
 5.  [Annexes](#5-annexes)
     1.  [Annex A: Automated Test Execution Details](#annex-a-automated-test-execution-details)
@@ -175,6 +176,24 @@ The following tools were utilized to implement our testing strategy:
 | **Custom Python Scripts** | A custom script (`report_converter.py`) was developed to parse the JUnit XML output from `pytest` and a manual test Excel file to generate a professional, human-readable Markdown report with a summary and detailed annexes. |
 | **Microsoft Excel** | Used as a centralized tool for designing, documenting, and tracking the execution of manual test cases. |
 
+### Multi-Layered Testing Strategy
+
+Building on the tools listed above, our testing strategy was founded on a multi-layered approach to ensure robustness from the database level up to the final user interaction. By focusing heavily on model-level and API-level automated tests, we created a comprehensive and efficient quality assurance process.
+
+#### Model-Level Testing: The Foundation of Data Integrity
+
+The models (`app/models/`) are the bedrock of our application, directly mapping to our database schema and encapsulating fundamental data rules. Our strategy prioritized testing this layer for several key reasons:
+*   **Ensuring Data Integrity:** This is the most effective layer to validate core database constraints. For example, test case `MODEL_DB_002` (`test_unique_email_constraint`) confirms that the database correctly rejects duplicate user emails, a critical business rule that prevents data corruption. Similarly, `MODEL_DB_004` (`test_dish_delete_fails_if_in_use_by_menu_item`) verifies that foreign key constraints are enforced, preventing an administrator from deleting a dish that is part of an active menu.
+*   **Speed and Isolation:** By running these tests against a fast, in-memory SQLite database (configured in `conftest.py`), we achieve a rapid feedback loop. Developers can run the entire model test suite in seconds, allowing them to catch regressions and validate changes to the data layer instantly without the overhead of a full application server.
+*   **Validating Core Logic:** The model methods themselves contain essential logic. For instance, `AppUser.create_user` is responsible for correctly hashing a password. Test case `MODEL_USER_001` validates not only that the user is created, but that the `verify_password` method works as expected, confirming the security logic at its source.
+
+#### API-Level Testing: Validating Business Logic and Security
+
+The RESTful API is the primary interface for all administrative actions and serves as the brain of the application. Testing at this level was critical for validating our core business workflows and security policies.
+*   **Verifying the API Contract:** Our API tests (`tests/test-python/controller/`) act as a consumer of our own API, ensuring it adheres to its defined contract. They check that endpoints accept the correct data structures, perform the right actions, and return the expected HTTP status codes and JSON responses. This guarantees that any client (including our own HTMX-powered frontend) can rely on the API's behavior.
+*   **Testing Complex Business Logic:** Controllers contain logic that orchestrates multiple model interactions. For example, placing an order involves checking the user's balance, creating a `Reservation` record, creating multiple `OrderItem` records, and updating the user's balance. An API test like `API_USER_001` (`test_user_crud`) is an integration test in itself, ensuring the full "Create, Read, Update, Delete" lifecycle for a resource works across the controller, model, and database layers.
+*   **Enforcing Security Policies:** The API is the application's security gatekeeper. Our test suite rigorously checks the authentication and authorization decorators defined in `app/controller/auth.py`. The parametrized tests in `test_api_no_auth.py` systematically confirm that every protected endpoint rejects unauthenticated requests. More importantly, `test_api_auth.py` (`API_SEC_001`) validates our role-based access control, ensuring a standard user can view their own data but is correctly forbidden from accessing another user's data or any admin-only endpoints. This is a critical security validation that is far more efficient to automate at the API level than through the UI.
+
 
 ### Test Results Summary
 
@@ -194,7 +213,11 @@ This section highlights all tests that failed or resulted in an error during exe
 
 The primary objective was to validate the core functionality of the application, encompassing both the student-facing user interface and the administrative-level RESTful APIs. The goal was to ensure the system's stability, data integrity, and adherence to specified business rules before deployment.
 
-The scope of testing was comprehensive, covering critical components of the application. For the backend, this included full Create, Read, Update, and Delete (CRUD) lifecycle testing for the User, Dish, Cafeteria, and Daily Menu API endpoints. Authentication and authorization were rigorously checked to ensure standard users could not access admin-protected resources. On the frontend, testing focused on key user journeys: the complete student workflow from login to browsing menus, adding items to a cart, and placing an order, as well as the administrator's ability to log in and manage menus. Additionally, model-level tests were conducted to verify database constraints, such as the uniqueness of menus. Intentionally out of scope for this phase were performance and load testing, formal security vulnerability scanning, and usability testing with a formal user group.
+A cornerstone of our strategy was a multi-layered approach to integration testing, which ensures that individual components work together correctly as a complete system. This went beyond simple unit tests by verifying interactions between the API controllers, the data models, and the database itself. Our tests were structured to validate vertical slices of functionality:
+*   **Model & Database Integration:** We explicitly tested how different models interact through database constraints. For example, test case `MODEL_DB_004` verifies that a `Dish` cannot be deleted if it is referenced by a `DailyMenuItem`, confirming that foreign key relationships and cascade rules are correctly enforced.
+*   **API & Service Integration:** Our API tests (`API_USER_001`, `API_MENU_001`, etc.) are inherently integration tests. They validate the full flow from an HTTP request hitting a controller, which then calls a model method, which in turn interacts with the database. This ensures the entire service layer for a given resource works as expected.
+*   **Cross-Cutting Concerns Integration:** We validated the integration of our security module (`auth.py`) across all relevant endpoints. Tests like `API_SEC_001` and `API_SEC_002` confirm that our authentication and authorization decorators correctly protect resources based on user roles and session status.
+*   **Scenario & Workflow Integration:** The highest level of integration was achieved through our scenario tests (`SCEN_INT_001`, `SCEN_ORDER_001`). These tests simulate complete, multi-step business workflows, such as an administrator setting up the system and a user subsequently placing an order, providing the highest degree of confidence in the application's overall stability.
 
 A hybrid strategy combining automated and manual testing methodologies was employed to achieve broad and deep coverage. Critical API functionality, model-level data integrity, and repetitive UI workflows were automated to ensure consistent and repeatable verification. These automated scripts formed the core of our regression suite. Manual exploratory testing was used to supplement this, focusing on verifying visual layout, user experience edge cases, and scenarios not easily covered by automated scripts. This blended approach allowed for both efficient regression checking and flexible, human-driven validation.
 
