@@ -1,278 +1,191 @@
-# test_admin_api.py
+# tests/test-python/controller/test_api_admin_access.py
+
 import pytest
-import requests
-from datetime import date, timedelta
+import uuid
 
-# --- CONFIGURATION ---
-BASE_URL = "http://localhost:8081"
+# Le préfixe de base pour toutes les routes de l'API v1
 API_PREFIX = "/api/v1"
-ADMIN_CREDENTIALS = {
-    "username": "admin@example.com",
-    "password": "password"
-}
 
-@pytest.fixture(scope="session")
-def admin_session():
+@pytest.fixture
+def admin_client(client):
     """
-    Fixture Pytest pour s'authentifier une seule fois pour toute la session de test.
-    Ceci est beaucoup plus efficace que de se logger avant chaque test.
+    Fixture PyTest qui retourne un client de test authentifié en tant qu'administrateur.
+    
+    Cette fixture utilise le client de test Flask standard, effectue une requête POST
+    sur la route /login avec les identifiants de l'admin, et vérifie que la connexion
+    a réussi. Le client conserve le cookie de session pour les tests suivants.
+    
+    Args:
+        client: La fixture de base du client de test Flask fournie par conftest.py.
+
+    Yields:
+        Le client de test Flask avec une session admin active.
     """
-    print("\n--- (Setup Fixture) Authentification Administrateur ---")
-    s = requests.Session()
-    login_url = f"{BASE_URL}/login"
-    
-    response = s.post(login_url, data=ADMIN_CREDENTIALS, timeout=5)
-    
-    # Vérification robuste de la réussite du login
-    assert response.status_code == 200, "Le login a retourné un code d'erreur"
-    assert "session" in s.cookies, "Le cookie de session est manquant après le login."
-    # Vérifie que la réponse finale (après redirection) contient un élément attendu du dashboard
-    assert "admin/dashboard" in response.url or "Dashboard" in response.text, "La page après login ne semble pas être le dashboard."
-    
-    print("--- Authentification réussie. Début des tests. ---")
-    yield s
-    # Ici, on pourrait ajouter du code de "teardown" (nettoyage) si nécessaire,
-    # comme un appel à /logout.
-    print("\n--- Fin de la session de test. ---")
-
-
-def test_user_crud(admin_session):
-    """Teste les opérations CRUD complètes sur les endpoints utilisateur."""
-    print("\n--- Test des Endpoints: Utilisateurs (User) ---")
-    user_data = {
-        "last_name": "TestPytest",
-        "first_name": "Utilisateur",
-        "email": f"test.user.pytest.{date.today()}@example.com", # Email unique
-        "password": "password123",
-        "role": "student",
-        "balance": 20.0
+    admin_credentials = {
+        "username": "admin@example.com",
+        "password": "password"
     }
-    user_id = None
-    try:
-        # 1. CREATE
-        res = admin_session.post(f"{BASE_URL}{API_PREFIX}/user/", json=user_data)
-        assert res.status_code == 201, f"CREATE User a échoué: {res.text}"
-        user_id = res.json()['user_id']
-        print(f"  ✅ CREATE User (ID: {user_id})")
-
-        # 2. READ (List)
-        res = admin_session.get(f"{BASE_URL}{API_PREFIX}/user/")
-        assert res.status_code == 200
-        assert any(u['user_id'] == user_id for u in res.json()), "Utilisateur créé non trouvé dans la liste"
-        print("  ✅ READ User List")
-
-        # 3. READ (Single)
-        res = admin_session.get(f"{BASE_URL}{API_PREFIX}/user/{user_id}")
-        assert res.status_code == 200
-        assert res.json()['email'] == user_data['email']
-        print("  ✅ READ Single User")
-
-        # 4. UPDATE
-        update_data = {"last_name": "TestModifié", "role": "staff"}
-        res = admin_session.put(f"{BASE_URL}{API_PREFIX}/user/{user_id}", json=update_data)
-        assert res.status_code == 200
-        assert res.json()['last_name'] == "TestModifié"
-        print("  ✅ UPDATE User")
-
-    finally:
-        # 5. DELETE (Cleanup)
-        if user_id:
-            res = admin_session.delete(f"{BASE_URL}{API_PREFIX}/user/{user_id}")
-            assert res.status_code == 200, "Le nettoyage de l'utilisateur a échoué"
-            print("  ✅ DELETE User (Cleanup)")
-
-def test_cafeteria_crud(admin_session):
-    """Teste les opérations CRUD complètes sur les endpoints cafétéria."""
-    print("\n--- Test des Endpoints: Cafétérias (Cafeteria) ---")
-    cafeteria_data = {"name": "Cafeteria de Test Pytest"}
-    cafeteria_id = None
-    try:
-        # 1. CREATE
-        res = admin_session.post(f"{BASE_URL}{API_PREFIX}/cafeteria/", json=cafeteria_data)
-        assert res.status_code == 201
-        cafeteria_id = res.json()['cafeteria_id']
-        print(f"  ✅ CREATE Cafeteria (ID: {cafeteria_id})")
-
-        # 2. READ (List & Single)
-        res = admin_session.get(f"{BASE_URL}{API_PREFIX}/cafeteria/")
-        assert res.status_code == 200
-        assert any(c['cafeteria_id'] == cafeteria_id for c in res.json())
-        print("  ✅ READ Cafeteria List")
-
-        res = admin_session.get(f"{BASE_URL}{API_PREFIX}/cafeteria/{cafeteria_id}")
-        assert res.status_code == 200
-        print("  ✅ READ Single Cafeteria")
-
-        # 3. UPDATE
-        res = admin_session.put(f"{BASE_URL}{API_PREFIX}/cafeteria/{cafeteria_id}", json={"name": "Nouveau Nom Café Pytest"})
-        assert res.status_code == 200
-        assert res.json()['name'] == "Nouveau Nom Café Pytest"
-        print("  ✅ UPDATE Cafeteria")
-
-    finally:
-        # 4. DELETE
-        if cafeteria_id:
-            res = admin_session.delete(f"{BASE_URL}{API_PREFIX}/cafeteria/{cafeteria_id}")
-            assert res.status_code == 200
-            print("  ✅ DELETE Cafeteria (Cleanup)")
-
-def test_dish_crud(admin_session):
-    """Teste les opérations CRUD complètes sur les endpoints plat."""
-    print("\n--- Test des Endpoints: Plats (Dish) ---")
-    dish_data = {"name": "Plat de Test Pytest", "description": "Un plat pour pytest.", "dine_in_price": 9.99, "dish_type": "main_course"}
-    dish_id = None
-    try:
-        # 1. CREATE
-        print("  - Étape 1: Création du plat...")
-        res_create = admin_session.post(f"{BASE_URL}{API_PREFIX}/dish/", json=dish_data)
-        assert res_create.status_code == 201, f"CREATE Dish a échoué: {res_create.text}"
-        created_dish = res_create.json()
-        dish_id = created_dish.get('dish_id')
-        assert dish_id is not None, "La réponse de création ne contient pas de 'dish_id'"
-        print(f"  ✅ CREATE Dish (ID: {dish_id})")
-
-        # --- AJOUT DE VÉRIFICATION IMMÉDIATE ---
-        # Essayons de relire le plat par son ID immédiatement pour voir s'il existe.
-        print(f"  - Vérification immédiate: Lecture du plat {dish_id}...")
-        res_read_single = admin_session.get(f"{BASE_URL}{API_PREFIX}/dish/{dish_id}")
-        assert res_read_single.status_code == 200, f"READ Single Dish a échoué juste après la création pour l'ID {dish_id}: {res_read_single.text}"
-        print("  ✅ Le plat est lisible individuellement.")
-        
-        # 2. READ (List)
-        print("  - Étape 2: Lecture de la liste complète des plats...")
-        res_list = admin_session.get(f"{BASE_URL}{API_PREFIX}/dish/")
-        assert res_list.status_code == 200, f"READ Dish List a retourné un code d'erreur: {res_list.text}"
-        
-        all_dishes = res_list.json()
-        
-        # --- DÉBOGAGE : AFFICHONS LES DONNÉES ---
-        print(f"  - ID du plat recherché: {dish_id} (type: {type(dish_id)})")
-        print(f"  - Nombre de plats reçus dans la liste: {len(all_dishes)}")
-        print(f"  - IDs des 5 premiers plats reçus: {[d.get('dish_id') for d in all_dishes[:5]]}")
-
-        # La vérification
-        is_found = any(d.get('dish_id') == dish_id for d in all_dishes)
-        
-        if not is_found:
-            # Si non trouvé, affichons la liste complète pour comprendre pourquoi
-            import json
-            print("--- ERREUR: Plat non trouvé dans la liste. Contenu de la liste reçue: ---")
-            print(json.dumps(all_dishes, indent=2))
-            print("----------------------------------------------------------------------")
-
-        assert is_found, f"Le plat créé (ID: {dish_id}) est introuvable dans la liste des plats retournée par l'API."
-        print("  ✅ READ Dish List")
-
-        # 3. UPDATE
-        print("  - Étape 3: Mise à jour du plat...")
-        res_update = admin_session.put(f"{BASE_URL}{API_PREFIX}/dish/{dish_id}", json={"dine_in_price": 12.50})
-        assert res_update.status_code == 200 and res_update.json()['dine_in_price'] == 12.50
-        print("  ✅ UPDATE Dish")
-
-    finally:
-        # 4. DELETE (Cleanup)
-        if dish_id:
-            print(f"  - Étape 4: Nettoyage du plat (ID: {dish_id})...")
-            res_delete = admin_session.delete(f"{BASE_URL}{API_PREFIX}/dish/{dish_id}")
-            assert res_delete.status_code == 200, f"Le nettoyage du plat a échoué: {res_delete.text}"
-            print("  ✅ DELETE Dish (Cleanup)")
+    # La route /login est une page web qui redirige. `follow_redirects=True`
+    # permet de suivre la redirection vers le tableau de bord et de vérifier
+    # que la connexion a bien fonctionné.
+    response = client.post("/login", data=admin_credentials, follow_redirects=True)
+    
+    # Après une connexion réussie, on doit avoir un statut 200 et être sur le dashboard admin.
+    assert response.status_code == 200, "La connexion de l'administrateur a échoué."
+    # Vérifie un élément clé du tableau de bord admin pour confirmer la réussite.
+    assert b"Admin Dashboard" in response.data, "La page de destination après le login ne semble pas être le dashboard admin."
+    
+    # Le 'client' a maintenant le cookie de session et est prêt pour les tests.
+    yield client
+    
+    # Nettoyage : déconnexion à la fin des tests utilisant cette fixture.
+    client.get("/logout")
 
 
-def test_menu_and_item_crud(admin_session):
-    """Teste les endpoints pour les menus et leurs items, en gérant les dépendances."""
-    print("\n--- Test des Endpoints: Menus (DailyMenu & DailyMenuItem) ---")
-    cafeteria_id, dish_id, menu_id, item_id = None, None, None, None
-    try:
-        # --- Prérequis ---
-        res_caf = admin_session.post(f"{BASE_URL}{API_PREFIX}/cafeteria/", json={"name": "Café pour Menu Pytest"})
-        assert res_caf.status_code == 201
-        cafeteria_id = res_caf.json()['cafeteria_id']
-        print(f"  ➡️ Prérequis: Création cafétéria (ID: {cafeteria_id})")
+# Génère une chaîne unique pour les tests de création afin d'éviter les conflits (409)
+# si les tests sont exécutés plusieurs fois sans réinitialiser la base.
+UNIQUE_ID = str(uuid.uuid4())[:8]
 
-        res_dish = admin_session.post(f"{BASE_URL}{API_PREFIX}/dish/", json={"name": "Plat pour Menu Pytest", "dine_in_price": 5, "dish_type": "soup"})
-        assert res_dish.status_code == 201
-        dish_id = res_dish.json()['dish_id']
-        print(f"  ➡️ Prérequis: Création plat (ID: {dish_id})")
-        
-        # --- Tests DailyMenu ---
-        menu_date = (date.today() + timedelta(days=20)).strftime('%Y-%m-%d')
-        res = admin_session.post(f"{BASE_URL}{API_PREFIX}/daily-menu/", json={"cafeteria_id": cafeteria_id, "menu_date": menu_date})
-        assert res.status_code == 201
-        menu_id = res.json()['menu_id']
-        print(f"  ✅ CREATE DailyMenu (ID: {menu_id})")
+# Liste des endpoints qui doivent être accessibles par un administrateur.
+# Chaque dictionnaire contient la méthode, l'URL, les données éventuelles (json)
+# et le code de statut attendu pour une opération réussie.
+ADMIN_ACCESSIBLE_ENDPOINTS = [
+    # --- user_controller ---
+    {"method": "GET", "url": f"{API_PREFIX}/user/", "expected_status": 200, "desc": "Lister tous les utilisateurs"},
+    {"method": "GET", "url": f"{API_PREFIX}/user/1", "expected_status": 200, "desc": "Récupérer un utilisateur par ID"},
+    {"method": "POST", "url": f"{API_PREFIX}/user/", "json": {"last_name": "Test", "first_name": "Admin", "email": f"test.admin.{UNIQUE_ID}@example.com", "password": "password"}, "expected_status": 201, "desc": "Créer un utilisateur"},
+    {"method": "PUT", "url": f"{API_PREFIX}/user/1", "json": {"first_name": "StudentUpdated"}, "expected_status": 200, "desc": "Modifier un utilisateur"},
+    # On ne teste pas la suppression d'utilisateurs/cafétérias de base pour ne pas casser d'autres tests.
 
-        # --- Tests DailyMenuItem ---
-        item_data = {"menu_id": menu_id, "dish_id": dish_id, "dish_role": "soup", "display_order": 1}
-        res = admin_session.post(f"{BASE_URL}{API_PREFIX}/daily-menu-item/", json=item_data)
-        assert res.status_code == 201
-        item_id = res.json()['menu_item_id']
-        print(f"  ✅ CREATE DailyMenuItem (ID: {item_id})")
+    # --- cafeteria_controller ---
+    {"method": "GET", "url": f"{API_PREFIX}/cafeteria/", "expected_status": 200, "desc": "Lister les cafétérias"},
+    {"method": "GET", "url": f"{API_PREFIX}/cafeteria/1", "expected_status": 200, "desc": "Récupérer une cafétéria par ID"},
+    {"method": "POST", "url": f"{API_PREFIX}/cafeteria/", "json": {"name": f"Café Test Admin {UNIQUE_ID}"}, "expected_status": 201, "desc": "Créer une cafétéria"},
+    {"method": "PUT", "url": f"{API_PREFIX}/cafeteria/1", "json": {"name": "AR-Updated"}, "expected_status": 200, "desc": "Modifier une cafétéria"},
 
-        # --- Vérifications ---
-        res = admin_session.get(f"{BASE_URL}{API_PREFIX}/daily-menu-item/by-menu/{menu_id}")
-        assert res.status_code == 200 and any(i['menu_item_id'] == item_id for i in res.json())
-        print("  ✅ READ MenuItem List")
-        
-    finally:
-        # --- Nettoyage dans l'ordre inverse des dépendances ---
-        if item_id:
-            admin_session.delete(f"{BASE_URL}{API_PREFIX}/daily-menu-item/{item_id}")
-            print(f"  🧹 Cleanup: DELETE DailyMenuItem ({item_id})")
-        if menu_id:
-            admin_session.delete(f"{BASE_URL}{API_PREFIX}/daily-menu/{menu_id}")
-            print(f"  🧹 Cleanup: DELETE DailyMenu ({menu_id})")
-        if dish_id:
-            admin_session.delete(f"{BASE_URL}{API_PREFIX}/dish/{dish_id}")
-            print(f"  🧹 Cleanup: DELETE Dish ({dish_id})")
-        if cafeteria_id:
-            admin_session.delete(f"{BASE_URL}{API_PREFIX}/cafeteria/{cafeteria_id}")
-            print(f"  🧹 Cleanup: DELETE Cafeteria ({cafeteria_id})")
+    # --- dish_controller ---
+    {"method": "GET", "url": f"{API_PREFIX}/dish/", "expected_status": 200, "desc": "Lister les plats"},
+    {"method": "GET", "url": f"{API_PREFIX}/dish/1", "expected_status": 200, "desc": "Récupérer un plat par ID"},
+    {"method": "POST", "url": f"{API_PREFIX}/dish/", "json": {"name": f"Plat Test Admin {UNIQUE_ID}", "description": "x", "dine_in_price": 1, "dish_type": "main_course"}, "expected_status": 201, "desc": "Créer un plat"},
+    {"method": "PUT", "url": f"{API_PREFIX}/dish/1", "json": {"dine_in_price": 0.01}, "expected_status": 200, "desc": "Modifier un plat"},
 
-def test_reservation_and_order_item_flow(admin_session):
-    """Teste le flux de réservation, qui crée implicitement des OrderItems."""
-    print("\n--- Test des Endpoints: Réservations (Reservation & OrderItem) ---")
-    cafeteria_id, dish_id = None, None
-    try:
-        # --- Prérequis ---
-        res_caf = admin_session.post(f"{BASE_URL}{API_PREFIX}/cafeteria/", json={"name": "Café pour Commande Pytest"})
-        assert res_caf.status_code == 201
-        cafeteria_id = res_caf.json()['cafeteria_id']
-        print(f"  ➡️ Prérequis: Création cafétéria (ID: {cafeteria_id})")
+    # --- daily_menu_controller ---
+    {"method": "GET", "url": f"{API_PREFIX}/daily-menu/", "expected_status": 200, "desc": "Lister tous les menus (admin)"},
+    {"method": "GET", "url": f"{API_PREFIX}/daily-menu/1", "expected_status": 200, "desc": "Récupérer un menu par ID (admin)"},
+    {"method": "GET", "url": f"{API_PREFIX}/daily-menu/by-cafeteria/1", "params": {"date": "2025-06-30"}, "expected_status": 200, "desc": "Récupérer un menu par cafétéria (tout utilisateur auth)"},
+    {"method": "POST", "url": f"{API_PREFIX}/daily-menu/", "json": {"cafeteria_id": 1, "menu_date": f"2099-12-{10 + int(UNIQUE_ID[:1], 16)}"}, "expected_status": 201, "desc": "Créer un menu (admin)"}, # Date unique pour éviter conflit
 
-        res_dish = admin_session.post(f"{BASE_URL}{API_PREFIX}/dish/", json={"name": "Plat à commander Pytest", "dine_in_price": 7.50, "dish_type": "main_course"})
-        assert res_dish.status_code == 201
-        dish_id = res_dish.json()['dish_id']
-        print(f"  ➡️ Prérequis: Création plat (ID: {dish_id})")
-        
-        # 1. CREATE Reservation
-        reservation_data = {"cafeteria_id": cafeteria_id, "items": [{"dish_id": dish_id, "quantity": 2}]}
-        res = admin_session.post(f"{BASE_URL}{API_PREFIX}/reservations/", json=reservation_data)
-        assert res.status_code == 201, f"La création de réservation a échoué: {res.text}"
-        reservation_id = res.json()['reservation_id']
-        print(f"  ✅ CREATE Reservation (ID: {reservation_id})")
+    # --- daily_menu_item_controller ---
+    {"method": "GET", "url": f"{API_PREFIX}/daily-menu-item/by-menu/1", "expected_status": 200, "desc": "Lister les items d'un menu (admin)"},
+    {"method": "POST", "url": f"{API_PREFIX}/daily-menu-item/", "json": {"menu_id": 1, "dish_id": 1, "dish_role": "main_course"}, "expected_status": 201, "desc": "Ajouter un item à un menu (admin)"},
 
-        # 2. READ Reservation
-        res = admin_session.get(f"{BASE_URL}{API_PREFIX}/reservations/{reservation_id}")
-        assert res.status_code == 200
-        print("  ✅ READ Single Reservation")
+    # --- order_item_controller ---
+    {"method": "GET", "url": f"{API_PREFIX}/order-item/", "expected_status": 200, "desc": "Lister les items de commande (admin)"},
+]
 
-        # 3. READ OrderItem (vérifier qu'il a bien été créé)
-        res = admin_session.get(f"{BASE_URL}{API_PREFIX}/order-item/")
-        assert res.status_code == 200
-        order_items = [item for item in res.json() if item['reservation_id'] == reservation_id]
-        assert len(order_items) == 1
-        print("  ✅ READ OrderItem (implicitement créé)")
+@pytest.mark.parametrize(
+    "endpoint",
+    ADMIN_ACCESSIBLE_ENDPOINTS,
+    # Génère des noms de tests plus lisibles
+    ids=[f"{ep['method']}_{ep['url'].replace(API_PREFIX, '').replace('/', '_')}" for ep in ADMIN_ACCESSIBLE_ENDPOINTS]
+)
+def test_api_admin_access_is_granted(admin_client, endpoint):
+    """
+    Vérifie qu'un administrateur authentifié a bien accès aux endpoints protégés
+    et que l'opération réussit avec le code de statut attendu.
+    
+    Args:
+        admin_client: Le client de test authentifié en tant qu'admin.
+        endpoint: Le dictionnaire décrivant l'endpoint à tester.
+    """
+    method = endpoint["method"].lower()
+    url = endpoint["url"]
+    
+    # Récupère la méthode du client à appeler (get, post, put, delete)
+    client_method_to_call = getattr(admin_client, method)
+    
+    # Prépare les arguments pour l'appel (json, data, params)
+    kwargs = {}
+    if "json" in endpoint:
+        kwargs["json"] = endpoint.get("json")
+    if "data" in endpoint:
+        kwargs["data"] = endpoint.get("data")
+    if "params" in endpoint:
+        kwargs["query_string"] = endpoint.get("params")
 
-        # 4. CANCEL Reservation
-        res = admin_session.put(f"{BASE_URL}{API_PREFIX}/reservations/{reservation_id}/cancel")
-        assert res.status_code == 200
-        print("  ✅ CANCEL Reservation")
-        
-    finally:
-        # --- Nettoyage des prérequis ---
-        if dish_id:
-            admin_session.delete(f"{BASE_URL}{API_PREFIX}/dish/{dish_id}")
-            print(f"  🧹 Cleanup: DELETE Dish ({dish_id})")
-        if cafeteria_id:
-            admin_session.delete(f"{BASE_URL}{API_PREFIX}/cafeteria/{cafeteria_id}")
-            print(f"  🧹 Cleanup: DELETE Cafeteria ({cafeteria_id})")
+    # Appelle la méthode du client de test
+    response = client_method_to_call(url, **kwargs)
+
+    # Informations de débogage en cas d'échec
+    debug_info = (
+        f"Endpoint: {endpoint['method']} {url}\n"
+        f"Description: {endpoint['desc']}\n"
+        f"Code de statut attendu: {endpoint['expected_status']}\n"
+        f"Code de statut reçu: {response.status_code}\n"
+        f"Corps de la réponse: {response.data.decode(errors='ignore')[:500]}"
+    )
+
+    assert response.status_code == endpoint['expected_status'], \
+        f"L'accès admin a échoué ou retourné un code inattendu.\n{debug_info}"
+
+def test_admin_can_get_existing_reservation_and_item(admin_client, app):
+    """
+    Vérifie qu'un admin peut récupérer une réservation et un order_item spécifiques.
+    Ce test crée ses propres données pour garantir leur existence.
+    
+    Args:
+        admin_client: Le client de test authentifié en tant qu'admin.
+        app: La fixture de l'application Flask pour accéder au contexte.
+    """
+    # --- 1. SETUP : Création des données nécessaires ---
+    with app.app_context():
+        # Il est préférable d'importer les modèles ici pour éviter les dépendances circulaires
+        from app.models import db, AppUser, Cafeteria, Dish, Reservation, OrderItem
+
+        # On récupère des objets créés par le seeder de base (utilisateur, cafétéria, plat)
+        user = db.session.get(AppUser, 1)
+        cafeteria = db.session.get(Cafeteria, 1)
+        dish = db.session.get(Dish, 1)
+
+        # On s'assure que nos prérequis existent bien
+        assert all([user, cafeteria, dish]), "Données de base (user, cafeteria, dish) manquantes du seeder."
+
+        # On crée une nouvelle réservation
+        reservation = Reservation(
+            user_id=user.user_id,
+            cafeteria_id=cafeteria.cafeteria_id,
+            total=dish.dine_in_price
+        )
+        db.session.add(reservation)
+        # db.session.flush() est crucial ici : il envoie les changements à la BDD
+        # et assigne un ID à notre objet 'reservation' sans terminer la transaction.
+        db.session.flush()
+
+        # On crée un article de commande lié à cette réservation
+        order_item = OrderItem(
+            reservation_id=reservation.reservation_id,
+            dish_id=dish.dish_id,
+            quantity=1,
+            applied_price=dish.dine_in_price,
+            is_takeaway=False
+        )
+        db.session.add(order_item)
+        db.session.commit() # On sauvegarde tout en base de données
+
+        # On garde les ID pour les utiliser dans nos appels API
+        reservation_id_to_test = reservation.reservation_id
+        order_item_id_to_test = order_item.item_id
+
+    # --- 2. TEST : On effectue les appels API avec les ID créés ---
+
+    # Test sur la réservation
+    response_reservation = admin_client.get(f"/api/v1/reservations/{reservation_id_to_test}")
+    assert response_reservation.status_code == 200
+    assert response_reservation.json['reservation_id'] == reservation_id_to_test
+    print(f"\n✅ Test de la réservation {reservation_id_to_test} réussi.")
+
+    # Test sur l'article de commande
+    response_order_item = admin_client.get(f"/api/v1/order-item/{order_item_id_to_test}")
+    assert response_order_item.status_code == 200
+    assert response_order_item.json['item_id'] == order_item_id_to_test
+    print(f"✅ Test de l'article de commande {order_item_id_to_test} réussi.")
