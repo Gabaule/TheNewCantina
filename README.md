@@ -107,14 +107,12 @@ For local development, you can run tests directly on your machine. This requires
 -   **Purpose**: Automates test execution and generates formal test reports in Markdown and PDF format. It combines results from automated `pytest` runs and manual tests documented in an Excel file.
 -   **Usage**:
     ```sh
-    # Run tests in Docker and generate reports, including a PDF
-    python report_generator.py --docker --output-pdf TestReport.pdf
+    python report_generator.py --output-pdf TestReport.pdf
 
     # Use existing XML results to generate a report without re-running tests
     python report_generator.py --no-run-tests
     ```
 -   **Arguments**:
-    -   `--docker`: Run tests inside the Docker container.
     -   `--no-run-tests`: Skip test execution and use an existing XML file.
     -   `--xml-file`: Path to the JUnit XML results file.
     -   `--manual-tests-excel`: Path to the Excel file with manual test cases.
